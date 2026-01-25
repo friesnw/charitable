@@ -1,0 +1,19 @@
+{
+  "name": "monorepo-template",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "frontend": "npm run dev -w frontend",
+    "backend": "npm run dev -w backend",
+    "dev": "concurrently \"npm run backend\" \"npm run frontend\"",
+    "build": "npm run build -w backend && npm run build -w frontend",
+    "codegen": "npm run codegen -w frontend"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "typescript": "^5.3.3"
+  }
+}
