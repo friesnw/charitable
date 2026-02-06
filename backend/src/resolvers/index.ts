@@ -1,6 +1,7 @@
 import { pool } from '../db.js';
+import { charityResolvers } from './charities.js';
 
-export const resolvers = {
+const userResolvers = {
   Query: {
     users: async () => {
       const result = await pool.query('SELECT * FROM users ORDER BY created_at DESC');
@@ -29,5 +30,16 @@ export const resolvers = {
       const result = await pool.query('DELETE FROM users WHERE id = $1', [id]);
       return (result.rowCount ?? 0) > 0;
     },
+  },
+};
+
+// Merge all resolvers
+export const resolvers = {
+  Query: {
+    ...userResolvers.Query,
+    ...charityResolvers.Query,
+  },
+  Mutation: {
+    ...userResolvers.Mutation,
   },
 };
