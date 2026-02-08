@@ -7,3 +7,6 @@ dist/
 
 # Generated files
 frontend/src/gql/
+
+# Personal learning notes
+docs/Learn/

@@ -1,5 +1,25 @@
 ## Phase 5: Donations + Every.org
 
+### Every.org Webhook Setup
+
+- [ ] **Email support@every.org** to set up a Partner Webhook
+
+**Include in your email:**
+- A couple sentences about your use case
+- Your webhook endpoint (e.g., `https://yourdomain.com/api/webhooks/every-org`)
+
+**They will send you:**
+- A unique `webhook_token` to include as a parameter on your Donate Link
+- All donations made via your Donate Link with your `webhook_token` will trigger a notification to your webhook
+
+**Questions to ask Every.org:**
+- [ ] How do you handle recurring/monthly donations with webhooks?
+- [ ] Do we receive a webhook notification for each monthly charge, or only the initial donation?
+- [ ] Is there a way to identify the first donation vs subsequent recurring charges in the webhook payload?
+- [ ] Do you send webhooks for failed charges or cancellations?
+
+---
+
 ### One-Time Donations
 - [ ] **Update `frontend/src/vite-env.d.ts`**: Add Every.org global types
 - [ ] **Create `frontend/src/components/DonateButton.tsx`**: Every.org widget wrapper (modal opens with frequency toggle)

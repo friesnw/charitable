@@ -45,7 +45,6 @@ These users feel friction in the following ways:
   
 
 
-
 Recurring payments
 
 Our Beliefs:
