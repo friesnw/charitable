@@ -1,6 +1,6 @@
+*The purpose of this document is to outline any big areas we hope to learn from this MVP and connect it with tracking*
 
-
-Learning Goal: 
+### Learning Goal: Giving types
 - What is the appetite for financial donations compared to donating time?
 - Measure: 
 	- Button clicks on "Donate" vs "Volunteer"
@@ -9,7 +9,7 @@ Learning Goal:
 - Current assumption:
 	- Higher desire for financial
 
-Learning Goal: 
+### Learning Goal: Donation types
 - What is frequency on single donations vs recurring? 
 - Measure: 
 	- Button clicks on "One-time Donation" vs "Volunteer"
