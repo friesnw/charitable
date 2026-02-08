@@ -1,6 +1,15 @@
 *The purpose of this document is to outline any big areas we hope to learn from this MVP and connect it with tracking*
 
-### Learning Goal: Giving types
+### Learn: Conversion funnel
+- What is the conversion / drop-off between critical steps in the flow?
+- Measure:
+	- What are the total number of unique users who: 
+		1. View homepage
+		2. View charity page 
+		3. Make a donation
+		4. Create an account
+
+### Learn: Giving types
 - What is the appetite for financial donations compared to donating time?
 - Measure: 
 	- Button clicks on "Donate" vs "Volunteer"
@@ -9,7 +18,7 @@
 - Current assumption:
 	- Higher desire for financial
 
-### Learning Goal: Donation types
+### Learn: Donation types
 - What is frequency on single donations vs recurring? 
 - Measure: 
 	- Button clicks on "One-time Donation" vs "Volunteer"

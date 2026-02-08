@@ -37,7 +37,6 @@ Values-driven individuals who give occasionally but want to give better, especia
 - Urban or suburban professionals under 40 that do not feel they are making an impact at work
 - People the need to care more about their local community
 
-
 These users feel friction in the following ways:
 - Can I afford this?
 - Will this actually make an impact? 
