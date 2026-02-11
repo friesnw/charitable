@@ -1,3 +1,4 @@
+> **SUPERSEDED:** This task has been merged into `2-Frontend-Foundation.md` (Phase 3: Purple Pages)
 
 ## Phase 3: Frontend Core (Charity Pages)
 

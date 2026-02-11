@@ -1,0 +1,27 @@
+@import "tailwindcss";
+@import './tokens.css';
+
+/* Enable content scanning for class detection */
+@source "../**/*.{js,ts,jsx,tsx}";
+
+/* Extend theme with CSS variables */
+@theme {
+  --color-bg-primary: var(--bg-primary);
+  --color-bg-accent: var(--bg-accent);
+
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-secondary: var(--brand-secondary);
+  --color-brand-tertiary: var(--brand-tertiary);
+
+  --color-success: var(--color-success);
+  --color-error: var(--color-error);
+
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+
+  --font-family-sans: var(--font-sans);
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+}

@@ -19,9 +19,15 @@ export const typeDefs = `#graphql
     updatedAt: String
   }
 
+  type AuthPayload {
+    token: String!
+    user: User!
+  }
+
   type Query {
     users: [User!]!
     user(id: ID!): User
+    me: User
 
     charities(tags: [String], search: String): [Charity!]!
     charity(id: ID!): Charity
@@ -30,5 +36,8 @@ export const typeDefs = `#graphql
   type Mutation {
     createUser(name: String!, email: String!): User!
     deleteUser(id: ID!): Boolean!
+
+    requestMagicLink(email: String!): Boolean!
+    verifyMagicLink(token: String!): AuthPayload!
   }
 `;

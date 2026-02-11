@@ -1,3 +1,5 @@
+> **SUPERSEDED:** This task has been merged into `2-Frontend-Foundation.md` (Phase 1 & 2: Auth Context, Yellow Pages)
+
 ## Phase 4: Auth UI
 
 **Auth approach:** Email-based 2FA via Resend (no passwords)

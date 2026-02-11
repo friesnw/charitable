@@ -13,6 +13,10 @@ const envSchema = z.object({
   DB_NAME: z.string().default('app_db'),
   DB_USER: z.string().default(process.env.USER || 'postgres'),
   DB_PASSWORD: z.string().default(''),
+  // Auth
+  JWT_SECRET: z.string().min(32),
+  RESEND_API_KEY: z.string().startsWith('re_'),
+  FRONTEND_URL: z.string().url().default('http://localhost:5173'),
 });
 
 const parsed = envSchema.safeParse(process.env);

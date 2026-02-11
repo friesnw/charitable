@@ -42,12 +42,14 @@
 
 ---
 
-### Dashboard (Basic Visualization)
+### Data Export (Simple Tables)
+
+*No fancy visualizations needed — just export tables to Excel for analysis.*
 
 - [ ] **Create `backend/src/resolvers/analytics.ts`**: GraphQL queries
   - `eventCounts(startDate, endDate)`: Count by event type
   - `dailyEvents(startDate, endDate)`: Events grouped by day
-  - `topPages(limit)`: Most viewed pages
+  - `funnelReport(startDate, endDate)`: Conversion funnel metrics
   - `recentEvents(limit)`: Latest events for debugging
 
 - [ ] **Update `typeDefs.ts`**: Add analytics types
@@ -57,38 +59,48 @@
     count: Int!
   }
 
-  type DailyEventCount {
-    date: String!
-    count: Int!
+  type FunnelStep {
+    step: String!
+    uniqueUsers: Int!
+    dropoff: Float
   }
 
   type Query {
     eventCounts(startDate: String, endDate: String): [EventCount!]!
-    dailyEvents(startDate: String, endDate: String): [DailyEventCount!]!
+    funnelReport(startDate: String, endDate: String): [FunnelStep!]!
+    recentEvents(limit: Int): [AnalyticsEvent!]!
   }
   ```
 
-- [ ] **Create `frontend/src/pages/AnalyticsDashboard.tsx`**:
-  - Line chart: Events over time
-  - Bar chart: Events by type
-  - Table: Recent events
+- [ ] **Create simple admin page** with:
+  - Table view of events (sortable, filterable)
+  - "Export to CSV" button for Excel import
+  - Date range picker
 
-- [ ] **Install chart library**: `npm install recharts` (or Chart.js)
+- [ ] **Add CSV export endpoint**: `GET /api/analytics/export?start=&end=`
+  - Returns CSV file of filtered events
+  - Columns: timestamp, event_name, event_data, session_id, user_id
 
 ---
 
 ### Events to Track
 
-| Event Name | When | Data |
-|------------|------|------|
-| `page_view` | Route change | `{ page, charityId? }` |
-| `charity_click` | Click charity card | `{ charityId, charityName }` |
-| `donate_click` | Click donate button | `{ charityId, charityName }` |
-| `donate_complete` | Every.org success callback | `{ charityId, amount }` |
-| `search` | Submit search | `{ query, resultsCount }` |
-| `filter_tag` | Select tag filter | `{ tag }` |
-| `sign_in_start` | Begin sign-in flow | `{}` |
-| `sign_in_complete` | Successfully signed in | `{ userId }` |
+**Core MVP Measurement Events** (from `/docs/Product/MVP Measurement Plan.md`):
+
+| Event Name | When | Data | Measurement Goal |
+|------------|------|------|------------------|
+| `page_view` | Route change | `{ page: 'home' \| 'charity' \| ... }` | Funnel step 1 & 2 |
+| `charity_view` | View charity detail page | `{ charityId, charityName }` | Funnel step 2 |
+| `donate_click` | Click "Donate" button | `{ charityId, charityName }` | Giving types |
+| `volunteer_click` | Click "Volunteer" button | `{ charityId, charityName }` | Giving types |
+| `donate_complete` | Every.org webhook received | `{ charityId, amount, frequency }` | Funnel step 3, Donation types |
+| `account_created` | User completes signup | `{ userId }` | Funnel step 4 |
+| `search` | Submit search | `{ query, resultsCount }` | Discovery behavior |
+| `filter_tag` | Select tag filter | `{ tag }` | Discovery behavior |
+
+**Frequency values for `donate_complete`:**
+- `"one-time"` — single donation
+- `"monthly"` — recurring (only count when `isInitial: true` to avoid double-counting)
 
 ---
 

@@ -1,5 +1,6 @@
 import { pool } from '../db.js';
 import { charityResolvers } from './charities.js';
+import { authResolvers } from './auth.js';
 
 const userResolvers = {
   Query: {
@@ -38,8 +39,10 @@ export const resolvers = {
   Query: {
     ...userResolvers.Query,
     ...charityResolvers.Query,
+    ...authResolvers.Query,
   },
   Mutation: {
     ...userResolvers.Mutation,
+    ...authResolvers.Mutation,
   },
 };

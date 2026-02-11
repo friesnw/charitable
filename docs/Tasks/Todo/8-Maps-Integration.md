@@ -139,6 +139,16 @@
   }
   ```
 
+- [ ] **Add `causes` query** (for filter dropdowns)
+  ```graphql
+  causes: [Cause!]!
+
+  type Cause {
+    tag: String!
+    charityCount: Int!
+  }
+  ```
+
 ---
 
 ### Verification

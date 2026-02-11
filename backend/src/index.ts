@@ -6,6 +6,7 @@ import { typeDefs } from './schema/typeDefs.js';
 import { resolvers } from './resolvers/index.js';
 import { runMigrations } from './db.js';
 import { env } from './env.js';
+import { verifyToken, Context } from './auth.js';
 
 const app = express();
 
@@ -22,7 +23,19 @@ async function main() {
     '/graphql',
     cors(),
     express.json(),
-    expressMiddleware(server)
+    expressMiddleware(server, {
+      context: async ({ req }): Promise<Context> => {
+        // Extract JWT from Authorization header
+        const authHeader = req.headers.authorization;
+        if (!authHeader?.startsWith('Bearer ')) {
+          return { user: null };
+        }
+
+        const token = authHeader.slice(7); // Remove 'Bearer '
+        const user = verifyToken(token);
+        return { user };
+      },
+    })
   );
 
   // Health check
