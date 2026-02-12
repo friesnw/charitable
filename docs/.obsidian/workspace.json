@@ -41,12 +41,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Learn/Frontend-Foundation.md",
+                "file": "Product/Customer Research.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Frontend-Foundation"
+              "title": "Customer Research"
             }
           }
         ],
@@ -123,7 +123,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Learn/Frontend-Foundation.md",
+                "file": "Product/Customer Research.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -133,7 +133,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for Frontend-Foundation"
+              "title": "Backlinks for Customer Research"
             }
           },
           {
@@ -142,12 +142,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Learn/Frontend-Foundation.md",
+                "file": "Product/Customer Research.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Outgoing links from Frontend-Foundation"
+              "title": "Outgoing links from Customer Research"
             }
           },
           {
@@ -185,13 +185,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Learn/Frontend-Foundation.md",
+                "file": "Product/Customer Research.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of Frontend-Foundation"
+              "title": "Outline of Customer Research"
             }
           }
         ]
@@ -214,10 +214,18 @@
   },
   "active": "65d0eb751c1ae1cf",
   "lastOpenFiles": [
+    "Research/Charity-Listing-Approval.md",
+    "Tasks/Todo/2-Charity-Seed.md",
+    "Product/Customer Research.md",
+    "Product/Data Strategy.md",
+    "Product/Policies.md",
+    "Product/Policies",
+    "Learn/Frontend-Foundation.md",
+    "Tasks/Done/3-Charity-Pages.md",
+    "Tasks/Done/4-Auth-UI.md",
+    "Tasks/Done/5b-Styleguide-Setup.md",
     "Learn/Authentication-and-JWTs.md",
     "Tasks/Todo/2-Frontend-Foundation.md",
-    "Learn/Frontend-Foundation.md",
-    "Tasks/Todo/2-Charity-Seed.md",
     "Tasks/Todo/5-Branding-Review.md",
     "Tasks/Todo/4-Auth-UI.md",
     "Tasks/Todo/3-Charity-Pages.md",
@@ -236,19 +244,11 @@
     "Tasks/Todo/name-search.md",
     "Tasks/Todo/name-search",
     "Tasks/Todo/10-Branding-Review.md",
-    "Tasks/Backlog/10-Branding-Review.md",
-    "Tasks/Backlog/9-Email-Notifications.md",
-    "Tasks/Backlog/12-Integrate-Donations.md",
-    "Tasks/Done/Explore every.org Disbursements API.md",
-    "Tasks/Todo/12-Integrate-Donations.md",
-    "Tasks/Todo/11-Enrich-DB-Tables.md",
-    "Tasks/Todo/5-Integrate-Donations.md",
     "Untitled",
     "Learn",
     "Tasks/Todo/1-Backend-Foundation,md",
     "Product/Product Position",
     "Product",
-    "Updatew",
-    "Tasks/Todo/create-brand-voice-doc"
+    "Updatew"
   ]
 }

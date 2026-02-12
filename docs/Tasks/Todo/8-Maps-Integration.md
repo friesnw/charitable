@@ -15,17 +15,10 @@
 
 ### Database: Location Data
 
-- [ ] **Migration 007**: Add location fields to charities
-  ```sql
-  ALTER TABLE charities ADD COLUMN latitude DECIMAL(10,8);
-  ALTER TABLE charities ADD COLUMN longitude DECIMAL(11,8);
-  ALTER TABLE charities ADD COLUMN neighborhood VARCHAR(100);
-  ALTER TABLE charities ADD COLUMN address TEXT;
-  ```
+The `charity_locations` table (with `label`, `description`, `address`, `latitude`, `longitude`) is created in [Phase 2: Charity Seed](./2-Charity-Seed.md). Charities can have multiple locations; each maps back to one parent charity.
 
-- [ ] **Update charity seed data** with lat/lng coordinates
-- [ ] **Update GraphQL schema** to expose location fields
-- [ ] **Update charities resolver** to return location data
+- [ ] **Backfill lat/lng** for any locations seeded without coordinates
+- [ ] **Determine neighborhood from coordinates** — use Denver neighborhood GeoJSON boundaries to derive which neighborhood a charity falls in (computed from lat/lng + boundary polygons, not stored on any row)
 
 ---
 

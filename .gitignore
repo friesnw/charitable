@@ -10,3 +10,6 @@ frontend/src/gql/
 
 # Personal learning notes
 docs/Learn/
+
+*storybook.log
+storybook-static

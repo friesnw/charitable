@@ -56,7 +56,7 @@ Build the frontend pages based on the flow diagram with two tiers:
 - [x] Install react-router-dom: `npm install react-router-dom -w frontend`
 - [x] Install Tailwind: `npm install -D tailwindcss postcss autoprefixer @tailwindcss/postcss -w frontend`
 - [x] Initialize Tailwind: Created `tailwind.config.js` and `postcss.config.js` manually (Tailwind v4)
-- [ ] Initialize Storybook: `cd frontend && npx storybook@latest init`
+- [x] Initialize Storybook: `cd frontend && npx storybook@latest init`
 
 ### 1.2 Design Tokens + Tailwind Setup
 
@@ -104,7 +104,7 @@ Build the frontend pages based on the flow diagram with two tiers:
 - [x] Create `frontend/src/styles/tokens.css` with CSS variables
 - [x] Create `frontend/src/styles/index.css` with Tailwind v4 `@import` + `@theme` config
 - [x] Create `tailwind.config.js` and `postcss.config.js` for Tailwind v4
-- [ ] Configure Storybook to use same tokens.css
+- [x] Configure Storybook to use same tokens.css
 
 ### 1.3 Routing
 - [x] Create `frontend/src/routes.tsx` with React Router v6 route definitions
@@ -173,13 +173,33 @@ These pages will:
 | `Badge` | cause tags | Charity cards |
 | `Spinner` | loading state | Data fetching |
 
+### Designer Color Playground
+
+Create a Storybook decorator that lets the designer adjust design tokens live and see all components update in real-time. Changes are preview-only (don't affect codebase).
+
+**Implementation:**
+- Add color picker controls for each token category (brand, background, text, semantic)
+- Use Storybook's `useGlobals` to store selected colors
+- Decorator injects CSS variable overrides via inline styles on a wrapper div
+- Designer can experiment with palettes, screenshot results, share hex values
+
+**Example controls:**
+```
+Brand Primary:    [color picker] #2563eb
+Brand Secondary:  [color picker] #64748b
+Background:       [color picker] #ffffff
+Text Primary:     [color picker] #0f172a
+```
+
 ### Tasks
-- [ ] Create `frontend/src/components/ui/Button.tsx` + `Button.stories.tsx`
-- [ ] Create `frontend/src/components/ui/Input.tsx` + `Input.stories.tsx`
-- [ ] Create `frontend/src/components/ui/Card.tsx` + `Card.stories.tsx`
-- [ ] Create `frontend/src/components/ui/Typography.tsx` + `Typography.stories.tsx`
-- [ ] Create `frontend/src/components/ui/Badge.tsx` + `Badge.stories.tsx`
-- [ ] Create `frontend/src/components/ui/Spinner.tsx` + `Spinner.stories.tsx`
+- [x] Create `frontend/src/components/ui/Button.tsx` + `Button.stories.tsx`
+- [x] Create `frontend/src/components/ui/Input.tsx` + `Input.stories.tsx`
+- [x] Create `frontend/src/components/ui/Card.tsx` + `Card.stories.tsx`
+- [x] Create `frontend/src/components/ui/Typography.tsx` + `Typography.stories.tsx`
+- [x] Create `frontend/src/components/ui/Badge.tsx` + `Badge.stories.tsx`
+- [x] Create `frontend/src/components/ui/Spinner.tsx` + `Spinner.stories.tsx`
+- [ ] ~~Create `.storybook/decorators/ThemeDecorator.tsx`~~ (deferred — designer color playground skipped for now)
+- [ ] ~~Add color picker globals to `.storybook/preview.tsx`~~ (deferred)
 
 ---
 
@@ -244,11 +264,11 @@ frontend/src/
 
 - [x] `npm run build` passes without errors
 - [ ] `npm run dev` starts frontend without errors
-- [ ] `npm run storybook` launches Storybook with component stories
+- [x] `npm run storybook` launches Storybook with component stories
 - [ ] All routes load correct pages
 - [ ] Login flow: enter email → "check email" → click link → logged in
 - [ ] JWT persists across page refresh
 - [ ] Protected routes redirect to login if unauthenticated
 - [ ] Purple pages fetch and display real charity data
 - [ ] Tailwind classes work, tokens.css variables accessible
-- [ ] Designer can view Storybook and see all core components
+- [x] Designer can view Storybook and see all core components
