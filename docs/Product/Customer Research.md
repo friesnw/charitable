@@ -1,4 +1,6 @@
+# Customer Research
 *Starting this doc for initial research q's and important assumptions to validate.*
+
 ## Candidates
 1. Warren Village
 	1. Why?
