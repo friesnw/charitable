@@ -41,12 +41,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Product/Customer Research.md",
+                "file": "Product/Policies.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Customer Research"
+              "title": "Policies"
             }
           }
         ],
@@ -123,7 +123,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Product/Customer Research.md",
+                "file": "Product/Policies.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -133,7 +133,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for Customer Research"
+              "title": "Backlinks for Policies"
             }
           },
           {
@@ -142,12 +142,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Product/Customer Research.md",
+                "file": "Product/Policies.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Outgoing links from Customer Research"
+              "title": "Outgoing links from Policies"
             }
           },
           {
@@ -185,13 +185,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Product/Customer Research.md",
+                "file": "Product/Policies.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of Customer Research"
+              "title": "Outline of Policies"
             }
           }
         ]
@@ -215,10 +215,10 @@
   "active": "65d0eb751c1ae1cf",
   "lastOpenFiles": [
     "Research/Charity-Listing-Approval.md",
-    "Tasks/Todo/2-Charity-Seed.md",
-    "Product/Customer Research.md",
-    "Product/Data Strategy.md",
     "Product/Policies.md",
+    "Product/Customer Research.md",
+    "Tasks/Todo/2-Charity-Seed.md",
+    "Product/Data Strategy.md",
     "Product/Policies",
     "Learn/Frontend-Foundation.md",
     "Tasks/Done/3-Charity-Pages.md",
