@@ -9,14 +9,28 @@ export const typeDefs = `#graphql
   type Charity {
     id: ID!
     name: String!
+    slug: String!
     description: String
     logoUrl: String
     websiteUrl: String
+    volunteerUrl: String
+    primaryAddress: String
     causeTags: [String!]!
     everyOrgSlug: String
     ein: String!
+    foundedYear: Int
+    everyOrgClaimed: Boolean!
+    isActive: Boolean!
+    locations: [CharityLocation!]!
     createdAt: String
     updatedAt: String
+  }
+
+  type CharityLocation {
+    id: ID!
+    label: String!
+    description: String
+    address: String
   }
 
   type AuthPayload {
@@ -30,7 +44,7 @@ export const typeDefs = `#graphql
     me: User
 
     charities(tags: [String], search: String): [Charity!]!
-    charity(id: ID!): Charity
+    charity(id: ID, slug: String): Charity
   }
 
   type Mutation {

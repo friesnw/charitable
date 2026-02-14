@@ -1,41 +1,39 @@
 ## Phase 2: Charity Seed Data & Schema Enrichment
 
-### Schema Enrichment Migration
+### Migration 007: Enrich charities table + create charity_locations + indexes
 
-Add columns to `charities`:
+Schema-only migration (data imported separately via CSV script):
+1. Adds new columns to `charities`
+2. Creates `charity_locations` table
+3. Adds indexes
+
+#### New charities columns
 
 | Field | Type | Purpose |
 |-------|------|---------|
-| `slug` | VARCHAR(255) UNIQUE NOT NULL | Our own URL-friendly identifier (e.g., `denver-rescue-mission`) |
-| `mission` | TEXT | Short mission statement, separate from longer description |
+| `slug` | VARCHAR(255) UNIQUE | Our own URL-friendly identifier (e.g., `denver-rescue-mission`) |
 | `founded_year` | INTEGER | When the charity was established |
 | `volunteer_url` | VARCHAR(500) | Link to volunteer signup page |
-| `verified` | BOOLEAN DEFAULT FALSE | Internal tracking only — not exposed via GraphQL |
 | `every_org_claimed` | BOOLEAN DEFAULT FALSE | Whether the charity has claimed their Every.org profile |
 | `is_active` | BOOLEAN DEFAULT TRUE | Soft delete / hide inactive charities |
+| `primary_address` | TEXT | Primary charity address |
 
----
-
-### Charity Locations Table (new)
-
-Charities can have **multiple locations**. Each location has its own label and address, but maps back to one parent charity (one slug, one EIN, one donation page).
+#### Charity locations table
 
 ```sql
 CREATE TABLE charity_locations (
   id SERIAL PRIMARY KEY,
   charity_id INTEGER REFERENCES charities(id) ON DELETE CASCADE NOT NULL,
-  label VARCHAR(255) NOT NULL,        -- e.g. "Main Office", "Downtown Shelter"
-  description TEXT,                    -- optional longer description of this location
+  label VARCHAR(255) NOT NULL,
+  description TEXT,
   address TEXT,
-  latitude DECIMAL(10,8),             -- nullable; locations without coords won't show on map
-  longitude DECIMAL(11,8),            -- nullable
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
----
+> Note: `latitude` and `longitude` columns deferred to [8-Maps-Integration](./8-Maps-Integration.md)
 
-### Additional Indexes
+#### Indexes
 
 | Index | Purpose |
 |-------|---------|
@@ -47,20 +45,48 @@ CREATE TABLE charity_locations (
 
 ---
 
-### Seed Data
+### CSV Import Script
 
-- [ ] **Seed ~13 Denver charities** with all fields: name, description, EIN, Every.org slug, slug, cause tags, mission, founded year, volunteer URL, every_org_claimed, is_active
-- [ ] **Seed charity_locations** — at least one location per charity with label and address; lat/lng optional (locations missing coordinates won't display on maps)
-- [ ] **Update GraphQL schema** to expose new fields on `Charity` type and add `CharityLocation` type
-- [ ] **Update resolvers** to return new fields + locations
-- [ ] **Verify**: `charities` query returns data, search/filter works, `charity(slug)` returns detail with locations
+**Script:** `backend/scripts/import-charities.ts`
+**Data source:** Google Sheet exported as CSV
+- Charities CSV → replaces all rows in `charities` table
+- Locations CSV → inserts into `charity_locations`, linked by slug
+
+Run: `DATABASE_URL="postgresql://localhost:5432/app_db" npx tsx scripts/import-charities.ts`
+
+---
+
+### GraphQL + Resolver Updates
+
+- [x] Update `Charity` type with new fields: `slug`, `foundedYear`, `volunteerUrl`, `everyOrgClaimed`, `isActive`, `primaryAddress`, `locations`
+- [x] Add `CharityLocation` type: `id`, `label`, `description`, `address`
+- [x] Update `charity` query to support lookup by `slug` (in addition to `id`)
+- [x] Update `toCharity()` helper in resolver with new field mappings
+- [x] Add `Charity.locations` field resolver (joins `charity_locations` by `charity_id`)
+- [x] Register `Charity` type resolver in `resolvers/index.ts`
+
+---
+
+### Tasks
+
+- [x] Write `backend/migrations/007_enrich_and_seed.sql` (schema-only: ALTER + CREATE TABLE + indexes)
+- [x] Write `backend/scripts/import-charities.ts` (CSV import)
+- [x] Update `backend/src/schema/typeDefs.ts`
+- [x] Update `backend/src/resolvers/charities.ts`
+- [x] Run migration
+- [x] Run CSV import (5 charities, 17 locations)
+- [ ] Verify: `charities` query returns enriched fields
+- [ ] Verify: `charity(slug: "denver-rescue-mission")` returns detail with locations
+- [ ] Verify: search/filter still works
 
 ---
 
 ### Decisions
 
-- `slug` is our own routing identifier; `every_org_slug` is kept separately for the Every.org donation widget (which requires their slug, not EIN)
-- `verified` is internal-only — not exposed in the GraphQL API
-- `trust_summary` dropped — `mission` is sufficient for now
-- Location data lives in `charity_locations`, not on the charity row (one-to-many)
-- `neighborhood` is deferred to [8-Maps-Integration](./8-Maps-Integration.md) — will be derived from lat/lng + Denver boundary GeoJSON, not stored
+- `slug` is our own routing identifier; `every_org_slug` is kept separately for the Every.org donation widget
+- `mission` and `verified` removed from schema for now
+- `primary_address` on charities table for the main/HQ address; `charity_locations` for additional locations
+- `latitude`/`longitude` deferred to maps integration
+- `neighborhood` deferred to [8-Maps-Integration](./8-Maps-Integration.md) — derived from coordinates + boundary data
+- Schema migration is separate from data — CSV import script handles data population
+- Import script deletes all existing charities before inserting (full replace)
