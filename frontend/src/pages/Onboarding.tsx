@@ -1,19 +1,28 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { gql, useMutation } from '@apollo/client';
+
+const SAVE_PREFERENCES = gql`
+  mutation SavePreferences($location: String!) {
+    savePreferences(location: $location) {
+      location
+      onboardingCompleted
+    }
+  }
+`;
 
 type Location = 'denver' | 'other' | null;
 
 export function Onboarding() {
   const navigate = useNavigate();
   const [location, setLocation] = useState<Location>(null);
+  const [savePreferences, { loading }] = useMutation(SAVE_PREFERENCES);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!location) return;
 
-    // TODO: Save preferences via GraphQL mutation
-    console.log('Saving preferences:', { location });
-
+    await savePreferences({ variables: { location } });
     navigate('/dashboard', { replace: true });
   };
 
@@ -53,10 +62,10 @@ export function Onboarding() {
 
         <button
           type="submit"
-          disabled={!location}
+          disabled={!location || loading}
           className="w-full bg-brand-primary text-white px-4 py-2 rounded-md hover:opacity-90 disabled:opacity-50"
         >
-          Continue
+          {loading ? 'Saving...' : 'Continue'}
         </button>
       </form>
     </div>

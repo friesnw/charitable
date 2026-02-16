@@ -219,7 +219,10 @@ CREATE TABLE user_preferences (
 );
 ```
 
-- [ ] Create `backend/migrations/007_create_user_preferences.sql`
+- [x] Create `backend/migrations/008_create_user_preferences.sql`
+- [x] Create `backend/src/resolvers/preferences.ts` — `myPreferences` query + `savePreferences` mutation
+- [x] Update GraphQL schema with `UserPreferences` type
+- [x] Wire up `Onboarding.tsx` to call `savePreferences` mutation
 
 ---
 
@@ -263,12 +266,12 @@ frontend/src/
 ## Verification
 
 - [x] `npm run build` passes without errors
-- [ ] `npm run dev` starts frontend without errors
+- [x] `npm run dev` starts frontend without errors
 - [x] `npm run storybook` launches Storybook with component stories
-- [ ] All routes load correct pages
+- [x] All routes load correct pages
 - [ ] Login flow: enter email → "check email" → click link → logged in
 - [ ] JWT persists across page refresh
 - [ ] Protected routes redirect to login if unauthenticated
-- [ ] Purple pages fetch and display real charity data
-- [ ] Tailwind classes work, tokens.css variables accessible
+- [x] Purple pages fetch and display real charity data
+- [x] Tailwind classes work, tokens.css variables accessible
 - [x] Designer can view Storybook and see all core components

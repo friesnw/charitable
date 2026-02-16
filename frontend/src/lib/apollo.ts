@@ -11,7 +11,7 @@ if (apiUrl && !apiUrl.startsWith('http')) {
 }
 
 const httpLink = createHttpLink({
-  uri: apiUrl,
+  uri: `${apiUrl}/graphql`,
 });
 
 // Auth link that adds JWT to requests

@@ -1,25 +1,4 @@
-## Phase 5: Donations + Every.org Integration
-
-**Note:** This is a *later* phase. Initial launch uses simple donation links to charity websites. Every.org integration adds tracked donations, giving history, and recurring donation support.
-
----
-
-### Prerequisites (Before Every.org)
-
-For initial launch, charity pages will have:
-- "Donate" button → links directly to charity's website (`websiteUrl`)
-- No donation tracking, no giving history
-- This lets us ship something live while we coordinate with Every.org
-
----
-
-### Backend Setup (When Ready for Every.org)
-
-- [ ] **Add donation types to `typeDefs.ts`**: `DonationIntent`, `createDonationIntent`, `myDonations`
-- [ ] **Create `backend/src/resolvers/donations.ts`**: `createDonationIntent`, `myDonations` resolvers
-- [ ] **Create `backend/src/routes/webhooks.ts`**: POST `/api/webhooks/every-org` endpoint
-
----
+## Phase 5: Donations + Every.org
 
 ### Every.org Webhook Setup
 
@@ -38,6 +17,7 @@ For initial launch, charity pages will have:
 - [ ] Do we receive a webhook notification for each monthly charge, or only the initial donation?
 - [ ] Is there a way to identify the first donation vs subsequent recurring charges in the webhook payload?
 - [ ] Do you send webhooks for failed charges or cancellations?
+- [ ] Can I create donations for charities that haven't claimed an account yet?
 
 ---
 

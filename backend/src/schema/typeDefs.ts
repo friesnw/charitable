@@ -38,10 +38,16 @@ export const typeDefs = `#graphql
     user: User!
   }
 
+  type UserPreferences {
+    location: String
+    onboardingCompleted: Boolean!
+  }
+
   type Query {
     users: [User!]!
     user(id: ID!): User
     me: User
+    myPreferences: UserPreferences
 
     charities(tags: [String], search: String): [Charity!]!
     charity(id: ID, slug: String): Charity
@@ -53,5 +59,7 @@ export const typeDefs = `#graphql
 
     requestMagicLink(email: String!): Boolean!
     verifyMagicLink(token: String!): AuthPayload!
+
+    savePreferences(location: String!): UserPreferences!
   }
 `;
