@@ -28,6 +28,8 @@ function toLocation(row: Record<string, unknown>) {
     label: row.label,
     description: row.description,
     address: row.address,
+    latitude: row.latitude != null ? parseFloat(row.latitude as string) : null,
+    longitude: row.longitude != null ? parseFloat(row.longitude as string) : null,
   };
 }
 

@@ -20,6 +20,8 @@ const GET_CHARITY = gql`
         label
         description
         address
+        latitude
+        longitude
       }
     }
   }
@@ -30,6 +32,8 @@ interface CharityLocation {
   label: string;
   description: string | null;
   address: string | null;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 interface Charity {

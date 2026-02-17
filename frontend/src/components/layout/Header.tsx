@@ -8,7 +8,7 @@ export function Header() {
     <header className="bg-bg-primary border-b border-brand-tertiary">
       <nav className="container mx-auto px-4 py-4 flex items-center justify-between">
         <Link to="/" className="text-xl font-bold text-text-primary">
-          Charitable
+          GoodLocal
         </Link>
 
         <div className="flex items-center gap-4">

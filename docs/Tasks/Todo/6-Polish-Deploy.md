@@ -20,6 +20,9 @@
 - [ ] Point custom domain to Render
 - [ ] Configure SSL (Render handles automatically)
 
+### API Key Lockdown
+- [ ] **Restrict Mapbox token** to production URL origins in Mapbox account settings (e.g., `https://goodlocal.org`)
+
 ### Verification
 - [ ] Backend GraphQL playground accessible at production URL
 - [ ] Frontend loads and can query charities

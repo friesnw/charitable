@@ -31,6 +31,8 @@ export const typeDefs = `#graphql
     label: String!
     description: String
     address: String
+    latitude: Float
+    longitude: Float
   }
 
   type AuthPayload {
