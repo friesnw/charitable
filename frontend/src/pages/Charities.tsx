@@ -1,6 +1,10 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, gql } from '@apollo/client';
+
+const CharityMap = lazy(() =>
+  import('../components/CharityMap').then((m) => ({ default: m.CharityMap }))
+);
 
 const GET_CHARITIES = gql`
   query GetCharities($tags: [String], $search: String) {
@@ -12,6 +16,14 @@ const GET_CHARITIES = gql`
       primaryAddress
       foundedYear
       causeTags
+      locations {
+        id
+        label
+        description
+        address
+        latitude
+        longitude
+      }
     }
   }
 `;
@@ -24,11 +36,20 @@ interface Charity {
   primaryAddress: string | null;
   foundedYear: number | null;
   causeTags: string[];
+  locations: {
+    id: string;
+    label: string;
+    description: string | null;
+    address: string | null;
+    latitude: number | null;
+    longitude: number | null;
+  }[];
 }
 
 export function Charities() {
   const [search, setSearch] = useState('');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
 
   const { loading, error, data } = useQuery(GET_CHARITIES, {
     variables: {
@@ -46,7 +67,31 @@ export function Charities() {
 
   return (
     <div>
-      <h1 className="text-xl font-bold text-text-primary mb-4">Find Charities</h1>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-xl font-bold text-text-primary">Find Charities</h1>
+        <div className="flex rounded-md border border-brand-tertiary overflow-hidden">
+          <button
+            onClick={() => setViewMode('list')}
+            className={`text-sm px-3 py-1 ${
+              viewMode === 'list'
+                ? 'bg-brand-primary text-white'
+                : 'bg-bg-accent text-text-secondary hover:bg-brand-tertiary'
+            }`}
+          >
+            List
+          </button>
+          <button
+            onClick={() => setViewMode('map')}
+            className={`text-sm px-3 py-1 ${
+              viewMode === 'map'
+                ? 'bg-brand-primary text-white'
+                : 'bg-bg-accent text-text-secondary hover:bg-brand-tertiary'
+            }`}
+          >
+            Map
+          </button>
+        </div>
+      </div>
 
       <div className="mb-6 space-y-3">
         <input
@@ -93,41 +138,47 @@ export function Charities() {
         <p className="text-text-secondary">No charities found.</p>
       )}
 
-      <ul className="space-y-4">
-        {charities.map((charity) => (
-          <li key={charity.id}>
-            <Link
-              to={`/charities/${charity.slug}`}
-              className="block p-4 border border-brand-tertiary rounded-lg hover:border-brand-primary"
-            >
-              <h2 className="font-bold text-text-primary">{charity.name}</h2>
-              {charity.foundedYear && (
-                <p className="text-text-secondary text-sm">
-                  Founded {charity.foundedYear}
-                </p>
-              )}
-              {charity.description && (
-                <p className="text-text-secondary mt-1 line-clamp-2">{charity.description}</p>
-              )}
-              {charity.primaryAddress && (
-                <p className="text-text-secondary text-sm mt-1">{charity.primaryAddress}</p>
-              )}
-              {charity.causeTags.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {charity.causeTags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="text-sm px-2 py-1 bg-bg-accent text-text-secondary rounded"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </Link>
-          </li>
-        ))}
-      </ul>
+      {viewMode === 'map' ? (
+        <Suspense fallback={<p className="text-text-secondary">Loading map...</p>}>
+          <CharityMap charities={charities} />
+        </Suspense>
+      ) : (
+        <ul className="space-y-4">
+          {charities.map((charity) => (
+            <li key={charity.id}>
+              <Link
+                to={`/charities/${charity.slug}`}
+                className="block p-4 border border-brand-tertiary rounded-lg hover:border-brand-primary"
+              >
+                <h2 className="font-bold text-text-primary">{charity.name}</h2>
+                {charity.foundedYear && (
+                  <p className="text-text-secondary text-sm">
+                    Founded {charity.foundedYear}
+                  </p>
+                )}
+                {charity.description && (
+                  <p className="text-text-secondary mt-1 line-clamp-2">{charity.description}</p>
+                )}
+                {charity.primaryAddress && (
+                  <p className="text-text-secondary text-sm mt-1">{charity.primaryAddress}</p>
+                )}
+                {charity.causeTags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {charity.causeTags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="text-sm px-2 py-1 bg-bg-accent text-text-secondary rounded"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
