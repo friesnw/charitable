@@ -4,24 +4,6 @@
 
 ---
 
-### Name Selection
-
-- [ ] **Brainstorm name options** (consider: local feel, giving/charity, Denver connection)
-- [ ] **Check domain availability** for top choices
-- [ ] **Check social handle availability** (Instagram, Twitter/X)
-- [ ] **Final decision**: Lock in the name
-
-Current placeholder: "Charitable"
-
----
-
-### Domain Purchase
-
-- [ ] **Purchase domain** (Namecheap, Google Domains, etc.)
-- [ ] **Configure DNS** to point to Render
-- [ ] **Verify domain with Resend** for email sending
-
----
 
 ### Branding Audit
 

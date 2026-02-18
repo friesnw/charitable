@@ -41,12 +41,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Tasks/Todo/4-Maps-Integration.md",
+                "file": "Tasks/Todo/Quick Enhancments.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "4-Maps-Integration"
+              "title": "Quick Enhancments"
             }
           }
         ],
@@ -215,7 +215,11 @@
   "active": "65d0eb751c1ae1cf",
   "lastOpenFiles": [
     "Tasks/Todo/5-Branding-Review.md",
+    "Tasks/Todo/6-Polish-Deploy.md",
+    "Tasks/Backlog/Name Confirmation.md",
     "Tasks/Todo/4-Maps-Integration.md",
+    "Tasks/Todo/Quick Enhancments.md",
+    "Tasks/Done/name-search.md",
     "Research/Maps-Integration.md",
     "Product/Sitemap.md",
     "Tasks/Done/2-Frontend-Foundation.md",
@@ -238,10 +242,6 @@
     "Tasks/Todo/2-Frontend-Foundation.md",
     "Tasks/Todo/4-Auth-UI.md",
     "Tasks/Todo/3-Charity-Pages.md",
-    "Tasks/Backlog/13-Donation-Pages.md",
-    "Tasks/Backlog/13-Donation-Tracking-Pages.md",
-    "Tasks/Todo/5b-Styleguide-Setup.md",
-    "Tasks/Backlog/Auth-Enhancements.md",
     "Product/Marketing-copy",
     "Research/Name-Research-Summary.csv",
     "Tasks/Todo/name-search",
