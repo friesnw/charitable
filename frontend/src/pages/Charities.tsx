@@ -1,5 +1,5 @@
 import { lazy, Suspense, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery, gql } from '@apollo/client';
 
 const CharityMap = lazy(() =>
@@ -49,7 +49,24 @@ interface Charity {
 export function Charities() {
   const [search, setSearch] = useState('');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const viewMode = searchParams.get('view') === 'list' ? 'list' : 'map';
+
+  const setViewMode = (mode: 'list' | 'map') => {
+    if (mode === 'list') {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        next.set('view', 'list');
+        return next;
+      });
+    } else {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete('view');
+        return next;
+      });
+    }
+  };
 
   const { loading, error, data } = useQuery(GET_CHARITIES, {
     variables: {
@@ -71,16 +88,6 @@ export function Charities() {
         <h1 className="text-xl font-bold text-text-primary">Find Charities</h1>
         <div className="flex rounded-md border border-brand-tertiary overflow-hidden">
           <button
-            onClick={() => setViewMode('list')}
-            className={`text-sm px-3 py-1 ${
-              viewMode === 'list'
-                ? 'bg-brand-primary text-white'
-                : 'bg-bg-accent text-text-secondary hover:bg-brand-tertiary'
-            }`}
-          >
-            List
-          </button>
-          <button
             onClick={() => setViewMode('map')}
             className={`text-sm px-3 py-1 ${
               viewMode === 'map'
@@ -89,6 +96,16 @@ export function Charities() {
             }`}
           >
             Map
+          </button>
+          <button
+            onClick={() => setViewMode('list')}
+            className={`text-sm px-3 py-1 ${
+              viewMode === 'list'
+                ? 'bg-brand-primary text-white'
+                : 'bg-bg-accent text-text-secondary hover:bg-brand-tertiary'
+            }`}
+          >
+            List
           </button>
         </div>
       </div>

@@ -23,11 +23,20 @@ Install Dependencies
   npm install @types/mapbox-gl --save-dev
   ```
 
+- [ ] **Create `frontend/src/components/CharityMap.tsx`**
+
+
+- [ ] **Add map view toggle** to charity list page
+  - List view (default) ↔ Map view
+
+
+
 ----
 
 
 ### Step 3: Focus map on Denver
 
+   Display map centered on Denver
 - Center: [-104.98832, 39.73669]
 - Zoom: 9.57
 
@@ -35,80 +44,18 @@ Install Dependencies
 ----
 
 
-
-
-#### Step 4: Add Charity Markers
+### Step 4: Add Charity Markers
 
 Reference doc: https://docs.mapbox.com/mapbox-gl-js/guides/add-your-data/markers/
 
 Anchor should use *bottom* so that the tip of the pin points to the exact location on the map
 
 - If lat long isn't present, dont display as a marker on the map
+
+
 ### Step 5: Add Marker Popups
 
-
-
-
-### Step 2: Location Data
-
-The `charity_locations` table (with `label`, `description`, `address`, `latitude`, `longitude`) is created in [Phase 2: Charity Seed](./2-Charity-Seed.md). Charities can have multiple locations; each maps back to one parent charity.
-
-- [ ] **Backfill lat/lng** for any locations seeded without coordinates
-- [ ] **Determine neighborhood from coordinates** — use Denver neighborhood GeoJSON boundaries to derive which neighborhood a charity falls in (computed from lat/lng + boundary polygons, not stored on any row)
-
----
-
-### Step 3: Denver Neighborhood Data
-
-- [ ] **Download Denver neighborhoods GeoJSON** from [Denver Open Data](https://opendata-geospatialdenver.hub.arcgis.com/)
-- [ ] **Store in `frontend/public/data/denver-neighborhoods.geojson`**
-- [ ] **Verify neighborhood names** match your charity data
-
----
-
-
----
-
-### Step 6: Build Map Components
-
-- [ ] **Create `frontend/src/components/CharityMap.tsx`**
-  - Display map centered on Denver
-  - Show charity markers with cause icons
-  - Click marker → show popup with name + donate link
-  - Cluster nearby markers at low zoom
-
-- [ ] **Create `frontend/src/components/NeighborhoodLayer.tsx`**
-  - Overlay Denver neighborhood boundaries
-  - Subtle fill color on hover
-  - Show neighborhood name labels
-
-- [ ] **Create `frontend/src/components/CauseMarker.tsx`**
-  - Custom marker component per cause type
-  - Consistent sizing and styling
-
----
-
-### Step 7: Update Discovery Page
-
-- [ ] **Add map view toggle** to charity list page
-  - List view (default) ↔ Map view
-
-- [ ] **Add neighborhood filter**
-  - Dropdown or clickable regions on map
-  - "Charities in Capitol Hill (4)"
-
-
-
----
-
-### Step 8: Update Charity Detail Page
-
-- [ ] **Add mini-map**
-  - Small Mapbox map showing charity location
-  - Link to directions
-
-- [ ] **Show neighborhood badge**
-  - "Located in Five Points"
+- [x] display charity location name, parent charity name, location description, link to charity page
 
 ---
 
@@ -119,22 +66,11 @@ The `charity_locations` table (with `label`, `description`, `address`, `latitude
   charities(
     tags: [String]
     search: String
-    neighborhood: String
     nearLat: Float
     nearLng: Float
-    radiusMiles: Float
   ): [Charity!]!
   ```
 
-- [ ] **Add `neighborhoods` query**
-  ```graphql
-  neighborhoods: [Neighborhood!]!
-
-  type Neighborhood {
-    name: String!
-    charityCount: Int!
-  }
-  ```
 
 - [ ] **Add `causes` query** (for filter dropdowns)
   ```graphql
@@ -171,20 +107,25 @@ The `charity_locations` table (with `label`, `description`, `address`, `latitude
 
 ---
 
-### Resources
-
-- [react-map-gl docs](https://visgl.github.io/react-map-gl/)
-- [Mapbox Studio](https://studio.mapbox.com/)
-- [Denver Open Data](https://opendata-geospatialdenver.hub.arcgis.com/)
-- [Maps Integration Research](/docs/Research/Maps-Integration.md)
-
-
-
-
 # Maps Part 2: Styling adjustments 
 ### 1. Customize the markers
 
 ### 2. Outline specific relevant neighborhoods based on research
+
+- [ ] Display Denver Neighborhood Data
+	- [ ] **Download Denver neighborhoods GeoJSON** from [Denver Open Data](https://opendata-geospatialdenver.hub.arcgis.com/)
+	- [ ] **Store in `frontend/public/data/denver-neighborhoods.geojson`**
+	- [ ] **Verify neighborhood names** match your charity data
+
+- [ ] **Add neighborhood filter**
+  - Dropdown or clickable regions on map
+  - "Charities in Capitol Hill (4)"
+
+- [ ] Backfill neighborhood data for charity locations to display on popup
+- [ ]  **Determine neighborhood from coordinates** — use Denver neighborhood GeoJSON boundaries to derive which neighborhood a charity falls in (computed from lat/lng + boundary polygons, not stored on any row)
+- [ ] graphql updates
+
+
 
 # Maps Future Enhancements
 
@@ -194,3 +135,15 @@ The `charity_locations` table (with `label`, `description`, `address`, `latitude
 
 
 Notes: 
+
+
+
+
+
+### Resources
+
+- [react-map-gl docs](https://visgl.github.io/react-map-gl/)
+- [Mapbox Studio](https://studio.mapbox.com/)
+- [Denver Open Data](https://opendata-geospatialdenver.hub.arcgis.com/)
+- [Maps Integration Research](/docs/Research/Maps-Integration.md)
+
