@@ -1,155 +1,164 @@
 # Render Deployment Strategy
 
-*Research date: 2026-02-19*
+*Updated: 2026-02-19*
 
-## TL;DR
+## Overview
 
-**Yes, it's worthwhile — and manageable.** The `render.yaml` config already exists, a dev environment costs ~$14/mo, and the free tier is not suitable for ongoing use. The main extra step vs. a greenfield deploy: your local DB has diverged from the migration files, so you'll need to export your current data and load it into Render. Recommended path: deploy a dev environment on paid Render tiers, which becomes your shared dev DB for collaborators and a rehearsal for production.
+This app deploys as **two separate Render services**:
+
+| Service | Render Type | What It Is |
+|---------|-------------|------------|
+| **Backend** | Web Service (Node) | Apollo/Express server, connects to Postgres |
+| **Frontend** | Static Site | Vite build output, just HTML/CSS/JS files |
+
+They're independent — each has its own URL, its own build process, and deploys on its own. The frontend just needs to know the backend's URL so it can make GraphQL requests.
 
 ---
 
-## Your Data Situation
+## One-Time Setup
 
-Your local DB has **diverged from the migration files** — you've made changes directly in Postgres (adding/removing charities, adding location data, etc.) that were never written back into a migration. The migration files produce a different dataset than what you currently have locally.
+### 1. Create the Backend Web Service
 
-This means you have two options for getting your data into Render:
+In the Render dashboard: **New → Web Service → connect your GitHub repo**
 
-### Option A: pg_dump (Faster, one-time)
+| Setting        | Value                                                       |
+| -------------- | ----------------------------------------------------------- |
+| Root Directory | *(leave blank)*                                             |
+| Build Command  | `npm install; npm run migrate up; npm run build -w backend` |
+| Start Command  | `npm run start -w backend`                                  |
+| Instance Type  | Starter ($7/mo)                                             |
 
-Export your local data and restore it directly to the Render DB. This is the fastest path and captures your exact current state.
+**Why root directory blank?** npm workspaces must resolve from the repo root. If you set it to `backend/`, the workspace dependencies won't install correctly.
+
+**Why `migrate up` in the build command?** This ensures every deploy automatically applies any new migration files before the server starts. Safe to run repeatedly — it's a no-op if there's nothing new.
+
+### 2. Create the Frontend Static Site
+
+In the Render dashboard: **New → Static Site → connect your GitHub repo**
+
+| Setting | Value |
+|---------|-------|
+| Root Directory | *(leave blank)* |
+| Build Command | `npm install; npm run build -w frontend` |
+| Publish Directory | `frontend/dist` |
+
+**Add a rewrite rule** (in the Static Site settings under "Redirects/Rewrites"):
+
+| Source | Destination | Action |
+|--------|-------------|--------|
+| `/*` | `/index.html` | Rewrite |
+
+This is required for React Router. Without it, refreshing any page other than `/` returns a 404.
+
+### 3. Create the PostgreSQL Database
+
+In Render dashboard: **New → PostgreSQL**
+
+Use the Basic tier ($7/mo). Once created, Render gives you a **connection string** — you'll need this for the backend's environment variables.
+
+### 4. Set Environment Variables
+
+**Backend service** (set in Render dashboard → your backend service → Environment):
+
+| Variable | Value |
+|----------|-------|
+| `DATABASE_URL` | The connection string from your Render Postgres |
+| `JWT_SECRET` | Your secret (same value as local `.env`) |
+| `RESEND_API_KEY` | Your Resend key |
+| `FRONTEND_URL` | `https://your-frontend.onrender.com` |
+| `NODE_ENV` | `production` |
+
+**Frontend static site** (set in Render dashboard → your frontend service → Environment):
+
+| Variable | Value |
+|----------|-------|
+| `VITE_API_URL` | `https://your-backend.onrender.com` |
+| `VITE_MAPBOX_TOKEN` | Your Mapbox token |
+
+**Important:** `VITE_*` variables are baked into the frontend at build time, not at runtime. If you change one, you need to trigger a redeploy of the frontend for it to take effect.
+
+---
+
+## Your Day-to-Day Workflow
+
+### Normal code changes
+
+```
+Write code locally → git push origin main → done
+```
+
+Render watches your `main` branch. When you push, it automatically:
+1. Detects the new commit
+2. Rebuilds the affected service(s) — both if you push changes to both
+3. Runs the build command (which includes `migrate up` for the backend)
+4. Swaps in the new version — on the Starter tier this involves a brief restart
+
+You don't run any deploy commands manually. Push to `main` = deploy.
+
+### Adding a new migration
+
+1. Write `backend/migrations/012_your_migration.sql` locally
+2. Test it locally: `DATABASE_URL=postgresql://nickfries@localhost:5432/app_db npm run migrate up`
+3. `git push origin main`
+4. Render rebuilds the backend → `migrate up` runs → new migration applies to the Render DB automatically
+
+You never need to manually run migrations against Render. The build command handles it.
+
+### Running migrations manually against Render (if ever needed)
 
 ```bash
-# Dump only the reference tables (not users/runtime data)
-pg_dump \
-  --data-only \
-  --table=charities \
-  --table=charity_locations \
-  --table=causes \
-  -d app_db > local_seed.sql
-
-# After Render DB is up and migrations have run, restore:
-psql <render-db-url> < local_seed.sql
+DATABASE_URL=<render-postgres-connection-string> npm run migrate up
 ```
 
-**Tradeoff:** Your migrations become out of sync with reality. If you ever spin up a fresh DB (a second developer, production), they won't get the current charity data from migrations alone.
+Get the connection string from: Render dashboard → your Postgres service → "Connect" tab → "External Connection String".
 
-### Option B: Write a new migration to capture current state (Cleaner, recommended)
+### Checking what's in the Render database
 
-Write a migration file (e.g., `011_reseed_charities.sql`) that deletes the old seeded data and inserts your current local data. Then all future environments get the right data automatically just by running migrations.
-
-This is more work upfront but the right long-term approach — especially since you said you want to promote this data to production eventually.
-
-**Recommended:** Use pg_dump to get unblocked now, then at a natural stopping point write a proper reseed migration so the data is in version control.
-
-**What won't transfer and shouldn't:** users, user_preferences, magic_link_tokens, donation_intents. These are runtime data — each environment should start with an empty user table.
+Connect any Postgres client (TablePlus, psql, etc.) using the **External Connection String** from the Render Postgres dashboard. Same as connecting locally, just a different URL.
 
 ---
 
-## Render Pricing: What Actually Matters
+## How the Two Services Talk to Each Other
 
-### Free Tier — Don't Rely On It
-
-| Resource | Free Tier Behavior |
-|----------|-------------------|
-| Web Service | Spins down after 15 min inactivity. First request has ~30s cold start. |
-| PostgreSQL | **Expires after 30 days — data is deleted.** |
-
-The free PostgreSQL expiration alone makes it unsuitable for anything beyond a quick test. Your designer would hit a dead site or corrupt DB within a month.
-
-### Recommended: Paid Tiers (~$14/mo for dev)
-
-| Service | Tier | Cost | Specs |
-|---------|------|------|-------|
-| Backend web service | Starter | $7/mo | 512MB RAM, 0.5 CPU, always-on |
-| PostgreSQL | Basic (lowest) | $7/mo | 256MB RAM, 100 connections, persistent |
-| **Total** | | **$14/mo** | |
-
-At this scale (handful of charities, a few collaborators) these specs are more than sufficient for development.
-
-### Production (Later)
-
-Same tiers likely work for MVP launch. Upgrade if you see performance issues. $14/mo stays reasonable unless you're handling significant traffic.
-
----
-
-## What Deployment Actually Looks Like
-
-### One-Time Setup (~45 min)
-
-1. **Push current code to GitHub** (already using git, so this is just `git push`)
-2. **Connect repo to Render** — log into render.com → "New" → "Blueprint" → select your repo
-3. **Render reads `render.yaml`** — automatically creates the backend service and DB
-4. **Set missing env vars** in Render dashboard (these aren't in `render.yaml` for security):
-   - `JWT_SECRET`
-   - `RESEND_API_KEY`
-   - `VITE_MAPBOX_TOKEN` (frontend)
-5. **Run migrations** against the Render DB once:
-   ```bash
-   DATABASE_URL=<render-db-url> npm run migrate up
-   ```
-   This creates the schema but **not your current local data** (see Data Situation above).
-6. **Load your local data** via pg_dump restore (Option A) or a new migration (Option B).
-7. Done. You have a live dev URL.
-
-### Ongoing Workflow (After Setup)
+The frontend is just static files — it has no server of its own. When a user loads the app in their browser, their browser makes GraphQL requests directly to the backend URL.
 
 ```
-You write code locally → git push → Render auto-deploys
+User's browser
+  → loads frontend from Render Static Site (https://your-frontend.onrender.com)
+  → makes GraphQL requests to backend (https://your-backend.onrender.com/graphql)
 ```
 
-New migrations run as part of deploy (you'd add a `prestart` script or run them manually). This is a one-line addition to `render.yaml`.
+This is why `VITE_API_URL` exists — it tells the frontend where to point those requests. Locally that's `http://localhost:4000`. On Render it's the backend's `.onrender.com` URL.
 
 ---
 
-## Collaboration Benefits
+## Deploying Only One Service
 
-Once deployed, your designer's setup becomes:
+Each service tracks the same `main` branch but they're independent. If you push a change that only touches `frontend/`, Render is smart enough to only rebuild the frontend (if you've configured it — see "Auto-Deploy" settings per service). In practice, both often rebuild on every push, which is fine since builds are fast.
 
-1. Clone repo
-2. Create `frontend/.env`:
-   ```
-   VITE_API_URL=https://your-render-backend.onrender.com
-   VITE_MAPBOX_TOKEN=...
-   ```
-3. `cd frontend && npm run dev`
-
-She sees all your charities and causes. She can sign up and you'd see her user in the Render DB (accessible via Render dashboard or any Postgres client pointed at the Render connection string). No local backend, no local Postgres needed.
+You can also trigger a manual redeploy from the Render dashboard for either service independently.
 
 ---
 
-## Dev → Production Promotion Path
+## Pricing
 
-When you're ready for production, you'd create a second environment on Render (or use the same config with a `prod` branch):
+| Service | Tier | Cost |
+|---------|------|------|
+| Backend Web Service | Starter | $7/mo |
+| PostgreSQL | Basic | $7/mo |
+| Frontend Static Site | — | **Free** |
+| **Total** | | **$14/mo** |
 
-```
-dev DB  →  run same migrations  →  prod DB
-```
-
-User data stays separate by environment (correct). For reference data (charities, causes, locations), you have two paths:
-
-- **If you pg_dump'd into Render dev:** you'd repeat a similar restore for production, or better — write a proper reseed migration before launch so production setup is just `migrate up`.
-- **If you wrote a reseed migration:** production is automatic. Just run migrations and you're done.
-
-**Rule of thumb going forward:** If data should exist in production (charities, causes, locations), it belongs in a migration. If it's runtime data (users, donations), it starts fresh per environment. The divergence you have now is worth fixing before launch.
+Static sites are always free on Render. You're only paying for the backend and the database.
 
 ---
 
-## When NOT to Bother
+## When Something Goes Wrong
 
-- **Solo development only, no collaborators** — your local setup is fine, ngrok is free for occasional sharing
-- **Actively building features that break the schema** — avoid deploying until the schema stabilizes a bit (you're close)
-- **Not ready to spend $14/mo** — totally valid early on, revisit when collaborators need access regularly
+**Build failed:** Check the build logs in the Render dashboard. The most common causes are a missing env var or a TypeScript error that only surfaces in a clean build.
 
----
+**Migration failed on deploy:** The backend won't start if `migrate up` fails. Fix the migration, push again. Check build logs for the SQL error.
 
-## Recommendation
+**Frontend shows stale data / wrong API URL:** The `VITE_API_URL` env var is baked in at build time. If it's wrong, update it in the Render dashboard and trigger a manual redeploy of the frontend.
 
-**Deploy a dev environment now.** You have:
-- A `render.yaml` that's already written
-- A clear path to get your local data into Render (pg_dump short-term, reseed migration long-term)
-- A designer who needs to collaborate
-- A future production environment that needs a rehearsal path
-
-The $14/mo is worth it for the shared environment, the practice deploying, and eliminating "works on my machine" issues. The setup is a one-afternoon task, not a project.
-
-**First step:** Check render.com to see if the services already exist from a previous attempt. If not, it's a fresh deploy.
+**CORS error in browser:** The backend's `FRONTEND_URL` env var needs to match the exact origin of your frontend (including `https://`). Update it and redeploy the backend.
