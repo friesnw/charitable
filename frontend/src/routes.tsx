@@ -6,8 +6,8 @@ import { ProtectedRoute } from './components/layout/ProtectedRoute';
 import { Home } from './pages/Home';
 import { Login } from './pages/Login';
 import { Verify } from './pages/Verify';
-import { Onboarding } from './pages/Onboarding';
 import { Dashboard } from './pages/Dashboard';
+import { Preferences } from './pages/Preferences';
 import { Charities } from './pages/Charities';
 import { CharityDetail } from './pages/CharityDetail';
 
@@ -25,10 +25,10 @@ export const router = createBrowserRouter([
     element: <PageShell><Verify /></PageShell>,
   },
   {
-    path: '/onboarding',
+    path: '/preferences',
     element: (
       <ProtectedRoute>
-        <PageShell><Onboarding /></PageShell>
+        <PageShell><Preferences /></PageShell>
       </ProtectedRoute>
     ),
   },

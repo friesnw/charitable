@@ -61,6 +61,13 @@ export function Header() {
                       {user?.email}
                     </span>
                     <hr className="border-brand-tertiary" />
+                    <Link
+                      to="/preferences"
+                      onClick={() => setProfileOpen(false)}
+                      className="block px-4 py-2 text-sm text-text-secondary hover:bg-bg-accent hover:text-text-primary"
+                    >
+                      Preferences
+                    </Link>
                     <button
                       onClick={() => {
                         setProfileOpen(false);

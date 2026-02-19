@@ -72,7 +72,7 @@ Anchor should use *bottom* so that the tip of the pin points to the exact locati
   ```
 
 
-- [ ] **Add `causes` query** (for filter dropdowns)
+- [x] **Add `causes` query** (for filter dropdowns)
   ```graphql
   causes: [Cause!]!
 

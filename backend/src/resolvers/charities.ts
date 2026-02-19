@@ -60,6 +60,11 @@ export const charityResolvers = {
       return result.rows.map(toCharity);
     },
 
+    causes: async () => {
+      const result = await pool.query('SELECT tag, label FROM causes ORDER BY label ASC');
+      return result.rows;
+    },
+
     charity: async (_: unknown, { id, slug }: { id?: string; slug?: string }) => {
       if (!id && !slug) return null;
 

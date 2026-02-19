@@ -1,6 +1,15 @@
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, gql } from '@apollo/client';
 
+const GET_CAUSES = gql`
+  query GetCauses {
+    causes {
+      tag
+      label
+    }
+  }
+`;
+
 const GET_CHARITY = gql`
   query GetCharity($slug: String!) {
     charity(slug: $slug) {
@@ -58,6 +67,12 @@ export function CharityDetail() {
     skip: !slug,
   });
 
+  const { data: causesData } = useQuery(GET_CAUSES);
+
+  const tagLabels = new Map<string, string>(
+    (causesData?.causes ?? []).map((c: { tag: string; label: string }) => [c.tag, c.label])
+  );
+
   if (loading) {
     return <p className="text-text-secondary">Loading...</p>;
   }
@@ -99,7 +114,7 @@ export function CharityDetail() {
               key={tag}
               className="text-sm px-2 py-1 bg-bg-accent text-text-secondary rounded"
             >
-              {tag}
+              {tagLabels.get(tag) ?? tag}
             </span>
           ))}
         </div>

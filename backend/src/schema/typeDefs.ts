@@ -45,6 +45,11 @@ export const typeDefs = `#graphql
     onboardingCompleted: Boolean!
   }
 
+  type Cause {
+    tag: String!
+    label: String!
+  }
+
   type Query {
     users: [User!]!
     user(id: ID!): User
@@ -53,6 +58,7 @@ export const typeDefs = `#graphql
 
     charities(tags: [String], search: String): [Charity!]!
     charity(id: ID, slug: String): Charity
+    causes: [Cause!]!
   }
 
   type Mutation {

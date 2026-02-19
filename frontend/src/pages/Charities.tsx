@@ -6,6 +6,15 @@ const CharityMap = lazy(() =>
   import('../components/CharityMap').then((m) => ({ default: m.CharityMap }))
 );
 
+const GET_CAUSES = gql`
+  query GetCauses {
+    causes {
+      tag
+      label
+    }
+  }
+`;
+
 const GET_CHARITIES = gql`
   query GetCharities($tags: [String], $search: String) {
     charities(tags: $tags, search: $search) {
@@ -75,6 +84,12 @@ export function Charities() {
     },
   });
 
+  const { data: causesData } = useQuery(GET_CAUSES);
+
+  const tagLabels = new Map<string, string>(
+    (causesData?.causes ?? []).map((c: { tag: string; label: string }) => [c.tag, c.label])
+  );
+
   const charities: Charity[] = data?.charities || [];
 
   // Collect all unique tags from results for the filter
@@ -141,7 +156,7 @@ export function Charities() {
                     : 'bg-bg-accent text-text-secondary hover:bg-brand-tertiary'
                 }`}
               >
-                {tag}
+                {tagLabels.get(tag) ?? tag}
               </button>
             ))}
           </div>
@@ -186,7 +201,7 @@ export function Charities() {
                         key={tag}
                         className="text-sm px-2 py-1 bg-bg-accent text-text-secondary rounded"
                       >
-                        {tag}
+                        {tagLabels.get(tag) ?? tag}
                       </span>
                     ))}
                   </div>
