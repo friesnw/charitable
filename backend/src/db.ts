@@ -16,7 +16,10 @@ export async function runMigrations() {
 
   // Dynamic import to handle ESM/CJS interop
   const nodePgMigrate = await import('node-pg-migrate');
-  const migrate = nodePgMigrate.default || nodePgMigrate;
+  // tsx (dev) unwraps __esModule automatically; plain node (prod) does not,
+  // so the runner may be at .default.default
+  const mod = nodePgMigrate.default as any;
+  const migrate = typeof mod === 'function' ? mod : mod.default;
 
   await migrate({
     databaseUrl: dbConfig,
