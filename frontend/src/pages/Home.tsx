@@ -14,7 +14,7 @@ export function Home() {
           There's a good cause just around the corner.
         </H1>
         <p className="font-sans text-lg text-text-secondary mt-4 max-w-xl mx-auto">
-          Give to Denver nonprofits that make an impact locally.
+          Support Denver nonprofits that make an impact locally.
         </p>
         <div className="flex items-center justify-center gap-4 mt-8">
           <Link

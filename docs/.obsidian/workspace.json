@@ -41,12 +41,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Research/Render-Deployment-Strategy.md",
+                "file": "Product/Sitemap.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Render-Deployment-Strategy"
+              "title": "Sitemap"
             }
           }
         ],
@@ -214,8 +214,9 @@
   },
   "active": "65d0eb751c1ae1cf",
   "lastOpenFiles": [
-    "Research/Competitive-Landscape.md",
     "Research/Render-Deployment-Strategy.md",
+    "Research/Name-Research.md",
+    "Research/Competitive-Landscape.md",
     "Research/User-Journey-and-Activation.md",
     "Research/Maps-Integration.md",
     "Product/Product-position.md",
@@ -241,7 +242,6 @@
     "Tasks/Done/3-Charity-Pages.md",
     "Tasks/Done/4-Auth-UI.md",
     "Tasks/Done/5b-Styleguide-Setup.md",
-    "Learn/Authentication-and-JWTs.md",
     "Product/Marketing-copy",
     "Research/Name-Research-Summary.csv",
     "Tasks/Todo/name-search",
