@@ -32,7 +32,7 @@ export const env = parsed.data;
 // Helper to get database config (supports both DATABASE_URL and individual vars)
 export function getDatabaseConfig() {
   if (env.DATABASE_URL) {
-    return { connectionString: env.DATABASE_URL };
+    return { connectionString: env.DATABASE_URL, ssl: { rejectUnauthorized: false } };
   }
   return {
     host: env.DB_HOST,
