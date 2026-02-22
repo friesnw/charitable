@@ -41,12 +41,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Product/Sitemap.md",
+                "file": "Tasks/Todo/9-Image-Support-Admin-Interface.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Sitemap"
+              "title": "9-Image-Support-Admin-Interface"
             }
           }
         ],
@@ -214,6 +214,14 @@
   },
   "active": "65d0eb751c1ae1cf",
   "lastOpenFiles": [
+    "Research/Beta-Pilot-Experience.md",
+    "Tasks/Todo/8-Preferences-Onboarding.md",
+    "Tasks/Todo/9-Image-Support-Admin-Interface.md",
+    "Tasks/Todo/Quick Enhancments.md",
+    "Tasks/Todo/5-Branding-Review.md",
+    "Product/Sitemap.md",
+    "Tasks/Backlog/7-Analytics-Beacon.md",
+    "Tasks/Done/4-Maps-Integration.md",
     "Research/Render-Deployment-Strategy.md",
     "Research/Name-Research.md",
     "Research/Competitive-Landscape.md",
@@ -221,13 +229,10 @@
     "Research/Maps-Integration.md",
     "Product/Product-position.md",
     "Product/Marketing-copy.md",
-    "Tasks/Todo/Quick Enhancments.md",
     "Tasks/Todo/4-Maps-Integration.md",
-    "Tasks/Todo/5-Branding-Review.md",
     "Tasks/Todo/6-Polish-Deploy.md",
     "Tasks/Backlog/Name Confirmation.md",
     "Tasks/Done/name-search.md",
-    "Product/Sitemap.md",
     "Tasks/Done/2-Frontend-Foundation.md",
     "Learn/tailwind-v4-token-system.md",
     "Product/Policies.md",
@@ -236,12 +241,7 @@
     "Product/Customer Research.md",
     "Research/Charity-Listing-Approval.md",
     "Tasks/Todo/2-Charity-Seed.md",
-    "Product/Data Strategy.md",
     "Product/Policies",
-    "Learn/Frontend-Foundation.md",
-    "Tasks/Done/3-Charity-Pages.md",
-    "Tasks/Done/4-Auth-UI.md",
-    "Tasks/Done/5b-Styleguide-Setup.md",
     "Product/Marketing-copy",
     "Research/Name-Research-Summary.csv",
     "Tasks/Todo/name-search",
