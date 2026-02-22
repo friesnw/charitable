@@ -19,7 +19,6 @@ I will frequently reference the /docs/tasks folder, with which we will manage ou
 - **Express alongside Apollo** — needed for REST webhook endpoint (`/api/webhooks/every-org`) and future routes
 - **Every.org modal widget** for donations — no custom payment UI for MVP; Disbursements API is a future consideration
 - **JWT auth** stored client-side; `Authorization` header on all GraphQL requests
-- **No maps for MVP** — charity discovery is list/search/filter only
 - **PostgreSQL GIN index** on `cause_tags` array column for fast tag filtering
 
 ## Conventions
