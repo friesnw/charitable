@@ -9,6 +9,7 @@ const GET_ADMIN_CHARITIES = gql`
   query GetAdminCharities {
     charities {
       id name slug logoUrl causeTags isActive
+      locations { id }
     }
   }
 `;
@@ -107,6 +108,7 @@ interface CharityRow {
   logoUrl: string | null;
   causeTags: string[];
   isActive: boolean;
+  locations: { id: string }[];
 }
 
 interface FlatLocation {
@@ -207,6 +209,8 @@ function LocationsTab() {
   const [locForms, setLocForms] = useState<Record<string, LocationForm>>({});
   const initialLocForms = useRef<Record<string, LocationForm>>({});
   const [uploadingId, setUploadingId] = useState<string | null>(null);
+  const [savingId, setSavingId] = useState<string | null>(null);
+  const [savedId, setSavedId] = useState<string | null>(null);
 
   const flatLocations: FlatLocation[] = (data?.charities ?? []).flatMap(
     (c: { id: string; name: string; slug: string; locations: FlatLocation[] }) =>
@@ -235,17 +239,24 @@ function LocationsTab() {
   async function handleSave(locId: string) {
     const form = locForms[locId];
     if (!form) return;
-    await updateLocation({
-      variables: {
-        id: locId,
-        label: form.label,
-        description: form.description || null,
-        address: form.address || null,
-        latitude: form.latitude ? parseFloat(form.latitude) : null,
-        longitude: form.longitude ? parseFloat(form.longitude) : null,
-      },
-    });
-    initialLocForms.current = { ...initialLocForms.current, [locId]: form };
+    setSavingId(locId);
+    try {
+      await updateLocation({
+        variables: {
+          id: locId,
+          label: form.label,
+          description: form.description || null,
+          address: form.address || null,
+          latitude: form.latitude ? parseFloat(form.latitude) : null,
+          longitude: form.longitude ? parseFloat(form.longitude) : null,
+        },
+      });
+      initialLocForms.current = { ...initialLocForms.current, [locId]: form };
+      setSavedId(locId);
+      setTimeout(() => setSavedId(id => id === locId ? null : id), 2000);
+    } finally {
+      setSavingId(null);
+    }
   }
 
   async function handleUploadPhoto(locId: string) {
@@ -388,11 +399,14 @@ function LocationsTab() {
                         </div>
                         <button
                           onClick={e => { e.stopPropagation(); handleSave(loc.id); }}
-                          disabled={!isDirty(loc.id)}
+                          disabled={!isDirty(loc.id) || savingId === loc.id}
                           className={`${btnCls} bg-brand-primary text-white hover:opacity-90 disabled:bg-brand-tertiary disabled:text-text-secondary disabled:cursor-not-allowed`}
                         >
-                          Save
+                          {savingId === loc.id ? 'Saving...' : 'Save'}
                         </button>
+                        {savedId === loc.id && (
+                          <span className="text-sm text-green-600">Saved</span>
+                        )}
                       </td>
                     </tr>
                   )}
@@ -724,6 +738,7 @@ export function Admin() {
                   <th className="text-left px-3 py-2 text-text-secondary font-medium w-12"></th>
                   <th className="text-left px-3 py-2 text-text-secondary font-medium">Name</th>
                   <th className="text-left px-3 py-2 text-text-secondary font-medium hidden md:table-cell">Tags</th>
+                  <th className="text-left px-3 py-2 text-text-secondary font-medium w-24 hidden sm:table-cell">Locations</th>
                   <th className="text-left px-3 py-2 text-text-secondary font-medium w-20">Status</th>
                 </tr>
               </thead>
@@ -763,6 +778,9 @@ export function Admin() {
                         )}
                       </div>
                     </td>
+                    <td className="px-3 py-2 hidden sm:table-cell text-text-secondary">
+                      {charity.locations.length}
+                    </td>
                     <td className="px-3 py-2">
                       <span className={`text-xs px-1.5 py-0.5 rounded ${
                         charity.isActive ? 'bg-green-100 text-green-700' : 'bg-bg-accent text-text-secondary'
@@ -774,7 +792,7 @@ export function Admin() {
                 ))}
                 {filtered.length === 0 && !loading && (
                   <tr>
-                    <td colSpan={4} className="px-3 py-4 text-text-secondary text-center text-sm">
+                    <td colSpan={5} className="px-3 py-4 text-text-secondary text-center text-sm">
                       No charities found.
                     </td>
                   </tr>

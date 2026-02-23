@@ -179,10 +179,15 @@ export function AdminCharityEdit() {
   const initialEditForm = useRef<EditForm | null>(null);
   const [locationForms, setLocationForms] = useState<Record<string, LocationForm>>({});
   const initialLocationForms = useRef<Record<string, LocationForm>>({});
+  const [expandedLocId, setExpandedLocId] = useState<string | null>(null);
   const [showAddLocation, setShowAddLocation] = useState(false);
   const [newLocForm, setNewLocForm] = useState<LocationForm>({ label: '', description: '', address: '', latitude: '', longitude: '' });
   const [uploadingField, setUploadingField] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [savingLocId, setSavingLocId] = useState<string | null>(null);
+  const [savedLocId, setSavedLocId] = useState<string | null>(null);
 
   const charity: CharityData | null = data?.charity ?? null;
   const causes: { tag: string; label: string }[] = causesData?.causes ?? [];
@@ -202,6 +207,8 @@ export function AdminCharityEdit() {
   async function handleSaveCharity() {
     if (!charity || !editForm) return;
     setSaveError(null);
+    setSaving(true);
+    setSaved(false);
     try {
       await updateCharity({
         variables: {
@@ -219,8 +226,12 @@ export function AdminCharityEdit() {
         },
       });
       initialEditForm.current = editForm;
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
     } catch (e: unknown) {
       setSaveError(e instanceof Error ? e.message : 'Save failed');
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -240,17 +251,24 @@ export function AdminCharityEdit() {
   async function handleSaveLocation(locId: string) {
     const form = locationForms[locId];
     if (!form) return;
-    await updateLocation({
-      variables: {
-        id: locId,
-        label: form.label,
-        description: form.description || null,
-        address: form.address || null,
-        latitude: form.latitude ? parseFloat(form.latitude) : null,
-        longitude: form.longitude ? parseFloat(form.longitude) : null,
-      },
-    });
-    initialLocationForms.current = { ...initialLocationForms.current, [locId]: form };
+    setSavingLocId(locId);
+    try {
+      await updateLocation({
+        variables: {
+          id: locId,
+          label: form.label,
+          description: form.description || null,
+          address: form.address || null,
+          latitude: form.latitude ? parseFloat(form.latitude) : null,
+          longitude: form.longitude ? parseFloat(form.longitude) : null,
+        },
+      });
+      initialLocationForms.current = { ...initialLocationForms.current, [locId]: form };
+      setSavedLocId(locId);
+      setTimeout(() => setSavedLocId(id => id === locId ? null : id), 2000);
+    } finally {
+      setSavingLocId(null);
+    }
   }
 
   async function handleUploadLocationPhoto(locId: string) {
@@ -446,136 +464,198 @@ export function AdminCharityEdit() {
         </div>
 
         {/* Save */}
-        <button onClick={handleSaveCharity}
-          disabled={!isDirty}
-          className={`${btnCls} bg-brand-primary text-white hover:opacity-90 disabled:bg-brand-tertiary disabled:text-text-secondary disabled:cursor-not-allowed`}>
-          Save Changes
-        </button>
+        <div className="flex items-center gap-3">
+          <button onClick={handleSaveCharity}
+            disabled={!isDirty || saving}
+            className={`${btnCls} bg-brand-primary text-white hover:opacity-90 disabled:bg-brand-tertiary disabled:text-text-secondary disabled:cursor-not-allowed`}>
+            {saving ? 'Saving...' : 'Save Changes'}
+          </button>
+          {saved && <span className="text-sm text-green-600">Saved</span>}
+        </div>
 
         {/* Locations */}
-        <div>
+        <div className="pt-4">
           <h3 className="font-bold text-text-primary mb-3">Locations</h3>
-          <div className="space-y-4">
-            {charity.locations.map(loc => {
-              const form = locationForms[loc.id];
-              if (!form) return null;
-              return (
-                <div key={loc.id} className="border border-brand-tertiary rounded-lg p-4 space-y-3">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div>
-                      <label className={labelCls}>Label</label>
-                      <input className={inputCls} value={form.label}
-                        onChange={e => setLocationForms(f => ({ ...f, [loc.id]: { ...f[loc.id], label: e.target.value } }))} />
-                    </div>
-                    <div>
-                      <label className={labelCls}>Address</label>
-                      <input className={inputCls} value={form.address}
-                        onChange={e => setLocationForms(f => ({ ...f, [loc.id]: { ...f[loc.id], address: e.target.value } }))} />
-                    </div>
-                    <div className="col-span-1 md:col-span-2">
-                      <label className={labelCls}>Description</label>
-                      <input className={inputCls} value={form.description}
-                        onChange={e => setLocationForms(f => ({ ...f, [loc.id]: { ...f[loc.id], description: e.target.value } }))} />
-                    </div>
-                    <div>
-                      <label className={labelCls}>Latitude</label>
-                      <input className={inputCls} type="number" step="any" value={form.latitude}
-                        onChange={e => setLocationForms(f => ({ ...f, [loc.id]: { ...f[loc.id], latitude: e.target.value } }))} />
-                    </div>
-                    <div>
-                      <label className={labelCls}>Longitude</label>
-                      <input className={inputCls} type="number" step="any" value={form.longitude}
-                        onChange={e => setLocationForms(f => ({ ...f, [loc.id]: { ...f[loc.id], longitude: e.target.value } }))} />
-                    </div>
-                  </div>
 
-                  {/* Location photo */}
-                  <div className="flex items-center gap-3">
-                    {loc.photoUrl ? (
-                      <img
-                        src={cloudinaryUrl(loc.photoUrl, { w: 96, h: 64, fit: 'scale' })}
-                        alt="Location"
-                        className="h-16 w-24 object-cover rounded border border-brand-tertiary"
-                      />
-                    ) : (
-                      <div className="h-16 w-24 bg-bg-accent rounded border border-brand-tertiary flex items-center justify-center text-text-secondary text-xs">
-                        No photo
-                      </div>
-                    )}
-                    <button
-                      onClick={() => handleUploadLocationPhoto(loc.id)}
-                      disabled={uploadingField === `photo-${loc.id}`}
-                      className={`${btnCls} border border-brand-tertiary text-text-secondary hover:bg-bg-accent disabled:opacity-50 text-xs`}
-                    >
-                      {uploadingField === `photo-${loc.id}` ? 'Uploading...' : 'Upload photo'}
-                    </button>
-                  </div>
+          <div className="border border-brand-tertiary rounded-lg overflow-hidden mb-3">
+            <table className="w-full text-sm">
+              <thead className="bg-bg-accent border-b border-brand-tertiary">
+                <tr>
+                  <th className="text-left px-3 py-2 text-text-secondary font-medium">Label</th>
+                  <th className="text-left px-3 py-2 text-text-secondary font-medium hidden md:table-cell">Description</th>
+                  <th className="text-left px-3 py-2 text-text-secondary font-medium hidden lg:table-cell">Address</th>
+                  <th className="text-left px-3 py-2 text-text-secondary font-medium hidden xl:table-cell w-28">Lat / Lng</th>
+                  <th className="text-left px-3 py-2 text-text-secondary font-medium w-16">Photo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {charity.locations.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="px-3 py-4 text-text-secondary text-center text-sm">
+                      No locations yet.
+                    </td>
+                  </tr>
+                )}
+                {charity.locations.map((loc, i) => {
+                  const expanded = expandedLocId === loc.id;
+                  const form = locationForms[loc.id];
+                  if (!form) return null;
+                  return (
+                    <>
+                      <tr
+                        key={loc.id}
+                        onClick={() => setExpandedLocId(expanded ? null : loc.id)}
+                        className={`border-b border-brand-tertiary cursor-pointer transition-colors hover:bg-bg-accent ${
+                          expanded ? 'bg-amber-50' : i % 2 === 0 ? 'bg-bg-primary' : 'bg-bg-accent/30'
+                        }`}
+                      >
+                        <td className="px-3 py-2 font-medium text-text-primary">{loc.label}</td>
+                        <td className="px-3 py-2 text-text-secondary hidden md:table-cell max-w-xs">
+                          <span className="line-clamp-1">{loc.description ?? '—'}</span>
+                        </td>
+                        <td className="px-3 py-2 text-text-secondary hidden lg:table-cell">{loc.address ?? '—'}</td>
+                        <td className="px-3 py-2 text-text-secondary hidden xl:table-cell font-mono text-xs">
+                          {loc.latitude != null ? `${loc.latitude.toFixed(4)}, ${loc.longitude?.toFixed(4)}` : '—'}
+                        </td>
+                        <td className="px-3 py-2">
+                          {loc.photoUrl ? (
+                            <img
+                              src={cloudinaryUrl(loc.photoUrl, { w: 40, h: 32, fit: 'scale' })}
+                              alt=""
+                              className="w-10 h-8 object-cover rounded"
+                            />
+                          ) : (
+                            <span className="text-text-secondary text-xs">—</span>
+                          )}
+                        </td>
+                      </tr>
 
-                  <div className="flex gap-2">
-                    <button onClick={() => handleSaveLocation(loc.id)}
-                      disabled={!isLocationDirty(loc.id)}
-                      className={`${btnCls} bg-brand-primary text-white hover:opacity-90 disabled:bg-brand-tertiary disabled:text-text-secondary disabled:cursor-not-allowed`}>
-                      Save
-                    </button>
-                    <button onClick={() => handleDeleteLocation(loc.id)}
-                      className={`${btnCls} border border-brand-tertiary text-error hover:bg-bg-accent`}>
-                      Delete
-                    </button>
-                  </div>
+                      {expanded && (
+                        <tr key={`${loc.id}-expanded`} className="bg-amber-50 border-b border-brand-tertiary">
+                          <td colSpan={5} className="px-4 py-4">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+                              <div>
+                                <label className={labelCls}>Label</label>
+                                <input className={inputCls} value={form.label}
+                                  onChange={e => setLocationForms(f => ({ ...f, [loc.id]: { ...f[loc.id], label: e.target.value } }))} />
+                              </div>
+                              <div>
+                                <label className={labelCls}>Address</label>
+                                <input className={inputCls} value={form.address}
+                                  onChange={e => setLocationForms(f => ({ ...f, [loc.id]: { ...f[loc.id], address: e.target.value } }))} />
+                              </div>
+                              <div>
+                                <label className={labelCls}>Latitude</label>
+                                <input className={inputCls} type="number" step="any" value={form.latitude}
+                                  onChange={e => setLocationForms(f => ({ ...f, [loc.id]: { ...f[loc.id], latitude: e.target.value } }))} />
+                              </div>
+                              <div>
+                                <label className={labelCls}>Longitude</label>
+                                <input className={inputCls} type="number" step="any" value={form.longitude}
+                                  onChange={e => setLocationForms(f => ({ ...f, [loc.id]: { ...f[loc.id], longitude: e.target.value } }))} />
+                              </div>
+                              <div className="col-span-2 md:col-span-4">
+                                <label className={labelCls}>Description</label>
+                                <textarea className={inputCls} rows={3} value={form.description}
+                                  onChange={e => setLocationForms(f => ({ ...f, [loc.id]: { ...f[loc.id], description: e.target.value } }))} />
+                              </div>
+                              <div>
+                                <label className={labelCls}>Photo</label>
+                                <div className="flex items-center gap-2 mt-1">
+                                  {loc.photoUrl && (
+                                    <img
+                                      src={cloudinaryUrl(loc.photoUrl, { w: 64, h: 40, fit: 'scale' })}
+                                      alt=""
+                                      className="h-10 rounded border border-brand-tertiary"
+                                    />
+                                  )}
+                                  <button
+                                    onClick={e => { e.stopPropagation(); handleUploadLocationPhoto(loc.id); }}
+                                    disabled={uploadingField === `photo-${loc.id}`}
+                                    className={`${btnCls} border border-brand-tertiary text-text-secondary hover:bg-bg-accent disabled:opacity-50 text-xs`}
+                                  >
+                                    {uploadingField === `photo-${loc.id}` ? 'Uploading...' : loc.photoUrl ? 'Replace' : 'Upload'}
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={e => { e.stopPropagation(); handleSaveLocation(loc.id); }}
+                                disabled={!isLocationDirty(loc.id) || savingLocId === loc.id}
+                                className={`${btnCls} bg-brand-primary text-white hover:opacity-90 disabled:bg-brand-tertiary disabled:text-text-secondary disabled:cursor-not-allowed`}
+                              >
+                                {savingLocId === loc.id ? 'Saving...' : 'Save'}
+                              </button>
+                              {savedLocId === loc.id && (
+                                <span className="text-sm text-green-600">Saved</span>
+                              )}
+                              <button
+                                onClick={e => { e.stopPropagation(); handleDeleteLocation(loc.id); }}
+                                className={`${btnCls} border border-red-300 text-red-600 hover:bg-red-50`}
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Add location */}
+          {showAddLocation ? (
+            <div className="border border-brand-tertiary border-dashed rounded-lg p-4 space-y-3">
+              <h4 className="text-sm font-medium text-text-primary">New Location</h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div>
+                  <label className={labelCls}>Label *</label>
+                  <input className={inputCls} value={newLocForm.label}
+                    onChange={e => setNewLocForm(f => ({ ...f, label: e.target.value }))} />
                 </div>
-              );
-            })}
-
-            {/* Add location */}
-            {showAddLocation ? (
-              <div className="border border-brand-tertiary border-dashed rounded-lg p-4 space-y-3">
-                <h4 className="text-sm font-medium text-text-primary">New Location</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div>
-                    <label className={labelCls}>Label *</label>
-                    <input className={inputCls} value={newLocForm.label}
-                      onChange={e => setNewLocForm(f => ({ ...f, label: e.target.value }))} />
-                  </div>
-                  <div>
-                    <label className={labelCls}>Address</label>
-                    <input className={inputCls} value={newLocForm.address}
-                      onChange={e => setNewLocForm(f => ({ ...f, address: e.target.value }))} />
-                  </div>
-                  <div className="col-span-1 md:col-span-2">
-                    <label className={labelCls}>Description</label>
-                    <input className={inputCls} value={newLocForm.description}
-                      onChange={e => setNewLocForm(f => ({ ...f, description: e.target.value }))} />
-                  </div>
-                  <div>
-                    <label className={labelCls}>Latitude</label>
-                    <input className={inputCls} type="number" step="any" value={newLocForm.latitude}
-                      onChange={e => setNewLocForm(f => ({ ...f, latitude: e.target.value }))} />
-                  </div>
-                  <div>
-                    <label className={labelCls}>Longitude</label>
-                    <input className={inputCls} type="number" step="any" value={newLocForm.longitude}
-                      onChange={e => setNewLocForm(f => ({ ...f, longitude: e.target.value }))} />
-                  </div>
+                <div>
+                  <label className={labelCls}>Address</label>
+                  <input className={inputCls} value={newLocForm.address}
+                    onChange={e => setNewLocForm(f => ({ ...f, address: e.target.value }))} />
                 </div>
-                <div className="flex gap-2">
-                  <button onClick={handleAddLocation}
-                    disabled={!newLocForm.label}
-                    className={`${btnCls} bg-brand-primary text-white hover:opacity-90 disabled:opacity-50`}>
-                    Add
-                  </button>
-                  <button onClick={() => setShowAddLocation(false)}
-                    className={`${btnCls} border border-brand-tertiary text-text-secondary hover:bg-bg-accent`}>
-                    Cancel
-                  </button>
+                <div>
+                  <label className={labelCls}>Latitude</label>
+                  <input className={inputCls} type="number" step="any" value={newLocForm.latitude}
+                    onChange={e => setNewLocForm(f => ({ ...f, latitude: e.target.value }))} />
+                </div>
+                <div>
+                  <label className={labelCls}>Longitude</label>
+                  <input className={inputCls} type="number" step="any" value={newLocForm.longitude}
+                    onChange={e => setNewLocForm(f => ({ ...f, longitude: e.target.value }))} />
+                </div>
+                <div className="col-span-2 md:col-span-4">
+                  <label className={labelCls}>Description</label>
+                  <textarea className={inputCls} rows={2} value={newLocForm.description}
+                    onChange={e => setNewLocForm(f => ({ ...f, description: e.target.value }))} />
                 </div>
               </div>
-            ) : (
-              <button onClick={() => setShowAddLocation(true)}
-                className="text-sm text-brand-primary hover:underline">
-                + Add location
-              </button>
-            )}
-          </div>
+              <div className="flex gap-2">
+                <button onClick={handleAddLocation}
+                  disabled={!newLocForm.label}
+                  className={`${btnCls} bg-brand-primary text-white hover:opacity-90 disabled:opacity-50`}>
+                  Add
+                </button>
+                <button onClick={() => setShowAddLocation(false)}
+                  className={`${btnCls} border border-brand-tertiary text-text-secondary hover:bg-bg-accent`}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button onClick={() => setShowAddLocation(true)}
+              className="text-sm text-brand-primary hover:underline">
+              + Add location
+            </button>
+          )}
         </div>
       </div>
     </div>

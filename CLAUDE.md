@@ -58,6 +58,15 @@ I will frequently reference the /docs/tasks folder, with which we will manage ou
 2. Seed data belongs in migration files (see `005`, `007`, `011`), not separate scripts
 3. Migrations apply automatically on server startup — no manual step needed locally or on Render
 
+## Database Safety Rules
+
+**NEVER suggest or run destructive database operations** (`DELETE`, `DROP`, `TRUNCATE`, `UPDATE` without a `WHERE` clause) without:
+1. First running a `SELECT` to verify what data exists and would be affected
+2. Explicitly telling the user exactly what will be deleted and that it is permanent
+3. Receiving clear confirmation from the user before proceeding
+
+**Never assume a database is empty.** Always query first (`SELECT COUNT(*) FROM table_name`) before suggesting any destructive operation.
+
 ## Database
 
 - **Local**: Uses individual `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` env vars
