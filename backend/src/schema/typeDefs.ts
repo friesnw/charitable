@@ -50,6 +50,7 @@ export const typeDefs = `#graphql
   type Cause {
     tag: String!
     label: String!
+    charityCount: Int!
   }
 
   type Query {
@@ -120,5 +121,8 @@ export const typeDefs = `#graphql
     ): CharityLocation!
 
     deleteCharityLocation(id: ID!): Boolean!
+
+    updateCause(tag: String!, label: String!): Cause!
+    deleteCause(tag: String!): Boolean!
   }
 `;

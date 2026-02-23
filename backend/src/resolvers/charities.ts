@@ -70,8 +70,18 @@ export const charityResolvers = {
     },
 
     causes: async () => {
-      const result = await pool.query('SELECT tag, label FROM causes ORDER BY label ASC');
-      return result.rows;
+      const result = await pool.query(`
+        SELECT c.tag, c.label, COUNT(ch.id)::int AS charity_count
+        FROM causes c
+        LEFT JOIN charities ch ON c.tag = ANY(ch.cause_tags)
+        GROUP BY c.tag, c.label
+        ORDER BY c.label ASC
+      `);
+      return result.rows.map(row => ({
+        tag: row.tag,
+        label: row.label,
+        charityCount: row.charity_count,
+      }));
     },
 
     charity: async (_: unknown, { id, slug }: { id?: string; slug?: string }) => {
@@ -214,6 +224,35 @@ export const charityResolvers = {
     deleteCharityLocation: async (_: unknown, { id }: { id: string }, context: Context) => {
       requireAdmin(context);
       const result = await pool.query('DELETE FROM charity_locations WHERE id = $1', [id]);
+      return (result.rowCount ?? 0) > 0;
+    },
+
+    updateCause: async (_: unknown, { tag, label }: { tag: string; label: string }, context: Context) => {
+      requireAdmin(context);
+      const result = await pool.query(
+        'UPDATE causes SET label = $1 WHERE tag = $2 RETURNING tag, label',
+        [label, tag]
+      );
+      if (result.rows.length === 0) throw new GraphQLError('Cause not found');
+      const row = result.rows[0];
+      // Return charityCount for the updated row
+      const countResult = await pool.query(
+        `SELECT COUNT(id)::int AS charity_count FROM charities WHERE $1 = ANY(cause_tags)`,
+        [tag]
+      );
+      return { tag: row.tag, label: row.label, charityCount: countResult.rows[0].charity_count };
+    },
+
+    deleteCause: async (_: unknown, { tag }: { tag: string }, context: Context) => {
+      requireAdmin(context);
+      const countResult = await pool.query(
+        `SELECT COUNT(id)::int AS charity_count FROM charities WHERE $1 = ANY(cause_tags)`,
+        [tag]
+      );
+      if (countResult.rows[0].charity_count > 0) {
+        throw new GraphQLError('Cannot delete a cause that is in use by charities');
+      }
+      const result = await pool.query('DELETE FROM causes WHERE tag = $1', [tag]);
       return (result.rowCount ?? 0) > 0;
     },
   },

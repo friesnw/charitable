@@ -30,6 +30,42 @@ const GET_ADMIN_LOCATIONS = gql`
   }
 `;
 
+const GET_ADMIN_CAUSES = gql`
+  query GetAdminCauses {
+    causes {
+      tag
+      label
+      charityCount
+    }
+  }
+`;
+
+const UPDATE_CAUSE = gql`
+  mutation UpdateCause($tag: String!, $label: String!) {
+    updateCause(tag: $tag, label: $label) {
+      tag label charityCount
+    }
+  }
+`;
+
+const DELETE_CAUSE = gql`
+  mutation DeleteCause($tag: String!) {
+    deleteCause(tag: $tag)
+  }
+`;
+
+const GET_USERS = gql`
+  query GetAdminUsers {
+    users {
+      id
+      name
+      email
+      isAdmin
+      createdAt
+    }
+  }
+`;
+
 const CREATE_CHARITY = gql`
   mutation CreateCharity(
     $name: String! $ein: String! $slug: String! $description: String
@@ -62,7 +98,7 @@ const UPDATE_LOCATION = gql`
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
-type Tab = 'charities' | 'locations' | 'cause-tags';
+type Tab = 'charities' | 'locations' | 'cause-tags' | 'users';
 
 interface CharityRow {
   id: string;
@@ -141,6 +177,7 @@ function TabBar({ active, onChange }: { active: Tab; onChange: (t: Tab) => void 
     { id: 'charities', label: 'Charities' },
     { id: 'locations', label: 'Charity Locations' },
     { id: 'cause-tags', label: 'Cause Tags' },
+    { id: 'users', label: 'Users' },
   ];
   return (
     <div className="flex gap-1 border-b border-brand-tertiary mb-6">
@@ -377,6 +414,186 @@ function LocationsTab() {
   );
 }
 
+function CauseTagsTab() {
+  const { data, loading, error } = useQuery(GET_ADMIN_CAUSES);
+  const [updateCause] = useMutation(UPDATE_CAUSE, { refetchQueries: ['GetAdminCauses'] });
+  const [deleteCause] = useMutation(DELETE_CAUSE, { refetchQueries: ['GetAdminCauses'] });
+
+  const [expandedTag, setExpandedTag] = useState<string | null>(null);
+  const [forms, setForms] = useState<Record<string, string>>({});
+  const initialForms = useRef<Record<string, string>>({});
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  const causes: { tag: string; label: string; charityCount: number }[] = data?.causes ?? [];
+
+  function handleExpand(tag: string, label: string) {
+    if (expandedTag === tag) { setExpandedTag(null); return; }
+    setExpandedTag(tag);
+    setDeleteError(null);
+    if (!forms[tag]) {
+      setForms(f => ({ ...f, [tag]: label }));
+      initialForms.current[tag] = label;
+    }
+  }
+
+  async function handleSave(tag: string) {
+    await updateCause({ variables: { tag, label: forms[tag] } });
+    initialForms.current = { ...initialForms.current, [tag]: forms[tag] };
+  }
+
+  async function handleDelete(tag: string) {
+    setDeleteError(null);
+    try {
+      await deleteCause({ variables: { tag } });
+      setExpandedTag(null);
+    } catch (e: unknown) {
+      setDeleteError(e instanceof Error ? e.message : 'Delete failed');
+    }
+  }
+
+  const isDirty = (tag: string) => forms[tag] !== initialForms.current[tag];
+
+  const inputCls = 'w-full px-2 py-1.5 border border-brand-tertiary rounded text-sm text-text-primary focus:border-brand-primary outline-none bg-bg-primary';
+  const labelCls = 'block text-xs text-text-secondary mb-0.5';
+  const btnCls = 'px-3 py-1.5 text-sm rounded';
+
+  if (loading) return <p className="text-text-secondary text-sm">Loading...</p>;
+  if (error) return <p className="text-error text-sm">{error.message}</p>;
+
+  return (
+    <div>
+      <div className="border border-brand-tertiary rounded-lg overflow-hidden">
+        <table className="w-full text-sm">
+          <thead className="bg-bg-accent border-b border-brand-tertiary">
+            <tr>
+              <th className="text-left px-3 py-2 text-text-secondary font-medium">Tag</th>
+              <th className="text-left px-3 py-2 text-text-secondary font-medium">Label</th>
+              <th className="text-left px-3 py-2 text-text-secondary font-medium w-28 text-right pr-4">Charities</th>
+            </tr>
+          </thead>
+          <tbody>
+            {causes.map((cause, i) => {
+              const expanded = expandedTag === cause.tag;
+              return (
+                <>
+                  <tr
+                    key={cause.tag}
+                    onClick={() => handleExpand(cause.tag, cause.label)}
+                    className={`border-b border-brand-tertiary cursor-pointer transition-colors hover:bg-bg-accent ${
+                      expanded ? 'bg-amber-50' : i % 2 === 0 ? 'bg-bg-primary' : 'bg-bg-accent/30'
+                    }`}
+                  >
+                    <td className="px-3 py-2 font-mono text-xs text-text-secondary">{cause.tag}</td>
+                    <td className="px-3 py-2 font-medium text-text-primary">{cause.label}</td>
+                    <td className="px-3 py-2 text-right pr-4 text-text-secondary">{cause.charityCount}</td>
+                  </tr>
+
+                  {expanded && (
+                    <tr key={`${cause.tag}-expanded`} className="bg-amber-50 border-b border-brand-tertiary">
+                      <td colSpan={3} className="px-4 py-4">
+                        <div className="grid grid-cols-2 gap-3 mb-3 max-w-lg">
+                          <div>
+                            <label className={labelCls}>Tag (identifier — read only)</label>
+                            <input className={`${inputCls} opacity-50 cursor-not-allowed`} value={cause.tag} readOnly />
+                          </div>
+                          <div>
+                            <label className={labelCls}>Label</label>
+                            <input
+                              className={inputCls}
+                              value={forms[cause.tag] ?? cause.label}
+                              onChange={e => setForms(f => ({ ...f, [cause.tag]: e.target.value }))}
+                            />
+                          </div>
+                        </div>
+                        {deleteError && <p className="text-error text-xs mb-2">{deleteError}</p>}
+                        <div className="flex gap-2">
+                          <button
+                            onClick={e => { e.stopPropagation(); handleSave(cause.tag); }}
+                            disabled={!isDirty(cause.tag)}
+                            className={`${btnCls} bg-brand-primary text-white hover:opacity-90 disabled:bg-brand-tertiary disabled:text-text-secondary disabled:cursor-not-allowed`}
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={e => { e.stopPropagation(); handleDelete(cause.tag); }}
+                            disabled={cause.charityCount > 0}
+                            title={cause.charityCount > 0 ? `Used by ${cause.charityCount} ${cause.charityCount === 1 ? 'charity' : 'charities'}` : 'Delete tag'}
+                            className={`${btnCls} border border-red-300 text-red-600 hover:bg-red-50 disabled:border-brand-tertiary disabled:text-text-secondary disabled:cursor-not-allowed`}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <p className="text-text-secondary text-xs mt-2">{causes.length} cause tag{causes.length !== 1 ? 's' : ''}</p>
+    </div>
+  );
+}
+
+function UsersTab() {
+  const { data, loading, error } = useQuery(GET_USERS);
+  const users: { id: string; name: string; email: string; isAdmin: boolean; createdAt: string | null }[] =
+    data?.users ?? [];
+
+  if (loading) return <p className="text-text-secondary text-sm">Loading...</p>;
+  if (error) return <p className="text-error text-sm">{error.message}</p>;
+
+  return (
+    <div>
+      <div className="border border-brand-tertiary rounded-lg overflow-hidden">
+        <table className="w-full text-sm">
+          <thead className="bg-bg-accent border-b border-brand-tertiary">
+            <tr>
+              <th className="text-left px-3 py-2 text-text-secondary font-medium">Name</th>
+              <th className="text-left px-3 py-2 text-text-secondary font-medium">Email</th>
+              <th className="text-left px-3 py-2 text-text-secondary font-medium w-20">Role</th>
+              <th className="text-left px-3 py-2 text-text-secondary font-medium hidden md:table-cell">Joined</th>
+            </tr>
+          </thead>
+          <tbody>
+            {users.map((user, i) => (
+              <tr
+                key={user.id}
+                className={`border-b border-brand-tertiary last:border-0 ${
+                  i % 2 === 0 ? 'bg-bg-primary' : 'bg-bg-accent/30'
+                }`}
+              >
+                <td className="px-3 py-2 font-medium text-text-primary">{user.name}</td>
+                <td className="px-3 py-2 text-text-secondary">{user.email}</td>
+                <td className="px-3 py-2">
+                  {user.isAdmin ? (
+                    <span className="text-xs px-1.5 py-0.5 rounded bg-amber-100 text-amber-700">Admin</span>
+                  ) : (
+                    <span className="text-xs px-1.5 py-0.5 rounded bg-bg-accent text-text-secondary">User</span>
+                  )}
+                </td>
+                <td className="px-3 py-2 text-text-secondary hidden md:table-cell">
+                  {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '—'}
+                </td>
+              </tr>
+            ))}
+            {users.length === 0 && (
+              <tr>
+                <td colSpan={4} className="px-3 py-4 text-text-secondary text-center text-sm">
+                  No users found.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+      <p className="text-text-secondary text-xs mt-2">{users.length} user{users.length !== 1 ? 's' : ''}</p>
+    </div>
+  );
+}
+
 // ── Main component ───────────────────────────────────────────────────────────
 
 export function Admin() {
@@ -572,9 +789,10 @@ export function Admin() {
       {activeTab === 'locations' && <LocationsTab />}
 
       {/* ── Cause Tags tab ── */}
-      {activeTab === 'cause-tags' && (
-        <p className="text-text-secondary text-sm">Cause Tags management coming soon.</p>
-      )}
+      {activeTab === 'cause-tags' && <CauseTagsTab />}
+
+      {/* ── Users tab ── */}
+      {activeTab === 'users' && <UsersTab />}
     </div>
   );
 }
