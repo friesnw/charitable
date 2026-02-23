@@ -1,6 +1,7 @@
 import { pool } from '../db.js';
+import { Context } from '../auth.js';
+import { GraphQLError } from 'graphql';
 
-// Helper to convert snake_case DB rows to camelCase GraphQL fields
 function toCharity(row: Record<string, unknown>) {
   return {
     id: row.id,
@@ -30,7 +31,17 @@ function toLocation(row: Record<string, unknown>) {
     address: row.address,
     latitude: row.latitude != null ? parseFloat(row.latitude as string) : null,
     longitude: row.longitude != null ? parseFloat(row.longitude as string) : null,
+    photoUrl: row.photo_url ?? null,
   };
+}
+
+function requireAdmin(context: Context) {
+  if (!context.user) {
+    throw new GraphQLError('Not authenticated', { extensions: { code: 'UNAUTHENTICATED' } });
+  }
+  if (!context.user.isAdmin) {
+    throw new GraphQLError('Not authorized', { extensions: { code: 'FORBIDDEN' } });
+  }
 }
 
 export const charityResolvers = {
@@ -42,13 +53,11 @@ export const charityResolvers = {
       let query = 'SELECT * FROM charities WHERE 1=1';
       const params: unknown[] = [];
 
-      // Filter by tags (using array overlap operator &&)
       if (tags && tags.length > 0) {
         params.push(tags);
         query += ` AND cause_tags && $${params.length}`;
       }
 
-      // Search by name (case-insensitive)
       if (search) {
         params.push(`%${search}%`);
         query += ` AND name ILIKE $${params.length}`;
@@ -83,6 +92,129 @@ export const charityResolvers = {
         [parent.id]
       );
       return result.rows.map(toLocation);
+    },
+  },
+
+  Mutation: {
+    updateCharity: async (_: unknown, args: Record<string, unknown>, context: Context) => {
+      requireAdmin(context);
+
+      const fieldMap: Record<string, string> = {
+        name: 'name',
+        description: 'description',
+        websiteUrl: 'website_url',
+        volunteerUrl: 'volunteer_url',
+        primaryAddress: 'primary_address',
+        causeTags: 'cause_tags',
+        everyOrgSlug: 'every_org_slug',
+        everyOrgClaimed: 'every_org_claimed',
+        foundedYear: 'founded_year',
+        isActive: 'is_active',
+        logoUrl: 'logo_url',
+      };
+
+      const setClauses: string[] = [];
+      const params: unknown[] = [];
+
+      for (const [argKey, colName] of Object.entries(fieldMap)) {
+        if (args[argKey] !== undefined) {
+          params.push(args[argKey]);
+          setClauses.push(`${colName} = $${params.length}`);
+        }
+      }
+
+      if (setClauses.length === 0) {
+        const result = await pool.query('SELECT * FROM charities WHERE id = $1', [args.id]);
+        return toCharity(result.rows[0]);
+      }
+
+      setClauses.push('updated_at = NOW()');
+      params.push(args.id);
+
+      const result = await pool.query(
+        `UPDATE charities SET ${setClauses.join(', ')} WHERE id = $${params.length} RETURNING *`,
+        params
+      );
+
+      return toCharity(result.rows[0]);
+    },
+
+    createCharity: async (_: unknown, args: Record<string, unknown>, context: Context) => {
+      requireAdmin(context);
+
+      const result = await pool.query(
+        `INSERT INTO charities (name, ein, slug, description, website_url, volunteer_url, primary_address, cause_tags, every_org_slug, founded_year)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+         RETURNING *`,
+        [
+          args.name, args.ein, args.slug,
+          args.description ?? null, args.websiteUrl ?? null,
+          args.volunteerUrl ?? null, args.primaryAddress ?? null,
+          args.causeTags ?? [], args.everyOrgSlug ?? null,
+          args.foundedYear ?? null,
+        ]
+      );
+
+      return toCharity(result.rows[0]);
+    },
+
+    updateCharityLocation: async (_: unknown, args: Record<string, unknown>, context: Context) => {
+      requireAdmin(context);
+
+      const fieldMap: Record<string, string> = {
+        label: 'label',
+        description: 'description',
+        address: 'address',
+        latitude: 'latitude',
+        longitude: 'longitude',
+        photoUrl: 'photo_url',
+      };
+
+      const setClauses: string[] = [];
+      const params: unknown[] = [];
+
+      for (const [argKey, colName] of Object.entries(fieldMap)) {
+        if (args[argKey] !== undefined) {
+          params.push(args[argKey]);
+          setClauses.push(`${colName} = $${params.length}`);
+        }
+      }
+
+      if (setClauses.length === 0) {
+        const result = await pool.query('SELECT * FROM charity_locations WHERE id = $1', [args.id]);
+        return toLocation(result.rows[0]);
+      }
+
+      params.push(args.id);
+      const result = await pool.query(
+        `UPDATE charity_locations SET ${setClauses.join(', ')} WHERE id = $${params.length} RETURNING *`,
+        params
+      );
+
+      return toLocation(result.rows[0]);
+    },
+
+    createCharityLocation: async (_: unknown, args: Record<string, unknown>, context: Context) => {
+      requireAdmin(context);
+
+      const result = await pool.query(
+        `INSERT INTO charity_locations (charity_id, label, description, address, latitude, longitude)
+         VALUES ($1, $2, $3, $4, $5, $6)
+         RETURNING *`,
+        [
+          args.charityId, args.label,
+          args.description ?? null, args.address ?? null,
+          args.latitude ?? null, args.longitude ?? null,
+        ]
+      );
+
+      return toLocation(result.rows[0]);
+    },
+
+    deleteCharityLocation: async (_: unknown, { id }: { id: string }, context: Context) => {
+      requireAdmin(context);
+      const result = await pool.query('DELETE FROM charity_locations WHERE id = $1', [id]);
+      return (result.rowCount ?? 0) > 0;
     },
   },
 };

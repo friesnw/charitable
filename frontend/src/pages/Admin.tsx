@@ -1,0 +1,580 @@
+import { useState, useRef } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useQuery, useMutation, gql } from '@apollo/client';
+import { cloudinaryUrl, pickAndUploadImage } from '../lib/cloudinary';
+
+// ── Queries & mutations ──────────────────────────────────────────────────────
+
+const GET_ADMIN_CHARITIES = gql`
+  query GetAdminCharities {
+    charities {
+      id name slug logoUrl causeTags isActive
+    }
+  }
+`;
+
+const GET_CAUSES = gql`
+  query GetCauses {
+    causes { tag label }
+  }
+`;
+
+const GET_ADMIN_LOCATIONS = gql`
+  query GetAdminLocations {
+    charities {
+      id name slug
+      locations {
+        id label description address latitude longitude photoUrl
+      }
+    }
+  }
+`;
+
+const CREATE_CHARITY = gql`
+  mutation CreateCharity(
+    $name: String! $ein: String! $slug: String! $description: String
+    $websiteUrl: String $volunteerUrl: String $primaryAddress: String
+    $causeTags: [String!] $everyOrgSlug: String $foundedYear: Int
+  ) {
+    createCharity(
+      name: $name ein: $ein slug: $slug description: $description
+      websiteUrl: $websiteUrl volunteerUrl: $volunteerUrl primaryAddress: $primaryAddress
+      causeTags: $causeTags everyOrgSlug: $everyOrgSlug foundedYear: $foundedYear
+    ) {
+      id name slug
+    }
+  }
+`;
+
+const UPDATE_LOCATION = gql`
+  mutation UpdateCharityLocation(
+    $id: ID! $label: String $description: String $address: String
+    $latitude: Float $longitude: Float $photoUrl: String
+  ) {
+    updateCharityLocation(
+      id: $id label: $label description: $description address: $address
+      latitude: $latitude longitude: $longitude photoUrl: $photoUrl
+    ) {
+      id label description address latitude longitude photoUrl
+    }
+  }
+`;
+
+// ── Types ────────────────────────────────────────────────────────────────────
+
+type Tab = 'charities' | 'locations' | 'cause-tags';
+
+interface CharityRow {
+  id: string;
+  name: string;
+  slug: string;
+  logoUrl: string | null;
+  causeTags: string[];
+  isActive: boolean;
+}
+
+interface FlatLocation {
+  id: string;
+  charityId: string;
+  charityName: string;
+  charitySlug: string;
+  label: string;
+  description: string | null;
+  address: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  photoUrl: string | null;
+}
+
+interface LocationForm {
+  label: string;
+  description: string;
+  address: string;
+  latitude: string;
+  longitude: string;
+}
+
+interface CreateForm {
+  name: string;
+  ein: string;
+  slug: string;
+  description: string;
+  everyOrgSlug: string;
+}
+
+const EMPTY_CREATE_FORM: CreateForm = {
+  name: '', ein: '', slug: '', description: '', everyOrgSlug: '',
+};
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+function slugify(name: string): string {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
+function initLocForm(loc: FlatLocation): LocationForm {
+  return {
+    label: loc.label,
+    description: loc.description ?? '',
+    address: loc.address ?? '',
+    latitude: loc.latitude?.toString() ?? '',
+    longitude: loc.longitude?.toString() ?? '',
+  };
+}
+
+function Initials({ name, size = 40 }: { name: string; size?: number }) {
+  const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+  return (
+    <div
+      className="flex items-center justify-center rounded bg-bg-accent text-text-secondary text-xs font-bold flex-shrink-0"
+      style={{ width: size, height: size }}
+    >
+      {initials}
+    </div>
+  );
+}
+
+// ── Sub-components ───────────────────────────────────────────────────────────
+
+function TabBar({ active, onChange }: { active: Tab; onChange: (t: Tab) => void }) {
+  const tabs: { id: Tab; label: string }[] = [
+    { id: 'charities', label: 'Charities' },
+    { id: 'locations', label: 'Charity Locations' },
+    { id: 'cause-tags', label: 'Cause Tags' },
+  ];
+  return (
+    <div className="flex gap-1 border-b border-brand-tertiary mb-6">
+      {tabs.map(tab => (
+        <button
+          key={tab.id}
+          onClick={() => onChange(tab.id)}
+          className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
+            active === tab.id
+              ? 'border-brand-primary text-text-primary'
+              : 'border-transparent text-text-secondary hover:text-text-primary'
+          }`}
+        >
+          {tab.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function LocationsTab() {
+  const { data, loading, error } = useQuery(GET_ADMIN_LOCATIONS);
+  const [updateLocation] = useMutation(UPDATE_LOCATION, { refetchQueries: ['GetAdminLocations'] });
+
+  const [locSearch, setLocSearch] = useState('');
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [locForms, setLocForms] = useState<Record<string, LocationForm>>({});
+  const initialLocForms = useRef<Record<string, LocationForm>>({});
+  const [uploadingId, setUploadingId] = useState<string | null>(null);
+
+  const flatLocations: FlatLocation[] = (data?.charities ?? []).flatMap(
+    (c: { id: string; name: string; slug: string; locations: FlatLocation[] }) =>
+      c.locations.map(loc => ({ ...loc, charityId: c.id, charityName: c.name, charitySlug: c.slug }))
+  );
+
+  const filtered = flatLocations.filter(loc =>
+    loc.label.toLowerCase().includes(locSearch.toLowerCase()) ||
+    loc.charityName.toLowerCase().includes(locSearch.toLowerCase()) ||
+    (loc.address ?? '').toLowerCase().includes(locSearch.toLowerCase())
+  );
+
+  function handleExpand(loc: FlatLocation) {
+    if (expandedId === loc.id) {
+      setExpandedId(null);
+      return;
+    }
+    setExpandedId(loc.id);
+    if (!locForms[loc.id]) {
+      const form = initLocForm(loc);
+      setLocForms(f => ({ ...f, [loc.id]: form }));
+      initialLocForms.current[loc.id] = form;
+    }
+  }
+
+  async function handleSave(locId: string) {
+    const form = locForms[locId];
+    if (!form) return;
+    await updateLocation({
+      variables: {
+        id: locId,
+        label: form.label,
+        description: form.description || null,
+        address: form.address || null,
+        latitude: form.latitude ? parseFloat(form.latitude) : null,
+        longitude: form.longitude ? parseFloat(form.longitude) : null,
+      },
+    });
+    initialLocForms.current = { ...initialLocForms.current, [locId]: form };
+  }
+
+  async function handleUploadPhoto(locId: string) {
+    setUploadingId(locId);
+    try {
+      const url = await pickAndUploadImage();
+      if (url) {
+        await updateLocation({ variables: { id: locId, photoUrl: url } });
+      }
+    } finally {
+      setUploadingId(null);
+    }
+  }
+
+  const isDirty = (locId: string) =>
+    JSON.stringify(locForms[locId]) !== JSON.stringify(initialLocForms.current[locId]);
+
+  const inputCls = 'w-full px-2 py-1.5 border border-brand-tertiary rounded text-sm text-text-primary focus:border-brand-primary outline-none bg-bg-primary';
+  const labelCls = 'block text-xs text-text-secondary mb-0.5';
+  const btnCls = 'px-3 py-1.5 text-sm rounded';
+
+  if (loading) return <p className="text-text-secondary text-sm">Loading...</p>;
+  if (error) return <p className="text-error text-sm">{error.message}</p>;
+
+  return (
+    <div>
+      <div className="mb-4">
+        <input
+          type="text"
+          placeholder="Search by charity, label, or address..."
+          value={locSearch}
+          onChange={e => setLocSearch(e.target.value)}
+          className="w-full px-3 py-1.5 border border-brand-tertiary rounded text-sm text-text-primary focus:border-brand-primary outline-none"
+        />
+      </div>
+
+      <div className="border border-brand-tertiary rounded-lg overflow-hidden">
+        <table className="w-full text-sm">
+          <thead className="bg-bg-accent border-b border-brand-tertiary">
+            <tr>
+              <th className="text-left px-3 py-2 text-text-secondary font-medium">Charity</th>
+              <th className="text-left px-3 py-2 text-text-secondary font-medium">Label</th>
+              <th className="text-left px-3 py-2 text-text-secondary font-medium hidden md:table-cell">Description</th>
+              <th className="text-left px-3 py-2 text-text-secondary font-medium hidden lg:table-cell">Address</th>
+              <th className="text-left px-3 py-2 text-text-secondary font-medium hidden xl:table-cell w-28">Lat / Lng</th>
+              <th className="text-left px-3 py-2 text-text-secondary font-medium w-16">Photo</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map((loc, i) => {
+              const expanded = expandedId === loc.id;
+              const form = locForms[loc.id];
+              return (
+                <>
+                  <tr
+                    key={loc.id}
+                    onClick={() => handleExpand(loc)}
+                    className={`border-b border-brand-tertiary cursor-pointer transition-colors hover:bg-bg-accent ${
+                      expanded ? 'bg-amber-50' : i % 2 === 0 ? 'bg-bg-primary' : 'bg-bg-accent/30'
+                    }`}
+                  >
+                    <td className="px-3 py-2">
+                      <Link
+                        to={`/admin/charities/${loc.charityId}`}
+                        onClick={e => e.stopPropagation()}
+                        className="text-brand-primary hover:underline text-xs"
+                      >
+                        {loc.charityName}
+                      </Link>
+                    </td>
+                    <td className="px-3 py-2 font-medium text-text-primary">{loc.label}</td>
+                    <td className="px-3 py-2 text-text-secondary hidden md:table-cell max-w-xs">
+                      <span className="line-clamp-1">{loc.description ?? '—'}</span>
+                    </td>
+                    <td className="px-3 py-2 text-text-secondary hidden lg:table-cell">{loc.address ?? '—'}</td>
+                    <td className="px-3 py-2 text-text-secondary hidden xl:table-cell font-mono text-xs">
+                      {loc.latitude != null ? `${loc.latitude.toFixed(4)}, ${loc.longitude?.toFixed(4)}` : '—'}
+                    </td>
+                    <td className="px-3 py-2">
+                      {loc.photoUrl ? (
+                        <img
+                          src={cloudinaryUrl(loc.photoUrl, { w: 40, h: 32, fit: 'scale' })}
+                          alt=""
+                          className="w-10 h-8 object-cover rounded"
+                        />
+                      ) : (
+                        <span className="text-text-secondary text-xs">—</span>
+                      )}
+                    </td>
+                  </tr>
+
+                  {expanded && form && (
+                    <tr key={`${loc.id}-expanded`} className="bg-amber-50 border-b border-brand-tertiary">
+                      <td colSpan={6} className="px-4 py-4">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+                          <div>
+                            <label className={labelCls}>Label</label>
+                            <input className={inputCls} value={form.label}
+                              onChange={e => setLocForms(f => ({ ...f, [loc.id]: { ...f[loc.id], label: e.target.value } }))} />
+                          </div>
+                          <div>
+                            <label className={labelCls}>Address</label>
+                            <input className={inputCls} value={form.address}
+                              onChange={e => setLocForms(f => ({ ...f, [loc.id]: { ...f[loc.id], address: e.target.value } }))} />
+                          </div>
+                          <div>
+                            <label className={labelCls}>Latitude</label>
+                            <input className={inputCls} type="number" step="any" value={form.latitude}
+                              onChange={e => setLocForms(f => ({ ...f, [loc.id]: { ...f[loc.id], latitude: e.target.value } }))} />
+                          </div>
+                          <div>
+                            <label className={labelCls}>Longitude</label>
+                            <input className={inputCls} type="number" step="any" value={form.longitude}
+                              onChange={e => setLocForms(f => ({ ...f, [loc.id]: { ...f[loc.id], longitude: e.target.value } }))} />
+                          </div>
+                          <div className="col-span-2 md:col-span-4">
+                            <label className={labelCls}>Description</label>
+                            <textarea className={inputCls} rows={3} value={form.description}
+                              onChange={e => setLocForms(f => ({ ...f, [loc.id]: { ...f[loc.id], description: e.target.value } }))} />
+                          </div>
+                          <div>
+                            <label className={labelCls}>Photo</label>
+                            <div className="flex items-center gap-2 mt-1">
+                              {loc.photoUrl && (
+                                <img
+                                  src={cloudinaryUrl(loc.photoUrl, { w: 64, h: 40, fit: 'scale' })}
+                                  alt=""
+                                  className="h-10 rounded border border-brand-tertiary"
+                                />
+                              )}
+                              <button
+                                onClick={e => { e.stopPropagation(); handleUploadPhoto(loc.id); }}
+                                disabled={uploadingId === loc.id}
+                                className={`${btnCls} border border-brand-tertiary text-text-secondary hover:bg-bg-accent disabled:opacity-50 text-xs`}
+                              >
+                                {uploadingId === loc.id ? 'Uploading...' : loc.photoUrl ? 'Replace' : 'Upload'}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          onClick={e => { e.stopPropagation(); handleSave(loc.id); }}
+                          disabled={!isDirty(loc.id)}
+                          className={`${btnCls} bg-brand-primary text-white hover:opacity-90 disabled:bg-brand-tertiary disabled:text-text-secondary disabled:cursor-not-allowed`}
+                        >
+                          Save
+                        </button>
+                      </td>
+                    </tr>
+                  )}
+                </>
+              );
+            })}
+            {filtered.length === 0 && (
+              <tr>
+                <td colSpan={5} className="px-3 py-4 text-text-secondary text-center text-sm">
+                  No locations found.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+      <p className="text-text-secondary text-xs mt-2">{filtered.length} location{filtered.length !== 1 ? 's' : ''}</p>
+    </div>
+  );
+}
+
+// ── Main component ───────────────────────────────────────────────────────────
+
+export function Admin() {
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<Tab>('charities');
+  const [adminSearch, setAdminSearch] = useState('');
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [createForm, setCreateForm] = useState<CreateForm>(EMPTY_CREATE_FORM);
+  const [createError, setCreateError] = useState<string | null>(null);
+
+  const { data, loading, error } = useQuery(GET_ADMIN_CHARITIES);
+  const { data: causesData } = useQuery(GET_CAUSES);
+  const [createCharity] = useMutation(CREATE_CHARITY, { refetchQueries: ['GetAdminCharities'] });
+
+  const charities: CharityRow[] = data?.charities ?? [];
+  const causes: { tag: string; label: string }[] = causesData?.causes ?? [];
+
+  const filtered = charities.filter(c =>
+    c.name.toLowerCase().includes(adminSearch.toLowerCase())
+  );
+
+  async function handleCreateCharity() {
+    if (!createForm.name || !createForm.ein || !createForm.slug) return;
+    setCreateError(null);
+    try {
+      const result = await createCharity({
+        variables: {
+          name: createForm.name,
+          ein: createForm.ein,
+          slug: createForm.slug,
+          description: createForm.description || null,
+          everyOrgSlug: createForm.everyOrgSlug || null,
+        },
+      });
+      setCreateForm(EMPTY_CREATE_FORM);
+      setShowCreateForm(false);
+      const id = result.data?.createCharity?.id;
+      if (id) navigate(`/admin/charities/${id}`);
+    } catch (e: unknown) {
+      setCreateError(e instanceof Error ? e.message : 'Create failed');
+    }
+  }
+
+  const inputCls = 'w-full px-2 py-1.5 border border-brand-tertiary rounded text-sm text-text-primary focus:border-brand-primary outline-none bg-bg-primary';
+  const labelCls = 'block text-xs text-text-secondary mb-0.5';
+  const btnCls = 'px-3 py-1.5 text-sm rounded';
+
+  return (
+    <div>
+      <h1 className="text-xl font-bold text-text-primary mb-4">Admin</h1>
+
+      <TabBar active={activeTab} onChange={setActiveTab} />
+
+      {/* ── Charities tab ── */}
+      {activeTab === 'charities' && (
+        <>
+          <div className="flex items-center gap-3 mb-4">
+            <input
+              type="text"
+              placeholder="Search charities..."
+              value={adminSearch}
+              onChange={e => setAdminSearch(e.target.value)}
+              className="flex-1 px-3 py-1.5 border border-brand-tertiary rounded text-sm text-text-primary focus:border-brand-primary outline-none"
+            />
+            <button
+              onClick={() => setShowCreateForm(!showCreateForm)}
+              className={`${btnCls} bg-brand-primary text-white hover:opacity-90 flex-shrink-0`}
+            >
+              + Add Charity
+            </button>
+          </div>
+
+          {showCreateForm && (
+            <div className="mb-4 p-4 border border-brand-tertiary rounded-lg bg-bg-accent space-y-3">
+              <h2 className="font-bold text-text-primary text-sm">New Charity</h2>
+              {createError && <p className="text-error text-sm">{createError}</p>}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className={labelCls}>Name *</label>
+                  <input className={inputCls} value={createForm.name}
+                    onChange={e => {
+                      const name = e.target.value;
+                      setCreateForm(f => ({ ...f, name, slug: slugify(name) }));
+                    }} />
+                </div>
+                <div>
+                  <label className={labelCls}>EIN *</label>
+                  <input className={inputCls} placeholder="XX-XXXXXXX" value={createForm.ein}
+                    onChange={e => setCreateForm(f => ({ ...f, ein: e.target.value }))} />
+                </div>
+                <div>
+                  <label className={labelCls}>Slug * (auto-generated)</label>
+                  <input className={inputCls} value={createForm.slug}
+                    onChange={e => setCreateForm(f => ({ ...f, slug: e.target.value }))} />
+                </div>
+                <div>
+                  <label className={labelCls}>Every.org Slug</label>
+                  <input className={inputCls} value={createForm.everyOrgSlug}
+                    onChange={e => setCreateForm(f => ({ ...f, everyOrgSlug: e.target.value }))} />
+                </div>
+                <div className="col-span-2">
+                  <label className={labelCls}>Description</label>
+                  <textarea className={inputCls} rows={2} value={createForm.description}
+                    onChange={e => setCreateForm(f => ({ ...f, description: e.target.value }))} />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={handleCreateCharity}
+                  disabled={!createForm.name || !createForm.ein || !createForm.slug}
+                  className={`${btnCls} bg-brand-primary text-white hover:opacity-90 disabled:opacity-50`}>
+                  Create
+                </button>
+                <button onClick={() => { setShowCreateForm(false); setCreateForm(EMPTY_CREATE_FORM); }}
+                  className={`${btnCls} border border-brand-tertiary text-text-secondary hover:bg-bg-accent`}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
+          {loading && <p className="text-text-secondary text-sm">Loading...</p>}
+          {error && <p className="text-error text-sm">{error.message}</p>}
+
+          <div className="border border-brand-tertiary rounded-lg overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-bg-accent border-b border-brand-tertiary">
+                <tr>
+                  <th className="text-left px-3 py-2 text-text-secondary font-medium w-12"></th>
+                  <th className="text-left px-3 py-2 text-text-secondary font-medium">Name</th>
+                  <th className="text-left px-3 py-2 text-text-secondary font-medium hidden md:table-cell">Tags</th>
+                  <th className="text-left px-3 py-2 text-text-secondary font-medium w-20">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((charity, i) => (
+                  <tr
+                    key={charity.id}
+                    onClick={() => navigate(`/admin/charities/${charity.id}`)}
+                    className={`border-b border-brand-tertiary last:border-0 cursor-pointer transition-colors hover:bg-bg-accent ${
+                      i % 2 === 0 ? 'bg-bg-primary' : 'bg-bg-accent/30'
+                    }`}
+                  >
+                    <td className="px-3 py-2">
+                      {charity.logoUrl ? (
+                        <img
+                          src={cloudinaryUrl(charity.logoUrl, { w: 40, h: 40 })}
+                          alt={charity.name}
+                          className="w-10 h-10 object-cover rounded"
+                        />
+                      ) : (
+                        <Initials name={charity.name} size={40} />
+                      )}
+                    </td>
+                    <td className="px-3 py-2">
+                      <div className="font-medium text-text-primary">{charity.name}</div>
+                      <div className="text-text-secondary text-xs">{charity.slug}</div>
+                    </td>
+                    <td className="px-3 py-2 hidden md:table-cell">
+                      <div className="flex flex-wrap gap-1">
+                        {charity.causeTags.slice(0, 3).map(tag => (
+                          <span key={tag} className="text-xs px-1.5 py-0.5 bg-bg-accent text-text-secondary rounded">
+                            {causes.find(c => c.tag === tag)?.label ?? tag}
+                          </span>
+                        ))}
+                        {charity.causeTags.length > 3 && (
+                          <span className="text-xs text-text-secondary">+{charity.causeTags.length - 3}</span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-3 py-2">
+                      <span className={`text-xs px-1.5 py-0.5 rounded ${
+                        charity.isActive ? 'bg-green-100 text-green-700' : 'bg-bg-accent text-text-secondary'
+                      }`}>
+                        {charity.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+                {filtered.length === 0 && !loading && (
+                  <tr>
+                    <td colSpan={4} className="px-3 py-4 text-text-secondary text-center text-sm">
+                      No charities found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+
+      {/* ── Locations tab ── */}
+      {activeTab === 'locations' && <LocationsTab />}
+
+      {/* ── Cause Tags tab ── */}
+      {activeTab === 'cause-tags' && (
+        <p className="text-text-secondary text-sm">Cause Tags management coming soon.</p>
+      )}
+    </div>
+  );
+}

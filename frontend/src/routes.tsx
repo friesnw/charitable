@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom';
 import { PageShell } from './components/layout/PageShell';
 import { ProtectedRoute } from './components/layout/ProtectedRoute';
+import { AdminRoute } from './components/layout/AdminRoute';
 
 // Pages
 import { Home } from './pages/Home';
@@ -10,6 +11,8 @@ import { Dashboard } from './pages/Dashboard';
 import { Preferences } from './pages/Preferences';
 import { Charities } from './pages/Charities';
 import { CharityDetail } from './pages/CharityDetail';
+import { Admin } from './pages/Admin';
+import { AdminCharityEdit } from './pages/AdminCharityEdit';
 
 export const router = createBrowserRouter([
   {
@@ -47,5 +50,21 @@ export const router = createBrowserRouter([
   {
     path: '/charities/:slug',
     element: <PageShell><CharityDetail /></PageShell>,
+  },
+  {
+    path: '/admin',
+    element: (
+      <AdminRoute>
+        <PageShell><Admin /></PageShell>
+      </AdminRoute>
+    ),
+  },
+  {
+    path: '/admin/charities/:id',
+    element: (
+      <AdminRoute>
+        <PageShell><AdminCharityEdit /></PageShell>
+      </AdminRoute>
+    ),
   },
 ]);

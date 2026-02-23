@@ -47,6 +47,7 @@ export const resolvers = {
     ...userResolvers.Mutation,
     ...authResolvers.Mutation,
     ...preferencesResolvers.Mutation,
+    ...charityResolvers.Mutation,
   },
   Charity: charityResolvers.Charity,
 };

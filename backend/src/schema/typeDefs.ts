@@ -3,6 +3,7 @@ export const typeDefs = `#graphql
     id: ID!
     name: String!
     email: String!
+    isAdmin: Boolean!
     createdAt: String
   }
 
@@ -33,6 +34,7 @@ export const typeDefs = `#graphql
     address: String
     latitude: Float
     longitude: Float
+    photoUrl: String
   }
 
   type AuthPayload {
@@ -69,5 +71,54 @@ export const typeDefs = `#graphql
     verifyMagicLink(token: String!): AuthPayload!
 
     savePreferences(location: String!): UserPreferences!
+
+    updateCharity(
+      id: ID!
+      name: String
+      description: String
+      websiteUrl: String
+      volunteerUrl: String
+      primaryAddress: String
+      causeTags: [String!]
+      everyOrgSlug: String
+      everyOrgClaimed: Boolean
+      foundedYear: Int
+      isActive: Boolean
+      logoUrl: String
+    ): Charity!
+
+    createCharity(
+      name: String!
+      ein: String!
+      slug: String!
+      description: String
+      websiteUrl: String
+      volunteerUrl: String
+      primaryAddress: String
+      causeTags: [String!]
+      everyOrgSlug: String
+      foundedYear: Int
+    ): Charity!
+
+    updateCharityLocation(
+      id: ID!
+      label: String
+      description: String
+      address: String
+      latitude: Float
+      longitude: Float
+      photoUrl: String
+    ): CharityLocation!
+
+    createCharityLocation(
+      charityId: ID!
+      label: String!
+      description: String
+      address: String
+      latitude: Float
+      longitude: Float
+    ): CharityLocation!
+
+    deleteCharityLocation(id: ID!): Boolean!
   }
 `;

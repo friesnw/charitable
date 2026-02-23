@@ -11,6 +11,7 @@ const VERIFY_MAGIC_LINK = gql`
         id
         email
         name
+        isAdmin
       }
     }
   }

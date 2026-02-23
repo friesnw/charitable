@@ -175,6 +175,9 @@ Add to `frontend/src/routes.tsx`:
 
 ### `frontend/src/lib/cloudinary.ts`
 
+Two exports:
+
+**`uploadToCloudinary`** — uploads a file, returns the original `secure_url` to store in the DB:
 ```typescript
 export async function uploadToCloudinary(file: File): Promise<string> {
   const formData = new FormData();
@@ -189,6 +192,27 @@ export async function uploadToCloudinary(file: File): Promise<string> {
   return data.secure_url as string;
 }
 ```
+
+**`cloudinaryUrl`** — builds an optimized delivery URL from a stored URL by injecting transformation params. Always use this in display components rather than rendering the raw URL:
+```typescript
+export function cloudinaryUrl(
+  url: string,
+  opts: { w?: number; h?: number; fit?: 'fill' | 'scale' | 'crop' } = {}
+): string {
+  const { w, h, fit = 'fill' } = opts;
+  const transforms = ['q_auto', 'f_auto', fit && `c_${fit}`, w && `w_${w}`, h && `h_${h}`]
+    .filter(Boolean)
+    .join(',');
+  return url.replace('/upload/', `/upload/${transforms}/`);
+}
+```
+
+Usage by context:
+- Logo thumbnail (list): `cloudinaryUrl(logoUrl, { w: 40, h: 40 })`
+- Logo (detail page): `cloudinaryUrl(logoUrl, { w: 64, h: 64 })`
+- Location photo: `cloudinaryUrl(photoUrl, { w: 640, h: 128, fit: 'scale' })`
+
+**Store the original URL in the DB.** Never store a transformed URL — the same source URL serves all display contexts via `cloudinaryUrl`.
 
 ### `frontend/src/context/AuthContext.tsx`
 
@@ -254,6 +278,32 @@ Add `isAdmin?: boolean` to `User` interface. Ensure `isAdmin` is included in the
 - [ ] Add Cloudinary env vars to Render frontend service
 - [ ] Add `ADMIN_EMAIL` to Render backend service
 - [ ] Run admin promotion SQL against production DB via Render shell
+
+---
+
+## Dev → Prod Workflow
+
+**Dev is the canonical authoring environment.** All charity data, images, and edits are managed in dev via the admin UI. Production receives promoted data — it is never authored directly.
+
+### Why this works cleanly
+
+Cloudinary URLs are public CDN URLs (`res.cloudinary.com/...`) with no environment coupling. An image uploaded from dev is instantly accessible from anywhere, including prod. No re-uploading or URL rewriting needed.
+
+### Cloudinary setup
+
+One account, one upload preset — use the **same `VITE_CLOUDINARY_CLOUD_NAME` and `VITE_CLOUDINARY_UPLOAD_PRESET`** in both dev and prod. No environment separation needed.
+
+### Promoting dev → prod
+
+Dump the charity-related tables from dev and restore into prod:
+
+```bash
+pg_dump --table=charities --table=charity_locations --table=causes \
+  --data-only $DEV_DATABASE_URL > charity_data.sql
+psql $PROD_DATABASE_URL < charity_data.sql
+```
+
+All image URLs, descriptions, locations, and tags come along automatically. The CSV import script is never run against production.
 
 ---
 

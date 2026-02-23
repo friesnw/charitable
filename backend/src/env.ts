@@ -17,6 +17,7 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(32),
   RESEND_API_KEY: z.string().startsWith('re_'),
   FRONTEND_URL: z.string().url().default('http://localhost:5173'),
+  ADMIN_EMAIL: z.string().email().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);

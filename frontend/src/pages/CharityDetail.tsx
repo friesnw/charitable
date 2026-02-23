@@ -1,5 +1,6 @@
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, gql } from '@apollo/client';
+import { cloudinaryUrl } from '../lib/cloudinary';
 
 const GET_CAUSES = gql`
   query GetCauses {
@@ -17,6 +18,7 @@ const GET_CHARITY = gql`
       name
       slug
       description
+      logoUrl
       websiteUrl
       volunteerUrl
       primaryAddress
@@ -31,6 +33,7 @@ const GET_CHARITY = gql`
         address
         latitude
         longitude
+        photoUrl
       }
     }
   }
@@ -43,6 +46,7 @@ interface CharityLocation {
   address: string | null;
   latitude: number | null;
   longitude: number | null;
+  photoUrl: string | null;
 }
 
 interface Charity {
@@ -50,6 +54,7 @@ interface Charity {
   name: string;
   slug: string;
   description: string | null;
+  logoUrl: string | null;
   websiteUrl: string | null;
   volunteerUrl: string | null;
   primaryAddress: string | null;
@@ -93,7 +98,16 @@ export function CharityDetail() {
         &larr; Back to charities
       </Link>
 
-      <h1 className="text-xl font-bold text-text-primary mb-1">{charity.name}</h1>
+      <div className="flex items-center gap-3 mb-1">
+        {charity.logoUrl && (
+          <img
+            src={cloudinaryUrl(charity.logoUrl, { w: 64, h: 64 })}
+            alt={charity.name}
+            className="w-16 h-16 object-cover rounded flex-shrink-0"
+          />
+        )}
+        <h1 className="text-xl font-bold text-text-primary">{charity.name}</h1>
+      </div>
 
       <div className="text-text-secondary text-sm mb-4 space-x-3">
         {charity.foundedYear && <span>Founded {charity.foundedYear}</span>}
@@ -133,6 +147,13 @@ export function CharityDetail() {
           <ul className="space-y-3">
             {charity.locations.map((loc) => (
               <li key={loc.id} className="p-3 border border-brand-tertiary rounded-md">
+                {loc.photoUrl && (
+                  <img
+                    src={cloudinaryUrl(loc.photoUrl, { w: 640, h: 128, fit: 'scale' })}
+                    alt={loc.label}
+                    className="w-full h-32 object-cover rounded mb-2"
+                  />
+                )}
                 <p className="font-medium text-text-primary">{loc.label}</p>
                 {loc.address && (
                   <p className="text-text-secondary text-sm">{loc.address}</p>

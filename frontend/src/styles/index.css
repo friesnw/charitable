@@ -13,7 +13,7 @@
   --color-brand-primary: var(--brand-primary);
   --color-brand-secondary: var(--brand-secondary);
   --color-brand-tertiary: var(--brand-tertiary);
-
+  --color-brand-accent: var(--brand-accent);
   --color-success: var(--color-success);
   --color-error: var(--color-error);
 

@@ -12,6 +12,7 @@ export const TOKEN_EXPIRY = {
 export interface JwtPayload {
   userId: number;
   email: string;
+  isAdmin: boolean;
 }
 
 // GraphQL context type

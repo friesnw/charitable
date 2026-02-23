@@ -68,6 +68,15 @@ export function Header() {
                     >
                       Preferences
                     </Link>
+                    {user?.isAdmin && (
+                      <Link
+                        to="/admin"
+                        onClick={() => setProfileOpen(false)}
+                        className="block px-4 py-2 text-sm text-text-secondary hover:bg-bg-accent hover:text-text-primary"
+                      >
+                        Admin
+                      </Link>
+                    )}
                     <button
                       onClick={() => {
                         setProfileOpen(false);

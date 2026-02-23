@@ -4,7 +4,7 @@ import { env } from '../env.js';
 const resend = new Resend(env.RESEND_API_KEY);
 
 // From address — update domain once verified with Resend
-const FROM_ADDRESS = 'GoodLocal <onboarding@contact.goodlocal.org>';
+const FROM_ADDRESS = 'GoodLocal <hello@contact.goodlocal.org>';
 
 export async function sendMagicLink(email: string, token: string): Promise<void> {
   const magicLink = `${env.FRONTEND_URL}/auth/verify?token=${token}`;

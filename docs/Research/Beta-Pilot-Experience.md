@@ -18,15 +18,15 @@ The language distinction matters enormously. Research on UX framing shows that "
 
 Naming the program shapes the relationship.
 
-| Label | Vibe | Verdict |
-|-------|------|---------|
-| "Beta Program" | Clinical, tech-y | Never for consumer apps |
-| "Pilot Program" | Neutral, official | OK but not exciting |
-| "Explorer Program" | Adventurous | Better, but generic |
-| **"Charter Member"** | Legacy, permanence, pride | **Best for GoodLocal** |
-| "Founding Member" | Insider, historical | Strong runner-up |
+Naming the program shapes the relationship.
 
-**"Charter Member" is the right call.** It has particular resonance in the nonprofit/civic world — "charter" implies building something lasting. Crucially, it's *permanent*: joining now grants a status that future users won't have. The asymmetry creates genuine belonging without manufactured scarcity.
+Examples:
+- Beta Program
+- Pilot Program
+- Explorer Program
+- Charter Member
+
+Preferred: Pilot to signal more product / software. Likely resonates more with tech audience.
 
 ---
 

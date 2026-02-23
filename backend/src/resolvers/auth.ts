@@ -17,6 +17,7 @@ export const authResolvers = {
       const row = result.rows[0];
       return {
         ...row,
+        isAdmin: row.is_admin ?? false,
         createdAt: row.created_at?.toISOString(),
       };
     },
@@ -92,12 +93,13 @@ export const authResolvers = {
       }
 
       // Generate JWT
-      const jwt = signToken({ userId: user.id, email: user.email });
+      const jwt = signToken({ userId: user.id, email: user.email, isAdmin: user.is_admin ?? false });
 
       return {
         token: jwt,
         user: {
           ...user,
+          isAdmin: user.is_admin ?? false,
           createdAt: user.created_at?.toISOString(),
         },
       };

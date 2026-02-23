@@ -10,16 +10,16 @@
 Once name is finalized, update these locations:
 
 **Code & Config:**
-- [ ] `frontend/index.html` — page title
-- [ ] `frontend/src/components/` — any hardcoded "Charitable" text
-- [ ] `backend/src/services/email.ts` — email from name, subject lines
+- [x] `frontend/index.html` — page title
+- [x] `frontend/src/components/` — any hardcoded "Charitable" text
+- [x] `backend/src/services/email.ts` — email from name, subject lines
 - [ ] `package.json` files — project name (optional)
 
 **Content:**
-- [ ] Homepage copy
-- [ ] Email templates (magic link, donation confirmation)
+- [x] Homepage copy
+- [x] Email templates (magic link, donation confirmation)
 - [ ] Footer / about text
-- [ ] Meta tags (og:title, description)
+- [x] Meta tags (og:title, description)
 
 **Assets:**
 - [ ] Favicon
@@ -30,8 +30,8 @@ Once name is finalized, update these locations:
 
 ### Email From Address
 
-- [ ] Choose format: `hello@[domain]`, `notifications@[domain]`, etc.
-- [ ] Update `FROM_ADDRESS` in `backend/src/services/email.ts`
+- [x] Choose format: `hello@[domain]`, `notifications@[domain]`, etc.
+- [x] Update `FROM_ADDRESS` in `backend/src/services/email.ts`
 
 ---
 

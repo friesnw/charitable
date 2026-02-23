@@ -1,6 +1,7 @@
 import { lazy, Suspense, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery, gql } from '@apollo/client';
+import { cloudinaryUrl } from '../lib/cloudinary';
 
 const CharityMap = lazy(() =>
   import('../components/CharityMap').then((m) => ({ default: m.CharityMap }))
@@ -22,6 +23,7 @@ const GET_CHARITIES = gql`
       slug
       name
       description
+      logoUrl
       primaryAddress
       foundedYear
       causeTags
@@ -42,6 +44,7 @@ interface Charity {
   slug: string;
   name: string;
   description: string | null;
+  logoUrl: string | null;
   primaryAddress: string | null;
   foundedYear: number | null;
   causeTags: string[];
@@ -112,7 +115,7 @@ export function Charities() {
             <div className="flex rounded-md border border-brand-tertiary overflow-hidden flex-shrink-0">
               <button
                 onClick={() => setViewMode('map')}
-                className="text-sm px-3 py-1 bg-brand-primary text-white"
+                className="text-sm px-3 py-1 bg-brand-accent text-white"
               >
                 Map
               </button>
@@ -130,7 +133,7 @@ export function Charities() {
                 onClick={() => setSelectedTag(null)}
                 className={`text-sm px-2 py-1 rounded ${
                   !selectedTag
-                    ? 'bg-brand-primary text-white'
+                    ? 'bg-brand-accent text-white'
                     : 'bg-bg-accent text-text-secondary hover:bg-brand-tertiary'
                 }`}
               >
@@ -142,7 +145,7 @@ export function Charities() {
                   onClick={() => setSelectedTag(tag === selectedTag ? null : tag)}
                   className={`text-sm px-2 py-1 rounded ${
                     tag === selectedTag
-                      ? 'bg-brand-primary text-white'
+                      ? 'bg-brand-accent text-white'
                       : 'bg-bg-accent text-text-secondary hover:bg-brand-tertiary'
                   }`}
                 >
@@ -182,8 +185,21 @@ export function Charities() {
                         : 'hover:bg-bg-accent'
                     }`}
                   >
-                    <div className="font-bold text-text-primary text-sm">
-                      {charity.name}
+                    <div className="flex items-center gap-2 mb-1">
+                      {charity.logoUrl ? (
+                        <img
+                          src={cloudinaryUrl(charity.logoUrl, { w: 40, h: 40 })}
+                          alt={charity.name}
+                          className="w-10 h-10 object-cover rounded flex-shrink-0"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 flex-shrink-0 rounded bg-bg-accent flex items-center justify-center text-text-secondary text-xs font-bold">
+                          {charity.name.slice(0, 2).toUpperCase()}
+                        </div>
+                      )}
+                      <div className="font-bold text-text-primary text-sm">
+                        {charity.name}
+                      </div>
                     </div>
                     {charity.foundedYear && (
                       <div className="text-text-secondary text-xs mt-0.5">
@@ -254,7 +270,7 @@ export function Charities() {
           </button>
           <button
             onClick={() => setViewMode('list')}
-            className="text-sm px-3 py-1 bg-brand-primary text-white"
+            className="text-sm px-3 py-1 bg-brand-accent text-white"
           >
             List
           </button>
@@ -276,7 +292,7 @@ export function Charities() {
               onClick={() => setSelectedTag(null)}
               className={`text-sm px-2 py-1 rounded ${
                 !selectedTag
-                  ? 'bg-brand-primary text-white'
+                  ? 'bg-brand-tertiary text-text-primary'
                   : 'bg-bg-accent text-text-secondary hover:bg-brand-tertiary'
               }`}
             >
@@ -288,7 +304,7 @@ export function Charities() {
                 onClick={() => setSelectedTag(tag === selectedTag ? null : tag)}
                 className={`text-sm px-2 py-1 rounded ${
                   tag === selectedTag
-                    ? 'bg-brand-primary text-white'
+                    ? 'bg-brand-accent text-white'
                     : 'bg-bg-accent text-text-secondary hover:bg-brand-tertiary'
                 }`}
               >
@@ -311,8 +327,20 @@ export function Charities() {
           <li key={charity.id}>
             <Link
               to={`/charities/${charity.slug}`}
-              className="block p-4 border border-brand-tertiary rounded-lg hover:border-brand-primary"
+              className="flex gap-3 p-4 border border-brand-tertiary rounded-lg hover:border-brand-primary"
             >
+              {charity.logoUrl ? (
+                <img
+                  src={cloudinaryUrl(charity.logoUrl, { w: 40, h: 40 })}
+                  alt={charity.name}
+                  className="w-10 h-10 object-cover rounded flex-shrink-0 mt-0.5"
+                />
+              ) : (
+                <div className="w-10 h-10 flex-shrink-0 rounded bg-bg-accent flex items-center justify-center text-text-secondary text-xs font-bold mt-0.5">
+                  {charity.name.slice(0, 2).toUpperCase()}
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
               <h2 className="font-bold text-text-primary">{charity.name}</h2>
               {charity.foundedYear && (
                 <p className="text-text-secondary text-sm">
@@ -337,6 +365,7 @@ export function Charities() {
                   ))}
                 </div>
               )}
+              </div>
             </Link>
           </li>
         ))}
