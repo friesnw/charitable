@@ -13,6 +13,8 @@ import { Charities } from './pages/Charities';
 import { CharityDetail } from './pages/CharityDetail';
 import { Admin } from './pages/Admin';
 import { AdminCharityEdit } from './pages/AdminCharityEdit';
+import { Explore } from './pages/Explore';
+import { Nearby } from './pages/Nearby';
 
 export const router = createBrowserRouter([
   {
@@ -42,6 +44,14 @@ export const router = createBrowserRouter([
         <PageShell><Dashboard /></PageShell>
       </ProtectedRoute>
     ),
+  },
+  {
+    path: '/explore',
+    element: <PageShell><Explore /></PageShell>,
+  },
+  {
+    path: '/nearby',
+    element: <PageShell><Nearby /></PageShell>,
   },
   {
     path: '/charities',
