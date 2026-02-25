@@ -37,7 +37,104 @@ Over **26 million Americans** work for companies with matching programs. **78% o
 
 ---
 
-## 2. Denver Small Business Landscape
+## 2. Competitive Landscape
+
+### Benevity
+
+The dominant enterprise CSR platform. Used by ~1,000 companies including Google, Microsoft, and Nike. Covers donation matching, volunteer tracking, grant management, and cause marketing — the full corporate giving suite.
+
+- **Pricing:** $100,000+/year; implementation fees on top; requires dedicated CSR administrator
+- **Who it's for:** Fortune 500 and large enterprises with dedicated CSR teams and six-figure budgets
+- **Strengths:** Deepest feature set in the market, largest nonprofit network (10,000+ verified orgs), white-label portals, enterprise-grade reporting
+- **Weaknesses:** Completely inaccessible to SMBs in price, complexity, and sales motion; 1.5M nonprofits is overwhelming with no local curation; implementation takes months
+
+**GoodLocal differentiation:** Not a competitor at all for SMBs. If anything, Benevity's dominance in enterprise creates the gap — SMBs can't use it and have nothing comparable at their price point.
+
+---
+
+### YourCause (Blackbaud)
+
+The second-largest enterprise CSR platform, now part of Blackbaud (the dominant nonprofit software company). Strong in higher education, healthcare, and financial services.
+
+- **Pricing:** Custom; generally lower than Benevity but still enterprise-minimum; no published pricing
+- **Who it's for:** Mid-to-large enterprises already in the Blackbaud ecosystem
+- **Strengths:** Fast fund disbursement via Blackbaud's existing nonprofit payment rails; AI-powered impact reporting; strong in sectors with large nonprofit relationships
+- **Weaknesses:** No mobile app; requires Blackbaud relationship; same structural inaccessibility to SMBs as Benevity
+
+**GoodLocal differentiation:** Same story as Benevity — a non-competitor for the SMB segment.
+
+---
+
+### Groundswell
+
+The most direct SMB competitor and the clearest pricing benchmark. DAF (Donor-Advised Fund) based model — each employee gets a personal giving account funded by the employer match. Employees allocate from their DAF to any nonprofit.
+
+- **Pricing:** $4,500/year (Benefactor, up to 200 employees) · $12,500/year (Philanthropist, adds volunteering) · 1% flat distribution fee on donations
+- **Who it's for:** SMBs and mid-market companies wanting a simple, self-serve matching program
+- **Strengths:** Most transparent pricing in the category; SOC 2 compliant; clean employee UX; DAF model means tax advantages for employer; no per-transaction complexity
+- **Weaknesses:** National focus with no local curation (employees choose from any nonprofit, which reintroduces choice paralysis); no community identity story; still $375/month which is high for a 30-person company
+
+**GoodLocal differentiation:** Price below ($299/month entry vs. $375/month), and offer what Groundswell can't — a curated local roster that makes the matching benefit feel like a Denver community statement, not just a checkbox. The "Give Where You Live" identity narrative is entirely absent from Groundswell.
+
+---
+
+### Millie
+
+The most consumer-forward workplace giving tool in the SMB space. Known for a "dating app" style nonprofit discovery experience — employees get matched to 3 nonprofits per week based on their location and interests. Founded in 2018, bootstrapped.
+
+- **Pricing:** Custom; no published pricing — estimated $800–$2,000+/month based on market positioning and feature set
+- **Who it's for:** SMBs and mid-market companies that want a branded, employee-experience-first matching program
+- **Strengths:** Best employee UX in the category; local discovery is a native feature (location-aware); strong onboarding and employee activation focus; good for employer brand storytelling
+- **Weaknesses:** Custom pricing creates friction in the sales process; no Denver-specific curation; national focus means the "local" story is generic; higher price floor than Groundswell
+
+**GoodLocal differentiation:** Millie is the most similar in spirit — both prioritize employee experience and discovery. GoodLocal's edge is Denver specificity. Millie's "local" is algorithmic and national; GoodLocal's is hand-curated and community-embedded. GoodLocal can also undercut on price significantly if Millie's estimates are accurate.
+
+---
+
+### Deed
+
+A YC-backed workplace giving platform that combines donation matching, volunteering, and skills-based giving. Targets tech companies and mission-driven employers.
+
+- **Pricing:** Custom; 2.5% disbursement fee on all donations; estimated $15,000–$40,000/year ACV; enterprise minimums
+- **Who it's for:** Tech companies (especially post-Series A startups and public tech companies) that want a full employee engagement suite
+- **Strengths:** Slick, modern UX; covers volunteering alongside giving; strong brand in tech circles; good API for HRIS integration
+- **Weaknesses:** 2.5% disbursement fee conflicts with "we don't touch the money" positioning; enterprise-focused pricing; no local-first angle; volunteering focus adds complexity SMBs don't need
+
+**GoodLocal differentiation:** Deed's 2.5% fee on donations is a philosophical and marketing liability GoodLocal can exploit. "100% of your match goes to the charity — we charge for the platform, not the philanthropy" is a direct counter-positioning. Deed also skews expensive and complex for what most SMBs need.
+
+---
+
+### EarthShare
+
+The most affordable workplace giving tool in the market, with a focus on environmental nonprofits. Charges $1–2 per employee per month, with the fee deducted from payouts rather than invoiced upfront.
+
+- **Pricing:** $1–2 PEPM; fee deducted from donations (so no upfront cost to employer); no implementation fee
+- **Who it's for:** Any size company, especially those with environmental values; large employee bases where PEPM is a natural fit
+- **Strengths:** Lowest price in the market; no invoicing friction (fee deducted from payouts); accessible to any company size; no minimum commitment
+- **Weaknesses:** Environmental sector focus limits applicability; no local curation; limited employer dashboard and reporting; minimal brand presence in Denver market
+
+**GoodLocal differentiation:** EarthShare is cheap but narrow. GoodLocal's flat-fee SaaS model is more predictable for employers, and the local curation is the product — not an afterthought. At 50 employees, EarthShare would cost $600–$1,200/year but offer essentially no curation or community story. GoodLocal at $299/month ($3,588/year) is more expensive but a fundamentally different product.
+
+---
+
+### Competitive Summary
+
+| | Benevity | YourCause | Groundswell | Millie | Deed | EarthShare | **GoodLocal** |
+|---|---|---|---|---|---|---|---|
+| **SMB accessible** | ✗ | ✗ | ✓ | Partial | ✗ | ✓ | ✓ |
+| **Published pricing** | ✗ | ✗ | ✓ | ✗ | ✗ | ✓ | ✓ |
+| **Entry price** | $100K+/yr | Custom | $4,500/yr | Custom | Custom | $1–2 PEPM | **$299/mo** |
+| **Local-first curation** | ✗ | ✗ | ✗ | Partial | ✗ | ✗ | ✓ |
+| **No cut of donations** | ✓ | ✓ | Partial (1%) | ✓ | ✗ (2.5%) | ✗ (fee from payouts) | ✓ |
+| **Denver presence** | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✓ |
+| **Employee consumer app** | ✗ | ✗ | ✗ | ✓ | ✓ | ✗ | ✓ |
+| **Zero admin setup** | ✗ | ✗ | Partial | Partial | ✗ | ✓ | ✓ |
+
+**GoodLocal's defensible position:** The only tool combining SMB-accessible pricing + local-first curation + a consumer app employees already use + a "we don't touch the money" trust model. Groundswell is the closest competitor; GoodLocal undercuts it on price and beats it on community identity.
+
+---
+
+## 3. Denver Small Business Landscape
 
 ### The Numbers
 
