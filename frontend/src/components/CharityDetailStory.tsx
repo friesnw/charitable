@@ -1,8 +1,9 @@
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { cloudinaryUrl } from '../lib/cloudinary';
 import { distanceLabel } from '../lib/geo';
 import { causeColor } from '../lib/causeColors';
-import { detectNeighborhood } from '../lib/neighborhoods';
+import { nearestNeighborhood } from '../lib/neighborhoods';
 
 interface StoryLocation {
   id: string;
@@ -41,9 +42,10 @@ export function CharityDetailStory({ charity, tagLabels, userDistance }: Charity
   const heroPhoto = heroLocation?.photoUrl ?? null;
   const color = causeColor(charity.causeTags);
 
-  // Detect neighborhood from primary address or first location address
-  const neighborhood = detectNeighborhood(charity.primaryAddress)
-    ?? detectNeighborhood(heroLocation?.address ?? null);
+  const neighborhood = useMemo(() => {
+    const loc = charity.locations.find((l) => l.latitude != null && l.longitude != null);
+    return loc ? nearestNeighborhood(loc.latitude!, loc.longitude!) : null;
+  }, [charity.locations]);
 
   return (
     <div className="-mx-4 -mt-4">
@@ -87,7 +89,7 @@ export function CharityDetailStory({ charity, tagLabels, userDistance }: Charity
           <div className="flex flex-wrap gap-2 mb-2">
             {neighborhood && (
               <span className="text-xs font-semibold text-white bg-white/20 backdrop-blur-sm px-2.5 py-1 rounded-full">
-                Serving {neighborhood}
+                {neighborhood}
               </span>
             )}
             {userDistance !== null && (

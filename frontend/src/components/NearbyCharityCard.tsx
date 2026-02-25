@@ -1,8 +1,9 @@
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { cloudinaryUrl } from '../lib/cloudinary';
 import { distanceLabel } from '../lib/geo';
 import { causeColor } from '../lib/causeColors';
-import { charityNeighborhoods } from '../lib/neighborhoods';
+import { nearestNeighborhood } from '../lib/neighborhoods';
 
 export interface NearbyCharity {
   id: string;
@@ -30,13 +31,10 @@ export function NearbyCharityCard({ charity, distance, tagLabels }: NearbyCharit
   const color = causeColor(charity.causeTags);
   const initials = charity.name.slice(0, 2).toUpperCase();
 
-  // Neighborhood chips: up to 2, then "+N more"
-  const neighborhoods = charityNeighborhoods(charity.locations);
-  const displayNeighborhoods = neighborhoods.slice(0, 2);
-  const extraCount = neighborhoods.length - 2;
-
-  // Fall back to distance badge if no neighborhoods detected
-  const showNeighborhoods = neighborhoods.length > 0;
+  const neighborhood = useMemo(() => {
+    const loc = charity.locations.find((l) => l.latitude != null && l.longitude != null);
+    return loc ? nearestNeighborhood(loc.latitude!, loc.longitude!) : null;
+  }, [charity.locations]);
 
   return (
     <Link to={`/charities/${charity.slug}`} className="block group">
@@ -64,24 +62,12 @@ export function NearbyCharityCard({ charity, distance, tagLabels }: NearbyCharit
               background: 'linear-gradient(to top, rgba(0,0,0,0.4) 0%, transparent 55%)',
             }}
           />
-          {/* Location badges at bottom of photo */}
+          {/* Location badge at bottom of photo */}
           <div className="absolute bottom-2 left-2 right-2 flex flex-wrap gap-1">
-            {showNeighborhoods ? (
-              <>
-                {displayNeighborhoods.map((n) => (
-                  <span
-                    key={n}
-                    className="text-white text-xs font-semibold bg-black/45 backdrop-blur-sm px-2 py-0.5 rounded-full"
-                  >
-                    {n}
-                  </span>
-                ))}
-                {extraCount > 0 && (
-                  <span className="text-white text-xs font-semibold bg-black/45 backdrop-blur-sm px-2 py-0.5 rounded-full">
-                    +{extraCount} more
-                  </span>
-                )}
-              </>
+            {neighborhood ? (
+              <span className="text-white text-xs font-semibold bg-black/45 backdrop-blur-sm px-2 py-0.5 rounded-full">
+                {neighborhood}
+              </span>
             ) : distance !== null ? (
               <span className="text-white text-xs font-semibold bg-black/45 backdrop-blur-sm px-2 py-0.5 rounded-full">
                 {distanceLabel(distance)}

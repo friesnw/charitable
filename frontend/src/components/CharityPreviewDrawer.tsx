@@ -1,7 +1,9 @@
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { cloudinaryUrl } from '../lib/cloudinary';
 import { distanceLabel } from '../lib/geo';
 import { causeColor } from '../lib/causeColors';
+import { nearestNeighborhood } from '../lib/neighborhoods';
 
 export interface DrawerCharity {
   id: string;
@@ -42,6 +44,13 @@ export function CharityPreviewDrawer({
 
   const color = causeColor(charity?.causeTags ?? []);
   const photoUrl = selectedLocation?.photoUrl ?? null;
+
+  const neighborhood = useMemo(() => {
+    if (selectedLocation?.latitude != null && selectedLocation?.longitude != null) {
+      return nearestNeighborhood(selectedLocation.latitude, selectedLocation.longitude);
+    }
+    return null;
+  }, [selectedLocation]);
 
   return (
     <>
@@ -86,10 +95,10 @@ export function CharityPreviewDrawer({
                 background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 60%)',
               }}
             />
-            {/* Distance badge */}
-            {distance !== null && (
+            {/* Neighborhood or distance badge */}
+            {(neighborhood ?? distance) !== null && (
               <span className="absolute bottom-3 left-3 text-white text-xs font-semibold bg-black/40 backdrop-blur-sm px-2 py-1 rounded-full">
-                {distanceLabel(distance)}
+                {neighborhood ?? distanceLabel(distance!)}
               </span>
             )}
             {/* Close button */}
