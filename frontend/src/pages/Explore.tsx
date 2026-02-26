@@ -1,4 +1,5 @@
 import { lazy, Suspense, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useQuery, gql } from '@apollo/client';
 import { CharityPreviewDrawer, type DrawerCharity } from '../components/CharityPreviewDrawer';
 import { NearbyCharityCard } from '../components/NearbyCharityCard';
@@ -44,6 +45,12 @@ type ExploreCharity = DrawerCharity & { id: string };
 const TOP_CAUSE_COUNT = 5;
 
 export function Explore() {
+  const [searchParams] = useSearchParams();
+  const initialCenter =
+    searchParams.get('lat') && searchParams.get('lng')
+      ? { lat: parseFloat(searchParams.get('lat')!), lng: parseFloat(searchParams.get('lng')!) }
+      : undefined;
+
   const [search, setSearch] = useState('');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [selectedCharityId, setSelectedCharityId] = useState<string | null>(null);
@@ -205,6 +212,7 @@ export function Explore() {
             userPos={userPos}
             onMarkerClick={handleMarkerClick}
             onMapClick={handleClose}
+            initialCenter={initialCenter}
           />
         </Suspense>
       )}

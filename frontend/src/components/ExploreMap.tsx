@@ -15,6 +15,7 @@ interface ExploreMapProps {
   userPos: { lat: number; lng: number } | null;
   onMarkerClick: (charity: ExploreCharity, locationId: string) => void;
   onMapClick: () => void;
+  initialCenter?: { lat: number; lng: number };
 }
 
 const DENVER_CENTER = { longitude: -104.98832, latitude: 39.73669 };
@@ -65,6 +66,7 @@ export function ExploreMap({
   userPos,
   onMarkerClick,
   onMapClick,
+  initialCenter,
 }: ExploreMapProps) {
   const mapRef = useRef<MapRef>(null);
 
@@ -73,8 +75,9 @@ export function ExploreMap({
       ref={mapRef}
       mapboxAccessToken={import.meta.env.VITE_MAPBOX_TOKEN}
       initialViewState={{
-        ...DENVER_CENTER,
-        zoom: DEFAULT_ZOOM,
+        latitude: initialCenter?.lat ?? DENVER_CENTER.latitude,
+        longitude: initialCenter?.lng ?? DENVER_CENTER.longitude,
+        zoom: initialCenter ? 13 : DEFAULT_ZOOM,
       }}
       style={{ width: '100%', height: '100%' }}
       mapStyle="mapbox://styles/mapbox/light-v11"

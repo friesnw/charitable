@@ -60,9 +60,11 @@ interface Charity {
 
 export function Charities() {
   const [search, setSearch] = useState('');
-  const [selectedTag, setSelectedTag] = useState<string | null>(null);
-  const [selectedCharityId, setSelectedCharityId] = useState<string | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
+  const [selectedTag, setSelectedTag] = useState<string | null>(
+    searchParams.get('tag') ?? null
+  );
+  const [selectedCharityId, setSelectedCharityId] = useState<string | null>(null);
   const viewMode = searchParams.get('view') === 'list' ? 'list' : 'map';
 
   const setViewMode = (mode: 'list' | 'map') => {
