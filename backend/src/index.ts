@@ -38,11 +38,6 @@ async function main() {
     })
   );
 
-  // Health check
-  app.get('/health', (_req, res) => {
-    res.send('OK');
-  });
-
   app.listen(env.PORT, () => {
     console.log(`Server ready at http://localhost:${env.PORT}/graphql`);
   });

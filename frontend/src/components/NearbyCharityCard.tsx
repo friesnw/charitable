@@ -31,9 +31,15 @@ export function NearbyCharityCard({ charity, distance, tagLabels }: NearbyCharit
   const color = causeColor(charity.causeTags);
   const initials = charity.name.slice(0, 2).toUpperCase();
 
-  const neighborhood = useMemo(() => {
-    const loc = charity.locations.find((l) => l.latitude != null && l.longitude != null);
-    return loc ? nearestNeighborhood(loc.latitude!, loc.longitude!) : null;
+  const neighborhoods = useMemo(() => {
+    const seen = new Set<string>();
+    const result: string[] = [];
+    for (const loc of charity.locations) {
+      if (loc.latitude == null || loc.longitude == null) continue;
+      const n = nearestNeighborhood(loc.latitude, loc.longitude);
+      if (n && !seen.has(n)) { seen.add(n); result.push(n); }
+    }
+    return result;
   }, [charity.locations]);
 
   return (
@@ -62,12 +68,21 @@ export function NearbyCharityCard({ charity, distance, tagLabels }: NearbyCharit
               background: 'linear-gradient(to top, rgba(0,0,0,0.4) 0%, transparent 55%)',
             }}
           />
-          {/* Location badge at bottom of photo */}
+          {/* Location badges at bottom of photo */}
           <div className="absolute bottom-2 left-2 right-2 flex flex-wrap gap-1">
-            {neighborhood ? (
-              <span className="text-white text-xs font-semibold bg-black/45 backdrop-blur-sm px-2 py-0.5 rounded-full">
-                {neighborhood}
-              </span>
+            {neighborhoods.length > 0 ? (
+              <>
+                {neighborhoods.slice(0, 2).map((n) => (
+                  <span key={n} className="text-white text-xs font-semibold bg-black/45 backdrop-blur-sm px-2 py-0.5 rounded-full">
+                    {n}
+                  </span>
+                ))}
+                {neighborhoods.length > 2 && (
+                  <span className="text-white text-xs font-semibold bg-black/45 backdrop-blur-sm px-2 py-0.5 rounded-full">
+                    +{neighborhoods.length - 2} more
+                  </span>
+                )}
+              </>
             ) : distance !== null ? (
               <span className="text-white text-xs font-semibold bg-black/45 backdrop-blur-sm px-2 py-0.5 rounded-full">
                 {distanceLabel(distance)}
