@@ -8,7 +8,6 @@ services:
   - type: web
     name: backend
     runtime: node
-    plan: free
     rootDir: backend
     buildCommand: npm install && npm run build
     startCommand: npm run start
@@ -25,7 +24,6 @@ services:
   - type: web
     name: frontend
     runtime: static
-    plan: free
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: dist
