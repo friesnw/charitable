@@ -41,12 +41,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Tasks/Todo/Improve Charities map.md",
+                "file": "Research/Beta-Pilot-Experience.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Improve Charities map"
+              "title": "Beta-Pilot-Experience"
             }
           }
         ],
@@ -214,7 +214,10 @@
   },
   "active": "65d0eb751c1ae1cf",
   "lastOpenFiles": [
+    "Tasks/Todo/5-Incorporate beta pilot experience.md",
     "Tasks/Todo/good local emails.md",
+    "Research/Archive/Homepage-Design-Benchmarks.md",
+    "Tasks/Todo/Populate images from google.md",
     "Tasks/Todo/Improve Charities map.md",
     "Research/Homepage-Design-Benchmarks.md",
     "Product/Marketing-copy.md",
@@ -238,9 +241,6 @@
     "Tasks/Done/Competitive-Landscape.md",
     "Tasks/Done/User-Journey.md",
     "Product/MVP Measurement Plan.md",
-    "Product/Customer Research.md",
-    "Research/B2B-Workplace-Giving-Research.md",
-    "Research/Charity-Listing-Approval.md",
     "Screenshot 2026-02-12 at 9.14.23 PM.png",
     "Product/Policies",
     "Product/Marketing-copy",
