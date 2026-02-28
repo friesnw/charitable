@@ -38,3 +38,5 @@ services:
     envVars:
       - key: VITE_API_URL
         sync: false  # Set manually after first deploy
+      - key: VITE_MAPBOX_TOKEN
+        sync: false  # Set manually after first deploy

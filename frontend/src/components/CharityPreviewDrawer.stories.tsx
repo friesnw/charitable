@@ -76,7 +76,7 @@ export const NoDistance: Story = {
 
 export const Closed: Story = {
   args: {
-    charity: null,
+    charity: MOCK_CHARITY,
     selectedLocationId: null,
     distance: null,
     tagLabels: MOCK_TAG_LABELS,
