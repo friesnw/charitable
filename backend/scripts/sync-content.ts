@@ -113,33 +113,64 @@ async function main() {
     const idMap = new Map<number, number>(); // source charity id → target charity id
 
     for (const charity of charities) {
-      const { rows } = await target.query<{ id: number }>(`
-        INSERT INTO charities
-          (name, slug, description, website_url, logo_url, cause_tags,
-           every_org_slug, ein, founded_year, volunteer_url, every_org_claimed,
-           is_active, primary_address)
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
-        ON CONFLICT (ein) DO UPDATE SET
-          name              = EXCLUDED.name,
-          slug              = EXCLUDED.slug,
-          description       = EXCLUDED.description,
-          website_url       = EXCLUDED.website_url,
-          logo_url          = EXCLUDED.logo_url,
-          cause_tags        = EXCLUDED.cause_tags,
-          every_org_slug    = EXCLUDED.every_org_slug,
-          founded_year      = EXCLUDED.founded_year,
-          volunteer_url     = EXCLUDED.volunteer_url,
-          every_org_claimed = EXCLUDED.every_org_claimed,
-          is_active         = EXCLUDED.is_active,
-          primary_address   = EXCLUDED.primary_address,
-          updated_at        = NOW()
-        RETURNING id
-      `, [
+      const params = [
         charity.name, charity.slug, charity.description, charity.website_url,
         charity.logo_url, charity.cause_tags, charity.every_org_slug, charity.ein,
         charity.founded_year, charity.volunteer_url, charity.every_org_claimed,
         charity.is_active, charity.primary_address,
-      ]);
+      ];
+
+      // Try upsert by EIN first. If every_org_slug conflicts with a different row,
+      // fall back to updating by every_org_slug (dev is authoritative).
+      let rows: { id: number }[];
+      try {
+        ({ rows } = await target.query<{ id: number }>(`
+          INSERT INTO charities
+            (name, slug, description, website_url, logo_url, cause_tags,
+             every_org_slug, ein, founded_year, volunteer_url, every_org_claimed,
+             is_active, primary_address)
+          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+          ON CONFLICT (ein) DO UPDATE SET
+            name              = EXCLUDED.name,
+            slug              = EXCLUDED.slug,
+            description       = EXCLUDED.description,
+            website_url       = EXCLUDED.website_url,
+            logo_url          = EXCLUDED.logo_url,
+            cause_tags        = EXCLUDED.cause_tags,
+            every_org_slug    = EXCLUDED.every_org_slug,
+            founded_year      = EXCLUDED.founded_year,
+            volunteer_url     = EXCLUDED.volunteer_url,
+            every_org_claimed = EXCLUDED.every_org_claimed,
+            is_active         = EXCLUDED.is_active,
+            primary_address   = EXCLUDED.primary_address,
+            updated_at        = NOW()
+          RETURNING id
+        `, params));
+      } catch (err: any) {
+        // Unique violation on every_org_slug — update the existing row instead
+        if (err.code === '23505' && err.constraint === 'charities_every_org_slug_key') {
+          ({ rows } = await target.query<{ id: number }>(`
+            UPDATE charities SET
+              name              = $1,
+              slug              = $2,
+              description       = $3,
+              website_url       = $4,
+              logo_url          = $5,
+              cause_tags        = $6,
+              ein               = $8,
+              founded_year      = $9,
+              volunteer_url     = $10,
+              every_org_claimed = $11,
+              is_active         = $12,
+              primary_address   = $13,
+              updated_at        = NOW()
+            WHERE every_org_slug = $7
+            RETURNING id
+          `, params));
+        } else {
+          throw err;
+        }
+      }
 
       idMap.set(charity.id, rows[0].id);
     }

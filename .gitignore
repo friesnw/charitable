@@ -13,3 +13,6 @@ docs/Learn/
 
 *storybook.log
 storybook-static
+
+# Claude Code commands (may contain credentials)
+.claude/commands/
