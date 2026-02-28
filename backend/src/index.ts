@@ -19,6 +19,10 @@ async function main() {
   await runMigrations();
   await server.start();
 
+  app.get('/.well-known/apollo/server-health', (_req, res) => {
+    res.status(200).json({ status: 'pass' });
+  });
+
   app.use(
     '/graphql',
     cors(),
