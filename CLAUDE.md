@@ -53,6 +53,9 @@ I will frequently reference the /docs/tasks folder, with which we will manage ou
 1. Create file in `frontend/src/components/ui/`
 2. Add a paired `ComponentName.stories.tsx` file alongside it
 
+**New functionality (any new page, flow, or user-facing feature):**
+1. Check `docs/Product/flows.md` and update or add the relevant flow
+
 **New database column or table:**
 1. Create a new migration file at `backend/migrations/0XX_description.sql` — never edit existing migrations
 2. Seed data belongs in migration files (see `005`, `007`, `011`), not separate scripts
@@ -74,6 +77,18 @@ I will frequently reference the /docs/tasks folder, with which we will manage ou
 - **Migrations**: Apply automatically on every server startup via `runMigrations()` in `db.ts`; safe to run repeatedly (no-op if nothing new)
 - **Reference data**: 19 predefined cause tags live in `migration 010`; these are the only valid `cause_tags` values
 - **Render free tier**: PostgreSQL expires after 90 days — upgrade before launch
+
+## Environments
+
+| Environment | Frontend | Backend / API | Database |
+|-------------|----------|---------------|----------|
+| **Local** | http://localhost:5173 | http://localhost:4000 | local PostgreSQL (`app_db`) |
+| **Dev (Render)** | https://goodlocal-frontend.onrender.com | Render backend service | Render PostgreSQL (dev) |
+| **Prod** | https://goodlocal.org | Render backend service | Render PostgreSQL (prod) |
+
+- Local uses individual `DB_*` env vars; Render environments use `DATABASE_URL` (auto-injected)
+- To run a script against dev or prod DB: `DATABASE_URL=<render-url> npx tsx scripts/my-script.ts`
+- Frontend `VITE_*` env vars are baked in at build time — redeploy required if they change
 
 ## Render Deployment
 

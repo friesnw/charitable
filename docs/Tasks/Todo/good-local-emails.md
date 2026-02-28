@@ -3,6 +3,9 @@
 - create good local emails
 - draft reachout
 
+claude questions:
+1. I'm hesitant whether to ask permission to use their imagery only, or also have to ask to even list their site. i dont want to come off as presumptive or invasive of their rights
+
 
 Hi there!
 Working on a project mapping charities across denver . the idea being that a lot of people don't have great visibility into some of the good happening just down the street from them, and by highlighting this it may motivate donations and contribution. 
