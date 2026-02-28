@@ -138,7 +138,7 @@ export function CharityDetailStory({ charity, tagLabels, userDistance }: Charity
             <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">
               Their locations
             </h2>
-            <div className="space-y-3">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
               {charity.locations.map((loc) => (
                 <div key={loc.id} className="rounded-lg overflow-hidden border border-gray-200">
                   {loc.photoUrl && (

@@ -1,0 +1,206 @@
+/**
+ * Populate charity_locations.photo_url via Google Street View Static API + Cloudinary.
+ *
+ * Prerequisites (add to backend/.env before running):
+ *   GOOGLE_MAPS_API_KEY   — Street View Static API enabled in Google Cloud Console
+ *   CLOUDINARY_CLOUD_NAME — same cloud as frontend
+ *   CLOUDINARY_API_KEY    — server-side credential (not the unsigned upload preset)
+ *   CLOUDINARY_API_SECRET — server-side credential
+ *
+ * Usage:
+ *   cd backend && npx tsx scripts/populate-street-view.ts
+ */
+
+import 'dotenv/config';
+import { createHash } from 'crypto';
+import { Pool } from 'pg';
+import { getDatabaseConfig } from '../src/env.js';
+
+// ---------------------------------------------------------------------------
+// Env validation
+// ---------------------------------------------------------------------------
+
+function requireEnv(name: string): string {
+  const val = process.env[name];
+  if (!val) {
+    console.error(`Missing required env var: ${name}`);
+    process.exit(1);
+  }
+  return val;
+}
+
+const GOOGLE_MAPS_API_KEY = requireEnv('GOOGLE_MAPS_API_KEY');
+const CLOUDINARY_CLOUD_NAME = requireEnv('CLOUDINARY_CLOUD_NAME');
+const CLOUDINARY_API_KEY = requireEnv('CLOUDINARY_API_KEY');
+const CLOUDINARY_API_SECRET = requireEnv('CLOUDINARY_API_SECRET');
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+interface LocationRow {
+  id: number;
+  label: string;
+  address: string | null;
+  latitude: string | null;
+  longitude: string | null;
+}
+
+interface CloudinaryUploadResponse {
+  secure_url: string;
+  public_id: string;
+}
+
+// ---------------------------------------------------------------------------
+// Street View helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Check Street View Metadata API to confirm imagery exists at the given
+ * location string (either "lat,lng" or an address). Free API call.
+ */
+async function hasStreetViewImagery(location: string): Promise<boolean> {
+  const params = new URLSearchParams({ location, key: GOOGLE_MAPS_API_KEY });
+  const url = `https://maps.googleapis.com/maps/api/streetview/metadata?${params}`;
+  const res = await fetch(url);
+  if (!res.ok) return false;
+  const data = (await res.json()) as { status: string };
+  return data.status === 'OK';
+}
+
+/**
+ * Download Street View image bytes for a given location string.
+ */
+async function downloadStreetViewImage(location: string): Promise<Buffer> {
+  const params = new URLSearchParams({
+    size: '600x400',
+    location,
+    fov: '80',
+    pitch: '0',
+    key: GOOGLE_MAPS_API_KEY,
+  });
+  const url = `https://maps.googleapis.com/maps/api/streetview?${params}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Street View API returned ${res.status}`);
+  return Buffer.from(await res.arrayBuffer());
+}
+
+// ---------------------------------------------------------------------------
+// Cloudinary helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Sign and upload an image buffer to Cloudinary.
+ * Returns the secure_url of the uploaded asset.
+ */
+async function uploadToCloudinary(imageBuffer: Buffer, publicId: string): Promise<string> {
+  const timestamp = Math.floor(Date.now() / 1000).toString();
+  const folder = 'charity-locations';
+
+  // Signature string: alphabetically-sorted key=value pairs, then api_secret appended
+  const toSign = `folder=${folder}&public_id=${publicId}&timestamp=${timestamp}${CLOUDINARY_API_SECRET}`;
+  const signature = createHash('sha1').update(toSign).digest('hex');
+
+  const form = new FormData();
+  form.append('file', new Blob([new Uint8Array(imageBuffer)], { type: 'image/jpeg' }), `${publicId}.jpg`);
+  form.append('api_key', CLOUDINARY_API_KEY);
+  form.append('timestamp', timestamp);
+  form.append('signature', signature);
+  form.append('public_id', publicId);
+  form.append('folder', folder);
+
+  const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
+  const res = await fetch(url, { method: 'POST', body: form });
+
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Cloudinary upload failed (${res.status}): ${body}`);
+  }
+
+  const result = (await res.json()) as CloudinaryUploadResponse;
+  return result.secure_url;
+}
+
+// ---------------------------------------------------------------------------
+// Main
+// ---------------------------------------------------------------------------
+
+async function main() {
+  const pool = new Pool(getDatabaseConfig());
+
+  try {
+    const { rows } = await pool.query<LocationRow>(`
+      SELECT id, label, address, latitude, longitude
+      FROM charity_locations
+      WHERE photo_url IS NULL
+        AND (latitude IS NOT NULL OR address IS NOT NULL)
+      ORDER BY id ASC
+    `);
+
+    if (rows.length === 0) {
+      console.log('No locations to process.');
+      return;
+    }
+
+    console.log(`Processing ${rows.length} location(s) with no photo...\n`);
+
+    let updated = 0;
+    let skipped = 0;
+    let failed = 0;
+
+    for (const loc of rows) {
+      const tag = `[${loc.id}] ${loc.label}`;
+
+      try {
+        // Determine the location parameter for Google APIs
+        const hasCoords = loc.latitude != null && loc.longitude != null;
+        let locationParam: string;
+
+        if (hasCoords) {
+          locationParam = `${parseFloat(loc.latitude!).toFixed(7)},${parseFloat(loc.longitude!).toFixed(7)}`;
+        } else if (loc.address) {
+          locationParam = loc.address;
+        } else {
+          console.log(`  SKIP  ${tag} — incomplete location data`);
+          skipped++;
+          continue;
+        }
+
+        // Check metadata before downloading to avoid storing grey "no imagery" images
+        const hasImagery = await hasStreetViewImagery(locationParam);
+        if (!hasImagery) {
+          console.log(`  SKIP  ${tag} — no Street View imagery`);
+          skipped++;
+          continue;
+        }
+
+        // Download the Street View image
+        const imageBuffer = await downloadStreetViewImage(locationParam);
+
+        // Upload to Cloudinary
+        const publicId = `location-${loc.id}`;
+        const photoUrl = await uploadToCloudinary(imageBuffer, publicId);
+
+        // Persist the URL
+        await pool.query(
+          'UPDATE charity_locations SET photo_url = $1 WHERE id = $2',
+          [photoUrl, loc.id]
+        );
+
+        console.log(`  OK    ${tag}`);
+        console.log(`        ${photoUrl}`);
+        updated++;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        console.error(`  FAIL  ${tag} — ${message}`);
+        failed++;
+      }
+    }
+
+    console.log(`\nDone: ${updated} updated, ${skipped} skipped (no imagery), ${failed} failed`);
+  } finally {
+    await pool.end();
+  }
+}
+
+main();

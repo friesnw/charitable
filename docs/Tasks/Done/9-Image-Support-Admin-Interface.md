@@ -247,28 +247,28 @@ Add `isAdmin?: boolean` to `User` interface. Ensure `isAdmin` is included in the
 
 ## Implementation Order
 
-### Phase 1 — Backend
-- [ ] Create `backend/migrations/012_add_image_fields.sql`, run locally
-- [ ] Update `backend/src/env.ts`: add `ADMIN_EMAIL` to Zod schema
-- [ ] Update `backend/src/auth.ts`: add `isAdmin` to `JwtPayload`
-- [ ] Update auth resolver: query+include `is_admin` in token and `me` response
-- [ ] Update `typeDefs.ts`: new fields + all new mutations
-- [ ] Update `resolvers/charities.ts`: extend mappers, add `requireAdmin`, add all mutation resolvers
-- [ ] Update `resolvers/index.ts`: spread `charityResolvers.Mutation`
-- [ ] **Manual step**: `UPDATE users SET is_admin = TRUE WHERE email = 'your@email.com';` in local DB
+### Phase 1 — Backend ✅ COMPLETE
+- [x] Create `backend/migrations/012_add_image_fields.sql`, run locally
+- [x] Update `backend/src/env.ts`: add `ADMIN_EMAIL` to Zod schema
+- [x] Update `backend/src/auth.ts`: add `isAdmin` to `JwtPayload`
+- [x] Update auth resolver: query+include `is_admin` in token and `me` response
+- [x] Update `typeDefs.ts`: new fields + all new mutations
+- [x] Update `resolvers/charities.ts`: extend mappers, add `requireAdmin`, add all mutation resolvers
+- [x] Update `resolvers/index.ts`: spread `charityResolvers.Mutation`
+- [x] **Manual step**: `UPDATE users SET is_admin = TRUE WHERE email = 'your@email.com';` in local DB
 
-### Phase 2 — Frontend auth
-- [ ] Update `AuthContext.tsx`: add `isAdmin` to User interface
-- [ ] Update `Verify.tsx`: include `isAdmin` in user object passed to `login()`
-- [ ] Create `AdminRoute.tsx`
-- [ ] Add `/admin` route to `routes.tsx`
-- [ ] Create stub `Admin.tsx`, verify route guard works
+### Phase 2 — Frontend auth ✅ COMPLETE
+- [x] Update `AuthContext.tsx`: add `isAdmin` to User interface
+- [x] Update `Verify.tsx`: include `isAdmin` in user object passed to `login()`
+- [x] Create `AdminRoute.tsx`
+- [x] Add `/admin` route to `routes.tsx`
+- [x] Create stub `Admin.tsx`, verify route guard works
 
-### Phase 3 — Cloudinary + Admin UI
-- [ ] Add `VITE_CLOUDINARY_*` vars to `frontend/.env.local`
-- [ ] Create `frontend/src/lib/cloudinary.ts`
-- [ ] Build out full `Admin.tsx` (charity list, edit panel, location management, image uploads)
-- [ ] Add conditional "Admin" link to `Header.tsx`
+### Phase 3 — Cloudinary + Admin UI ✅ COMPLETE
+- [x] Add `VITE_CLOUDINARY_*` vars to `frontend/.env.local`
+- [x] Create `frontend/src/lib/cloudinary.ts`
+- [x] Build out full `Admin.tsx` (charity list, edit panel, location management, image uploads)
+- [x] Add conditional "Admin" link to `Header.tsx`
 
 ### Phase 4 — Public display
 - [ ] Update `Charities.tsx`: add logo to query + card display

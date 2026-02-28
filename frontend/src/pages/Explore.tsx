@@ -246,8 +246,8 @@ export function Explore() {
         </div>
       )}
 
-      {/* Bottom drawer (map mode only) */}
-      {viewMode === 'map' && (
+      {/* Bottom drawer (map mode only) — only mounted when a charity is selected */}
+      {viewMode === 'map' && selectedCharity !== null && (
         <CharityPreviewDrawer
           charity={selectedCharity}
           selectedLocationId={selectedLocationId}
