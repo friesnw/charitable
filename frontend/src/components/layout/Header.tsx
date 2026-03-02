@@ -20,26 +20,26 @@ export function Header() {
   }, [profileOpen]);
 
   return (
-    <header className="bg-bg-primary border-b border-brand-tertiary">
+    <header className="bg-brand-primary border-b border-white/10">
       <nav className="container mx-auto px-4 py-4 flex items-center justify-between">
-        <Link to="/" className="text-xl font-bold text-text-primary">
-          Good<span style={{ color: 'rgb(63 162 70)' }}>Local</span>
+        <Link to="/" className="text-xl font-bold text-white">
+          Good<span style={{ color: 'var(--brand-accent)' }}>Local</span>
         </Link>
 
         <div className="flex items-center gap-4">
-          <Link to="/charities" className="text-text-secondary hover:text-text-primary">
+          <Link to="/charities" className="text-white/70 hover:text-white">
             Find Charities
           </Link>
 
           {isAuthenticated ? (
             <>
-              <Link to="/dashboard" className="text-text-secondary hover:text-text-primary">
+              <Link to="/dashboard" className="text-white/70 hover:text-white">
                 Dashboard
               </Link>
               <div className="relative" ref={menuRef}>
                 <button
                   onClick={() => setProfileOpen(!profileOpen)}
-                  className="flex items-center justify-center w-8 h-8 rounded-full bg-brand-tertiary text-text-secondary hover:text-text-primary"
+                  className="flex items-center justify-center w-8 h-8 rounded-full bg-white/20 text-white hover:text-white"
                   aria-label="Profile menu"
                 >
                   <svg
@@ -93,7 +93,7 @@ export function Header() {
           ) : (
             <Link
               to="/login"
-              className="bg-brand-primary text-white px-4 py-2 rounded-md hover:opacity-90"
+              className="bg-brand-secondary text-white px-4 py-2 rounded-md hover:opacity-90"
             >
               Log in
             </Link>

@@ -467,7 +467,7 @@ export function AdminCharityEdit() {
         <div className="flex items-center gap-3">
           <button onClick={handleSaveCharity}
             disabled={!isDirty || saving}
-            className={`${btnCls} bg-brand-primary text-white hover:opacity-90 disabled:bg-brand-tertiary disabled:text-text-secondary disabled:cursor-not-allowed`}>
+            className={`${btnCls} bg-brand-secondary text-white hover:opacity-90 disabled:bg-brand-tertiary disabled:text-text-secondary disabled:cursor-not-allowed`}>
             {saving ? 'Saving...' : 'Save Changes'}
           </button>
           {saved && <span className="text-sm text-green-600">Saved</span>}
@@ -583,7 +583,7 @@ export function AdminCharityEdit() {
                               <button
                                 onClick={e => { e.stopPropagation(); handleSaveLocation(loc.id); }}
                                 disabled={!isLocationDirty(loc.id) || savingLocId === loc.id}
-                                className={`${btnCls} bg-brand-primary text-white hover:opacity-90 disabled:bg-brand-tertiary disabled:text-text-secondary disabled:cursor-not-allowed`}
+                                className={`${btnCls} bg-brand-secondary text-white hover:opacity-90 disabled:bg-brand-tertiary disabled:text-text-secondary disabled:cursor-not-allowed`}
                               >
                                 {savingLocId === loc.id ? 'Saving...' : 'Save'}
                               </button>
@@ -641,7 +641,7 @@ export function AdminCharityEdit() {
               <div className="flex gap-2">
                 <button onClick={handleAddLocation}
                   disabled={!newLocForm.label}
-                  className={`${btnCls} bg-brand-primary text-white hover:opacity-90 disabled:opacity-50`}>
+                  className={`${btnCls} bg-brand-secondary text-white hover:opacity-90 disabled:opacity-50`}>
                   Add
                 </button>
                 <button onClick={() => setShowAddLocation(false)}

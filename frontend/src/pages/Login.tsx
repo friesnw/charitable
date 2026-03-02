@@ -65,7 +65,7 @@ export function Login() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-brand-primary text-white px-4 py-2 rounded-md hover:opacity-90 disabled:opacity-50"
+          className="w-full bg-brand-secondary text-white px-4 py-2 rounded-md hover:opacity-90 disabled:opacity-50"
         >
           {loading ? 'Sending...' : 'Send magic link'}
         </button>

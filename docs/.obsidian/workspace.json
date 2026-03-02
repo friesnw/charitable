@@ -27,12 +27,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Tasks/Todo/11-Tag cleanup.md",
+                "file": "Tasks/Todo/8-Preferences-Onboarding.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "11-Tag cleanup"
+              "title": "8-Preferences-Onboarding"
             }
           }
         ],
@@ -200,15 +200,16 @@
   },
   "active": "a2df9bbf62f6851d",
   "lastOpenFiles": [
-    "Operations.md",
-    "Tasks/Backlog/MVP Measurement Plan.md",
+    "Tasks/Backlog/17-Database-Backup-Process.md",
+    "Tasks/Todo/01-Outline-content-flow.md",
+    "Tasks/Todo/8-Preferences-Onboarding.md",
     "Tasks/Todo/9-Improve-Charities-map.md",
     "Tasks/Todo/good-local-emails.md",
-    "Tasks/Todo/01-Outline content flow.md",
-    "Tasks/Todo/01-Outline-content-flow.md",
-    "Tasks/Todo/11-Tag cleanup.md",
-    "Tasks/Todo/8-Preferences-Onboarding.md",
+    "Tasks/Backlog/11-Tag cleanup.md",
     "Tasks/Todo/17-Database-Backup-Process.md",
+    "Operations.md",
+    "Tasks/Backlog/MVP Measurement Plan.md",
+    "Tasks/Todo/01-Outline content flow.md",
     "Product/flows.md",
     "Tasks/Backlog/5-Incorporate beta pilot experience.md",
     "Untitled.md",
@@ -225,7 +226,6 @@
     "Research/Beta-Pilot-Experience.md",
     "Tasks/Todo/5-Incorporate beta pilot experience.md",
     "Tasks/Todo/good local emails.md",
-    "Research/Archive/Homepage-Design-Benchmarks.md",
     "Research/Archive",
     "Screenshot 2026-02-12 at 9.14.23 PM.png",
     "Product/Policies",

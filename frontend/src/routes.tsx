@@ -19,7 +19,7 @@ import { Nearby } from './pages/Nearby';
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: <PageShell><Home /></PageShell>,
+    element: <PageShell fullWidth><Home /></PageShell>,
   },
   {
     path: '/login',
@@ -47,7 +47,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/explore',
-    element: <PageShell><Explore /></PageShell>,
+    element: <PageShell fullWidth><Explore /></PageShell>,
   },
   {
     path: '/nearby',
@@ -55,7 +55,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/charities',
-    element: <PageShell><Charities /></PageShell>,
+    element: <PageShell fullWidth><Charities /></PageShell>,
   },
   {
     path: '/charities/:slug',

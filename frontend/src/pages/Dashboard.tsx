@@ -21,7 +21,7 @@ export function Dashboard() {
 
       <Link
         to="/charities"
-        className="inline-block bg-brand-primary text-white px-4 py-2 rounded-md hover:opacity-90"
+        className="inline-block bg-brand-secondary text-white px-4 py-2 rounded-md hover:opacity-90"
       >
         Discover charities
       </Link>

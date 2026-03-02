@@ -11,29 +11,30 @@ const tokenGroups = [
   {
     label: 'Brand',
     tokens: [
-      { name: '--brand-primary', value: '#2563eb' },
-      { name: '--brand-secondary', value: '#64748b' },
+      { name: '--brand-primary', value: '#343D47' },
+      { name: '--brand-secondary', value: '#4D92E6' },
       { name: '--brand-tertiary', value: '#e2e8f0' },
+      { name: '--brand-accent', value: '#E9D8B2' },
     ],
   },
   {
     label: 'Semantic',
     tokens: [
-      { name: '--color-success', value: '#22c55e' },
-      { name: '--color-error', value: '#ef4444' },
+      { name: '--color-success', value: '#607F75' },
+      { name: '--color-error', value: '#DC8D6D' },
     ],
   },
   {
     label: 'Text',
     tokens: [
-      { name: '--text-primary', value: '#0f172a' },
+      { name: '--text-primary', value: '#343D47' },
       { name: '--text-secondary', value: '#64748b' },
     ],
   },
 ];
 
 function Swatch({ name, value }: { name: string; value: string }) {
-  const isLight = ['#ffffff', '#f8fafc', '#e2e8f0'].includes(value.toLowerCase());
+  const isLight = ['#ffffff', '#f8fafc', '#e2e8f0', '#e9d8b2'].includes(value.toLowerCase());
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
       <div

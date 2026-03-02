@@ -4,17 +4,17 @@
   --bg-accent: #f8fafc;
 
   /* Brand */
-  --brand-primary: #3C26C6;
-  --brand-secondary: #64748b;
-  --brand-tertiary: #e2e8f0;
-  --brand-accent: #8E79BA;
+  --brand-primary: #343D47;   /* dark charcoal — nav, hero, foundation */
+  --brand-secondary: #4D92E6; /* blue — primary CTA */
+  --brand-tertiary: #e2e8f0;  /* neutral light — borders, dividers */
+  --brand-accent: #E9D8B2;    /* warm cream — pairs against dark primary */
 
   /* Semantic */
-  --color-success: #22c55e;
-  --color-error: #ef4444;
+  --color-success: #607F75; /* muted green */
+  --color-error: #DC8D6D;   /* warm orange-red */
 
   /* Text */
-  --text-primary: #0f172a;
+  --text-primary: #343D47;
   --text-secondary: #64748b;
 
   /* Typography */

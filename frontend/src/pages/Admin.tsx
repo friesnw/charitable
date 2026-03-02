@@ -400,7 +400,7 @@ function LocationsTab() {
                         <button
                           onClick={e => { e.stopPropagation(); handleSave(loc.id); }}
                           disabled={!isDirty(loc.id) || savingId === loc.id}
-                          className={`${btnCls} bg-brand-primary text-white hover:opacity-90 disabled:bg-brand-tertiary disabled:text-text-secondary disabled:cursor-not-allowed`}
+                          className={`${btnCls} bg-brand-secondary text-white hover:opacity-90 disabled:bg-brand-tertiary disabled:text-text-secondary disabled:cursor-not-allowed`}
                         >
                           {savingId === loc.id ? 'Saving...' : 'Save'}
                         </button>
@@ -524,7 +524,7 @@ function CauseTagsTab() {
                           <button
                             onClick={e => { e.stopPropagation(); handleSave(cause.tag); }}
                             disabled={!isDirty(cause.tag)}
-                            className={`${btnCls} bg-brand-primary text-white hover:opacity-90 disabled:bg-brand-tertiary disabled:text-text-secondary disabled:cursor-not-allowed`}
+                            className={`${btnCls} bg-brand-secondary text-white hover:opacity-90 disabled:bg-brand-tertiary disabled:text-text-secondary disabled:cursor-not-allowed`}
                           >
                             Save
                           </button>
@@ -674,7 +674,7 @@ export function Admin() {
             />
             <button
               onClick={() => setShowCreateForm(!showCreateForm)}
-              className={`${btnCls} bg-brand-primary text-white hover:opacity-90 flex-shrink-0`}
+              className={`${btnCls} bg-brand-secondary text-white hover:opacity-90 flex-shrink-0`}
             >
               + Add Charity
             </button>
@@ -717,7 +717,7 @@ export function Admin() {
               <div className="flex gap-2">
                 <button onClick={handleCreateCharity}
                   disabled={!createForm.name || !createForm.ein || !createForm.slug}
-                  className={`${btnCls} bg-brand-primary text-white hover:opacity-90 disabled:opacity-50`}>
+                  className={`${btnCls} bg-brand-secondary text-white hover:opacity-90 disabled:opacity-50`}>
                   Create
                 </button>
                 <button onClick={() => { setShowCreateForm(false); setCreateForm(EMPTY_CREATE_FORM); }}

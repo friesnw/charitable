@@ -67,24 +67,24 @@ export function Home() {
     <div>
       {/* Section 1 — Hero */}
       <section
-        className="relative -mx-4 -mt-8"
+        className="relative bg-brand-primary"
         style={{ height: 'calc(100vh - 65px)' }}
       >
         <div className="flex flex-col items-center justify-center h-full px-6 text-center">
-          <h1 className="font-sans font-bold text-4xl md:text-5xl text-text-primary leading-tight max-w-3xl">
+          <h1 className="font-sans font-bold text-4xl md:text-5xl text-white leading-tight max-w-3xl">
             Donate to local charities and track your impact across Denver.
           </h1>
           <div className="flex items-center justify-center gap-4 mt-8 flex-wrap">
             <Link
               to="/explore"
-              className="inline-flex items-center justify-center px-6 py-3 font-sans text-base font-medium rounded-md bg-brand-primary text-white hover:opacity-90 transition-opacity"
+              className="inline-flex items-center justify-center px-6 py-3 font-sans text-base font-medium rounded-md bg-brand-secondary text-white hover:opacity-90 transition-opacity"
             >
               Get started
             </Link>
             {!isAuthenticated && (
               <Link
                 to="/login"
-                className="inline-flex items-center justify-center px-6 py-3 font-sans text-base font-medium rounded-md bg-brand-tertiary text-text-secondary hover:opacity-80 transition-opacity"
+                className="inline-flex items-center justify-center px-6 py-3 font-sans text-base font-medium rounded-md bg-white/10 text-white border border-white/20 hover:bg-white/20 transition-opacity"
               >
                 I already have an account
               </Link>
@@ -94,7 +94,7 @@ export function Home() {
 
         {/* Neighborhood strip — pinned to bottom */}
         <div className="absolute bottom-0 left-0 right-0 px-4 pb-5">
-          <p className="text-xs text-text-secondary text-center mb-2 font-medium uppercase tracking-wider">
+          <p className="text-xs text-white/50 text-center mb-2 font-medium uppercase tracking-wider">
             Explore by neighborhood
           </p>
           <div className="flex gap-2 overflow-x-auto pb-1 justify-start md:justify-center">
@@ -102,7 +102,7 @@ export function Home() {
               <Link
                 key={name}
                 to={`/explore?lat=${lat}&lng=${lng}`}
-                className="flex-shrink-0 text-sm px-3 py-1.5 rounded-full border border-brand-tertiary bg-bg-primary text-text-secondary hover:border-brand-primary hover:text-text-primary transition-colors"
+                className="flex-shrink-0 text-sm px-3 py-1.5 rounded-full border border-white/20 bg-white/10 text-white/70 hover:border-brand-accent hover:text-brand-accent transition-colors"
               >
                 {name}
               </Link>
@@ -124,13 +124,13 @@ export function Home() {
             </p>
             <ol className="mt-8 flex flex-col gap-4">
               <li className="flex items-start gap-3">
-                <span className="flex-shrink-0 w-7 h-7 rounded-full bg-brand-primary text-white text-sm font-bold flex items-center justify-center">
+                <span className="flex-shrink-0 w-7 h-7 rounded-full bg-brand-secondary text-white text-sm font-bold flex items-center justify-center">
                   1
                 </span>
                 <span className="font-sans text-text-primary pt-0.5">Find trusted local charities in your neighborhood</span>
               </li>
               <li className="flex items-start gap-3">
-                <span className="flex-shrink-0 w-7 h-7 rounded-full bg-brand-primary text-white text-sm font-bold flex items-center justify-center">
+                <span className="flex-shrink-0 w-7 h-7 rounded-full bg-brand-secondary text-white text-sm font-bold flex items-center justify-center">
                   2
                 </span>
                 <span className="font-sans text-text-primary pt-0.5">
@@ -141,7 +141,7 @@ export function Home() {
             <div className="mt-10">
               <Link
                 to="/explore"
-                className="inline-flex items-center justify-center px-6 py-3 font-sans text-base font-medium rounded-md bg-brand-primary text-white hover:opacity-90 transition-opacity"
+                className="inline-flex items-center justify-center px-6 py-3 font-sans text-base font-medium rounded-md bg-brand-secondary text-white hover:opacity-90 transition-opacity"
               >
                 Get started
               </Link>
@@ -175,7 +175,7 @@ export function Home() {
       </section>
 
       {/* Section 3 — Survey */}
-      <section className="py-20 text-center px-6 bg-bg-accent -mx-4">
+      <section className="py-20 text-center px-6 bg-bg-accent">
         <h2 className="font-sans font-bold text-2xl md:text-3xl text-text-primary max-w-xl mx-auto leading-snug">
           Where could Denver use the most support?
         </h2>
@@ -188,8 +188,8 @@ export function Home() {
                 onClick={() => setSelectedSurveyTag(isSelected ? null : slug)}
                 className={`px-5 py-2.5 rounded-full font-sans text-sm font-medium border transition-colors ${
                   isSelected
-                    ? 'bg-brand-primary text-white border-brand-primary'
-                    : 'bg-bg-primary text-text-secondary border-brand-tertiary hover:border-brand-primary hover:text-text-primary'
+                    ? 'bg-brand-secondary text-white border-brand-secondary'
+                    : 'bg-bg-primary text-text-secondary border-brand-tertiary hover:border-brand-secondary hover:text-text-primary'
                 }`}
               >
                 {label}
@@ -204,7 +204,7 @@ export function Home() {
         >
           <Link
             to={`/charities?tag=${selectedSurveyTag ?? ''}`}
-            className="inline-flex items-center gap-1 font-sans text-base font-medium text-brand-primary hover:underline"
+            className="inline-flex items-center gap-1 font-sans text-base font-medium text-brand-secondary hover:underline"
           >
             {charityCount !== null
               ? `Find ${charityCount} charities helping with ${selectedSurveyLabel} →`
