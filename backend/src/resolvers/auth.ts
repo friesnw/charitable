@@ -95,8 +95,16 @@ export const authResolvers = {
       // Generate JWT
       const jwt = signToken({ userId: user.id, email: user.email, isAdmin: user.is_admin ?? false });
 
+      // Check if onboarding has been completed
+      const prefsResult = await pool.query(
+        'SELECT onboarding_completed FROM user_preferences WHERE user_id = $1',
+        [user.id]
+      );
+      const onboardingCompleted = prefsResult.rows[0]?.onboarding_completed ?? false;
+
       return {
         token: jwt,
+        onboardingCompleted,
         user: {
           ...user,
           isAdmin: user.is_admin ?? false,

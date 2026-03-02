@@ -7,6 +7,7 @@ const VERIFY_MAGIC_LINK = gql`
   mutation VerifyMagicLink($token: String!) {
     verifyMagicLink(token: $token) {
       token
+      onboardingCompleted
       user {
         id
         email
@@ -37,7 +38,10 @@ export function Verify() {
       .then(({ data }) => {
         if (data?.verifyMagicLink) {
           login(data.verifyMagicLink.token, data.verifyMagicLink.user);
-          navigate('/dashboard', { replace: true });
+          const destination = data.verifyMagicLink.onboardingCompleted
+            ? '/dashboard'
+            : '/preferences';
+          navigate(destination, { replace: true });
         }
       })
       .catch((err) => {

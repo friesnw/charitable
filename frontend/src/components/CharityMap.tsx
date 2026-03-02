@@ -18,6 +18,7 @@ interface CharityMapProps {
     }[];
   }[];
   selectedCharityId?: string | null;
+  initialCenter?: { longitude: number; latitude: number; zoom: number };
   className?: string;
 }
 
@@ -38,9 +39,38 @@ const COLOR_DEFAULT = '#0EA5E9';
 const COLOR_HIGHLIGHTED = '#EF4444';
 const COLOR_DIMMED = '#CBD5E1';
 
-export function CharityMap({ charities, selectedCharityId, className }: CharityMapProps) {
+export function CharityMap({ charities, selectedCharityId, initialCenter, className }: CharityMapProps) {
   const mapRef = useRef<MapRef>(null);
   const [selectedMarker, setSelectedMarker] = useState<SelectedMarker | null>(null);
+  // Holds a center that arrived before the map style finished loading
+  const pendingCenterRef = useRef<{ longitude: number; latitude: number; zoom: number } | null>(null);
+
+  // When initialCenter changes: fly immediately if map is ready, otherwise queue it
+  useEffect(() => {
+    if (!initialCenter) return;
+    if (mapRef.current?.isStyleLoaded()) {
+      mapRef.current.flyTo({
+        center: [initialCenter.longitude, initialCenter.latitude],
+        zoom: initialCenter.zoom - 1,
+        duration: 800,
+      });
+    } else {
+      pendingCenterRef.current = initialCenter;
+    }
+  }, [initialCenter]);
+
+  // Apply any queued center once the map style has loaded
+  function handleMapLoad() {
+    const center = pendingCenterRef.current;
+    if (center && mapRef.current) {
+      mapRef.current.flyTo({
+        center: [center.longitude, center.latitude],
+        zoom: center.zoom - 1,
+        duration: 0,
+      });
+      pendingCenterRef.current = null;
+    }
+  }
 
   useEffect(() => {
     if (!selectedCharityId || !mapRef.current) return;
@@ -75,12 +105,10 @@ export function CharityMap({ charities, selectedCharityId, className }: CharityM
       <Map
         ref={mapRef}
         mapboxAccessToken={import.meta.env.VITE_MAPBOX_TOKEN}
-        initialViewState={{
-          ...DENVER_CENTER,
-          zoom: DEFAULT_ZOOM,
-        }}
+        initialViewState={{ ...DENVER_CENTER, zoom: DEFAULT_ZOOM }}
         style={{ width: '100%', height: '100%' }}
         mapStyle="mapbox://styles/mapbox/streets-v12"
+        onLoad={handleMapLoad}
       >
         {charities.flatMap((charity) =>
           charity.locations

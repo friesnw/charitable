@@ -4,6 +4,7 @@ import { GraphQLError } from 'graphql';
 import { charityResolvers } from './charities.js';
 import { authResolvers } from './auth.js';
 import { preferencesResolvers } from './preferences.js';
+import { zipResolvers } from './zip.js';
 
 function requireAdmin(context: Context) {
   if (!context.user) {
@@ -56,6 +57,7 @@ export const resolvers = {
     ...charityResolvers.Query,
     ...authResolvers.Query,
     ...preferencesResolvers.Query,
+    ...zipResolvers.Query,
   },
   Mutation: {
     ...userResolvers.Mutation,

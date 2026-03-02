@@ -1,11 +1,31 @@
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { useQuery, gql } from '@apollo/client';
+import { useQuery, useLazyQuery, gql } from '@apollo/client';
+import { useAuth } from '../hooks/useAuth';
 import { cloudinaryUrl } from '../lib/cloudinary';
 
 const CharityMap = lazy(() =>
   import('../components/CharityMap').then((m) => ({ default: m.CharityMap }))
 );
+
+const MY_PREFERENCES_ZIP = gql`
+  query MyPreferencesZip {
+    myPreferences {
+      zipCode
+    }
+  }
+`;
+
+const RESOLVE_ZIP = gql`
+  query ResolveZipForMap($zip: String!) {
+    resolveZip(zip: $zip) {
+      latitude
+      longitude
+      zoom
+      state
+    }
+  }
+`;
 
 const GET_CAUSES = gql`
   query GetCauses {
@@ -59,6 +79,7 @@ interface Charity {
 }
 
 export function Charities() {
+  const { isAuthenticated } = useAuth();
   const [search, setSearch] = useState('');
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedTag, setSelectedTag] = useState<string | null>(
@@ -66,6 +87,59 @@ export function Charities() {
   );
   const [selectedCharityId, setSelectedCharityId] = useState<string | null>(null);
   const viewMode = searchParams.get('view') === 'list' ? 'list' : 'map';
+
+  // Zip-based map centering
+  const [initialCenter, setInitialCenter] = useState<{ longitude: number; latitude: number; zoom: number } | undefined>();
+  const [activeZip, setActiveZip] = useState<string | null>(null);
+  const [zipEditing, setZipEditing] = useState(false);
+  const [zipInputValue, setZipInputValue] = useState('');
+  const [zipFeedback, setZipFeedback] = useState<string | null>(null);
+  const [resolveZip] = useLazyQuery(RESOLVE_ZIP);
+
+  const { data: prefsData } = useQuery(MY_PREFERENCES_ZIP, { skip: !isAuthenticated });
+
+  // For authenticated users: center on saved zip
+  useEffect(() => {
+    if (isAuthenticated && prefsData?.myPreferences?.zipCode) {
+      const zip = prefsData.myPreferences.zipCode;
+      setActiveZip(zip);
+      resolveZip({ variables: { zip } }).then(({ data }) => {
+        const info = data?.resolveZip;
+        if (info?.state === 'CO') {
+          setInitialCenter({ longitude: info.longitude, latitude: info.latitude, zoom: info.zoom });
+        }
+      });
+    }
+  }, [isAuthenticated, prefsData]);
+
+  // For unauthenticated users: check localStorage
+  useEffect(() => {
+    if (!isAuthenticated) {
+      const localZip = localStorage.getItem('userZip');
+      if (localZip) {
+        setActiveZip(localZip);
+        resolveZip({ variables: { zip: localZip } }).then(({ data }) => {
+          const info = data?.resolveZip;
+          if (info?.state === 'CO') {
+            setInitialCenter({ longitude: info.longitude, latitude: info.latitude, zoom: info.zoom });
+          }
+        });
+      }
+    }
+  }, [isAuthenticated]);
+
+  const handleZipSubmit = () => {
+    const digits = zipInputValue.replace(/\D/g, '');
+    if (digits.length !== 5) return;
+    resolveZip({ variables: { zip: digits } }).then(({ data }) => {
+      const info = data?.resolveZip;
+      if (!info) return;
+      if (!isAuthenticated) localStorage.setItem('userZip', digits);
+      setActiveZip(digits);
+      setInitialCenter({ longitude: info.longitude, latitude: info.latitude, zoom: info.zoom });
+      setZipEditing(false);
+    });
+  };
 
   const setViewMode = (mode: 'list' | 'map') => {
     setSearchParams((prev) => {
@@ -101,8 +175,7 @@ export function Charities() {
 
   if (viewMode === 'map') {
     return (
-      // Break out of PageShell's px-4 and pb-8 to go full-width/height
-      <div className="-mx-4 -mb-8 flex flex-col" style={{ height: 'calc(100vh - 65px)' }}>
+      <div className="flex flex-col" style={{ height: 'calc(100vh - 65px)' }}>
         {/* Top bar: title, search, tag filters, view toggle */}
         <div className="px-4 py-3 border-b border-brand-tertiary flex-shrink-0 space-y-3">
           <div className="flex items-center justify-between gap-4">
@@ -244,11 +317,50 @@ export function Charities() {
           </div>
 
           {/* Map */}
-          <div className="flex-1">
+          <div className="flex-1 relative">
+            {/* Persistent zip indicator — top right of map */}
+            <div className="absolute top-3 right-3 z-10">
+              {zipEditing ? (
+                <div className="bg-white border border-brand-tertiary rounded-md shadow px-3 py-2 flex items-center gap-2 text-sm">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="Zip code"
+                    value={zipInputValue}
+                    onChange={(e) => setZipInputValue(e.target.value.replace(/\D/g, '').slice(0, 5))}
+                    onKeyDown={(e) => e.key === 'Enter' && handleZipSubmit()}
+                    maxLength={5}
+                    autoFocus
+                    className="border border-brand-tertiary rounded px-2 py-1 w-24 outline-none focus:border-brand-primary"
+                  />
+                  <button
+                    onClick={handleZipSubmit}
+                    disabled={zipInputValue.length !== 5}
+                    className="bg-brand-secondary text-white px-3 py-1 rounded disabled:opacity-50"
+                  >
+                    Go
+                  </button>
+                  <button
+                    onClick={() => setZipEditing(false)}
+                    className="text-text-secondary hover:text-text-primary"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => { setZipInputValue(activeZip ?? ''); setZipEditing(true); }}
+                  className="bg-white border border-brand-tertiary rounded-md shadow px-3 py-2 text-sm text-text-secondary hover:border-brand-primary hover:text-text-primary"
+                >
+                  {activeZip ? `Near ${activeZip}` : 'Set location'}
+                </button>
+              )}
+            </div>
             <Suspense fallback={<p className="text-text-secondary p-4">Loading map...</p>}>
               <CharityMap
                 charities={charities}
                 selectedCharityId={selectedCharityId}
+                initialCenter={initialCenter}
                 className="w-full h-full"
               />
             </Suspense>
@@ -260,7 +372,7 @@ export function Charities() {
 
   // List view
   return (
-    <div>
+    <div className="container mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-xl font-bold text-text-primary">Find Charities</h1>
         <div className="flex rounded-md border border-brand-tertiary overflow-hidden">

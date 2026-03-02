@@ -40,10 +40,23 @@ export const typeDefs = `#graphql
   type AuthPayload {
     token: String!
     user: User!
+    onboardingCompleted: Boolean!
+  }
+
+  type ZipInfo {
+    zip: String!
+    city: String!
+    state: String!
+    latitude: Float!
+    longitude: Float!
+    neighborhood: String
+    zoom: Int
   }
 
   type UserPreferences {
     location: String
+    zipCode: String
+    neighborhood: String
     onboardingCompleted: Boolean!
   }
 
@@ -62,6 +75,7 @@ export const typeDefs = `#graphql
     charities(tags: [String], search: String): [Charity!]!
     charity(id: ID, slug: String): Charity
     causes: [Cause!]!
+    resolveZip(zip: String!): ZipInfo
   }
 
   type Mutation {
@@ -71,7 +85,7 @@ export const typeDefs = `#graphql
     requestMagicLink(email: String!): Boolean!
     verifyMagicLink(token: String!): AuthPayload!
 
-    savePreferences(location: String!): UserPreferences!
+    savePreferences(zipCode: String, neighborhood: String): UserPreferences!
 
     updateCharity(
       id: ID!

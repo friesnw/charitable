@@ -14,6 +14,8 @@ function requireAuth(context: Context) {
 function toPreferences(row: Record<string, unknown>) {
   return {
     location: row.location,
+    zipCode: row.zip_code ?? null,
+    neighborhood: row.neighborhood ?? null,
     onboardingCompleted: row.onboarding_completed ?? false,
   };
 }
@@ -34,17 +36,30 @@ export const preferencesResolvers = {
   Mutation: {
     savePreferences: async (
       _: unknown,
-      { location }: { location: string },
+      { zipCode, neighborhood }: { zipCode?: string; neighborhood?: string },
       context: Context
     ) => {
       const user = requireAuth(context);
+      let location = 'other';
+      if (zipCode) {
+        const zipResult = await pool.query(
+          'SELECT state FROM zip_codes WHERE zip = $1',
+          [zipCode]
+        );
+        if (zipResult.rows[0]?.state === 'CO') location = 'denver';
+      }
       const result = await pool.query(
-        `INSERT INTO user_preferences (user_id, location, onboarding_completed)
-         VALUES ($1, $2, TRUE)
+        `INSERT INTO user_preferences (user_id, location, zip_code, neighborhood, onboarding_completed)
+         VALUES ($1, $2, $3, $4, TRUE)
          ON CONFLICT (user_id)
-         DO UPDATE SET location = $2, onboarding_completed = TRUE, updated_at = NOW()
+         DO UPDATE SET
+           location = $2,
+           zip_code = $3,
+           neighborhood = $4,
+           onboarding_completed = TRUE,
+           updated_at = NOW()
          RETURNING *`,
-        [user.userId, location]
+        [user.userId, location, zipCode ?? null, neighborhood ?? null]
       );
       return toPreferences(result.rows[0]);
     },

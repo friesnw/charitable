@@ -1,6 +1,7 @@
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useQuery, gql } from '@apollo/client';
+import { useQuery, useLazyQuery, gql } from '@apollo/client';
+import { useAuth } from '../hooks/useAuth';
 import { CharityPreviewDrawer, type DrawerCharity } from '../components/CharityPreviewDrawer';
 import { NearbyCharityCard } from '../components/NearbyCharityCard';
 import { useGeolocation, nearestLocation } from '../lib/geo';
@@ -9,6 +10,25 @@ import { causeColor, causeIcon } from '../lib/causeColors';
 const ExploreMap = lazy(() =>
   import('../components/ExploreMap').then((m) => ({ default: m.ExploreMap }))
 );
+
+const MY_PREFERENCES_ZIP_EXPLORE = gql`
+  query MyPreferencesZipExplore {
+    myPreferences {
+      zipCode
+    }
+  }
+`;
+
+const RESOLVE_ZIP_EXPLORE = gql`
+  query ResolveZipExplore($zip: String!) {
+    resolveZip(zip: $zip) {
+      latitude
+      longitude
+      zoom
+      state
+    }
+  }
+`;
 
 const GET_CAUSES = gql`
   query GetCausesExplore {
@@ -46,10 +66,42 @@ const TOP_CAUSE_COUNT = 5;
 
 export function Explore() {
   const [searchParams] = useSearchParams();
-  const initialCenter =
-    searchParams.get('lat') && searchParams.get('lng')
-      ? { lat: parseFloat(searchParams.get('lat')!), lng: parseFloat(searchParams.get('lng')!) }
-      : undefined;
+  const { isAuthenticated } = useAuth();
+
+  // URL params take priority (e.g. deep-linked map position)
+  const urlLat = searchParams.get('lat');
+  const urlLng = searchParams.get('lng');
+  const [initialCenter, setInitialCenter] = useState<{ lat: number; lng: number; zoom?: number } | undefined>(
+    urlLat && urlLng ? { lat: parseFloat(urlLat), lng: parseFloat(urlLng), zoom: 13 } : undefined
+  );
+
+  const { data: prefsData } = useQuery(MY_PREFERENCES_ZIP_EXPLORE, { skip: !isAuthenticated });
+  const [resolveZip] = useLazyQuery(RESOLVE_ZIP_EXPLORE);
+
+  // Authenticated: center on saved home zip
+  useEffect(() => {
+    if (urlLat || !isAuthenticated || !prefsData?.myPreferences?.zipCode) return;
+    resolveZip({ variables: { zip: prefsData.myPreferences.zipCode } }).then(({ data }) => {
+      const info = data?.resolveZip;
+      if (info?.state === 'CO') {
+        setInitialCenter({ lat: info.latitude, lng: info.longitude, zoom: info.zoom ?? 13 });
+      }
+    });
+  }, [isAuthenticated, prefsData]);
+
+  // Unauthenticated: center on localStorage zip
+  useEffect(() => {
+    if (urlLat || isAuthenticated) return;
+    const localZip = localStorage.getItem('userZip');
+    if (localZip) {
+      resolveZip({ variables: { zip: localZip } }).then(({ data }) => {
+        const info = data?.resolveZip;
+        if (info?.state === 'CO') {
+          setInitialCenter({ lat: info.latitude, lng: info.longitude, zoom: info.zoom ?? 13 });
+        }
+      });
+    }
+  }, [isAuthenticated]);
 
   const [search, setSearch] = useState('');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
@@ -119,7 +171,7 @@ export function Explore() {
 
   return (
     <div
-      className="-mx-4 -mb-8 relative overflow-hidden"
+      className="relative overflow-hidden"
       style={{ height: 'calc(100vh - 65px)' }}
     >
       {/* Floating controls overlay */}

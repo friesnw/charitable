@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import Map, { Marker, MapRef } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { causeColor, causeIcon } from '../lib/causeColors';
@@ -15,7 +15,7 @@ interface ExploreMapProps {
   userPos: { lat: number; lng: number } | null;
   onMarkerClick: (charity: ExploreCharity, locationId: string) => void;
   onMapClick: () => void;
-  initialCenter?: { lat: number; lng: number };
+  initialCenter?: { lat: number; lng: number; zoom?: number };
 }
 
 const DENVER_CENTER = { longitude: -104.98832, latitude: 39.73669 };
@@ -69,19 +69,42 @@ export function ExploreMap({
   initialCenter,
 }: ExploreMapProps) {
   const mapRef = useRef<MapRef>(null);
+  const pendingCenterRef = useRef<{ lat: number; lng: number; zoom?: number } | null>(null);
+
+  useEffect(() => {
+    if (!initialCenter) return;
+    if (mapRef.current?.isStyleLoaded()) {
+      mapRef.current.flyTo({
+        center: [initialCenter.lng, initialCenter.lat],
+        zoom: (initialCenter.zoom ?? DEFAULT_ZOOM) - 1,
+        duration: 800,
+      });
+    } else {
+      pendingCenterRef.current = initialCenter;
+    }
+  }, [initialCenter]);
+
+  function handleMapLoad() {
+    const center = pendingCenterRef.current;
+    if (center && mapRef.current) {
+      mapRef.current.flyTo({
+        center: [center.lng, center.lat],
+        zoom: (center.zoom ?? DEFAULT_ZOOM) - 1,
+        duration: 0,
+      });
+      pendingCenterRef.current = null;
+    }
+  }
 
   return (
     <Map
       ref={mapRef}
       mapboxAccessToken={import.meta.env.VITE_MAPBOX_TOKEN}
-      initialViewState={{
-        latitude: initialCenter?.lat ?? DENVER_CENTER.latitude,
-        longitude: initialCenter?.lng ?? DENVER_CENTER.longitude,
-        zoom: initialCenter ? 13 : DEFAULT_ZOOM,
-      }}
+      initialViewState={{ ...DENVER_CENTER, zoom: DEFAULT_ZOOM }}
       style={{ width: '100%', height: '100%' }}
       mapStyle="mapbox://styles/mapbox/light-v11"
       onClick={onMapClick}
+      onLoad={handleMapLoad}
     >
       {/* User location dot */}
       {userPos && (
