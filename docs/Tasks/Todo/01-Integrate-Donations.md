@@ -2,22 +2,15 @@
 
 ### Every.org Webhook Setup
 
-- [ ] **Email support@every.org** to set up a Partner Webhook
+- [ ] **Create a webhook in the Every.org developer dashboard**: https://www.every.org/developer
+  - Paste in the backend webhook URL: `https://<render-backend>.onrender.com/api/webhooks/every-org`
+  - Every.org will give you a `webhook_token` — add it as `EVERY_ORG_WEBHOOK_TOKEN` in Render env vars
+- [ ] **Append `?webhookToken=<token>` to all Every.org donate links** in the frontend so Every.org fires the webhook for GoodLocal-referred donations
 
-**Include in your email:**
-- A couple sentences about your use case
-- Your webhook endpoint (e.g., `https://yourdomain.com/api/webhooks/every-org`)
-
-**They will send you:**
-- A unique `webhook_token` to include as a parameter on your Donate Link
-- All donations made via your Donate Link with your `webhook_token` will trigger a notification to your webhook
-
-**Questions to ask Every.org:**
-- [ ] How do you handle recurring/monthly donations with webhooks?
-- [ ] Do we receive a webhook notification for each monthly charge, or only the initial donation?
-- [ ] Is there a way to identify the first donation vs subsequent recurring charges in the webhook payload?
-- [ ] Do you send webhooks for failed charges or cancellations?
-- [ ] Can I create donations for charities that haven't claimed an account yet?
+**Things to verify in the dashboard / docs:**
+- [ ] Does Every.org send a webhook for each monthly recurring charge, or only the initial donation?
+- [ ] Is there a way to distinguish the first donation from subsequent recurring charges in the payload?
+- [ ] Does Every.org send webhooks for failed charges or cancellations?
 
 ---
 

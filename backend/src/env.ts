@@ -19,6 +19,7 @@ const envSchema = z.object({
   FRONTEND_URL: z.string().url().default('http://localhost:5173'),
   ADMIN_EMAIL: z.string().email().optional(),
   EVERY_ORG_WEBHOOK_TOKEN: z.string().optional(),
+  EVERY_ORG_AUTH_TOKEN: z.string().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);

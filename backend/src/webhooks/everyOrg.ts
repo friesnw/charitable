@@ -25,6 +25,15 @@ interface EveryOrgPayload {
 export async function handleEveryOrgWebhook(req: Request, res: Response) {
   const payload = req.body as EveryOrgPayload;
 
+  // Verify auth token from Authorization header (Every.org sends this to prove the request is from them)
+  if (env.EVERY_ORG_AUTH_TOKEN) {
+    const authHeader = req.headers.authorization;
+    if (authHeader !== env.EVERY_ORG_AUTH_TOKEN) {
+      console.warn('[every-org webhook] Invalid auth token');
+      return res.status(401).json({ error: 'Invalid auth token' });
+    }
+  }
+
   // Verify webhook token if we have one configured
   if (env.EVERY_ORG_WEBHOOK_TOKEN) {
     const receivedToken = payload.webhookToken ?? req.query.webhookToken;
