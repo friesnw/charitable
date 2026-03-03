@@ -49,7 +49,15 @@ type ZipInfo = {
 export function Preferences() {
   const { user } = useAuth();
   const { data: prefsData, loading: queryLoading } = useQuery(MY_PREFERENCES);
-  const [savePreferences, { loading: saving }] = useMutation(SAVE_PREFERENCES);
+  const [savePreferences, { loading: saving }] = useMutation(SAVE_PREFERENCES, {
+    update(cache, { data }) {
+      if (!data?.savePreferences) return;
+      cache.writeQuery({
+        query: MY_PREFERENCES,
+        data: { myPreferences: data.savePreferences },
+      });
+    },
+  });
   const [resolveZip, { loading: zipLooking }] = useLazyQuery(RESOLVE_ZIP);
 
   const [zipInput, setZipInput] = useState('');
