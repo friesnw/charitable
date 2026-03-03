@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery, useLazyQuery, gql } from '@apollo/client';
 import { useAuth } from '../hooks/useAuth';
 import { cloudinaryUrl } from '../lib/cloudinary';
-import { causeColor, causeIcon } from '../lib/causeColors';
+import { causeColor, causeIcon, FEATURED_TAGS } from '../lib/causeColors';
 import { nearestNeighborhood } from '../lib/neighborhoods';
 import { CharityPreviewDrawer } from '../components/CharityPreviewDrawer';
 
@@ -92,6 +92,7 @@ export function Charities() {
   const [selectedTag, setSelectedTag] = useState<string | null>(
     searchParams.get('tag') ?? null
   );
+  const [showAllTags, setShowAllTags] = useState(false);
   const [selectedCharityId, setSelectedCharityId] = useState<string | null>(null);
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
   const viewMode = searchParams.get('view') === 'list' ? 'list' : 'map';
@@ -178,9 +179,11 @@ export function Charities() {
 
   const charities: Charity[] = data?.charities || [];
 
-  const allTags = Array.from(
-    new Set(charities.flatMap((c) => c.causeTags))
-  ).sort();
+  const availableTags = Array.from(new Set(charities.flatMap((c) => c.causeTags)));
+  const featuredTags = FEATURED_TAGS.filter((t) => availableTags.includes(t));
+  const remainingTags = availableTags.filter((t) => !FEATURED_TAGS.includes(t)).sort();
+  const effectiveShowAll = showAllTags || (!!selectedTag && remainingTags.includes(selectedTag));
+  const visibleTags = effectiveShowAll ? [...featuredTags, ...remainingTags] : featuredTags;
 
   if (viewMode === 'map') {
     return (
@@ -374,7 +377,7 @@ export function Charities() {
                   </button>
                 </div>
               </div>
-              {allTags.length > 0 && (
+              {availableTags.length > 0 && (
                 <div className="pointer-events-auto flex gap-2 overflow-x-auto pb-1">
                   <button
                     onClick={() => setSelectedTag(null)}
@@ -386,12 +389,12 @@ export function Charities() {
                   >
                     All
                   </button>
-                  {allTags.map((tag) => {
+                  {visibleTags.map((tag) => {
                     const isActive = tag === selectedTag;
                     return (
                       <button
                         key={tag}
-                        onClick={() => setSelectedTag(tag === selectedTag ? null : tag)}
+                        onClick={() => { setShowAllTags(false); setSelectedTag(tag === selectedTag ? null : tag); }}
                         className="flex-shrink-0 text-xs px-3 py-1.5 rounded-full shadow font-medium transition-all flex items-center gap-1"
                         style={
                           isActive
@@ -404,6 +407,14 @@ export function Charities() {
                       </button>
                     );
                   })}
+                  {!effectiveShowAll && remainingTags.length > 0 && (
+                    <button
+                      onClick={() => setShowAllTags(true)}
+                      className="flex-shrink-0 text-xs px-3 py-1.5 rounded-full shadow font-medium bg-white/90 backdrop-blur-sm text-gray-500 border border-gray-200 hover:bg-white"
+                    >
+                      + {remainingTags.length} more
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -513,7 +524,7 @@ export function Charities() {
           className="w-full px-3 py-2 border border-brand-tertiary rounded-md text-text-primary focus:border-brand-primary outline-none"
         />
 
-        {allTags.length > 0 && (
+        {availableTags.length > 0 && (
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setSelectedTag(null)}
@@ -525,7 +536,7 @@ export function Charities() {
             >
               All
             </button>
-            {allTags.map((tag) => (
+            {visibleTags.map((tag) => (
               <button
                 key={tag}
                 onClick={() => setSelectedTag(tag === selectedTag ? null : tag)}
@@ -538,6 +549,14 @@ export function Charities() {
                 {tagLabels.get(tag) ?? tag}
               </button>
             ))}
+            {!effectiveShowAll && remainingTags.length > 0 && (
+              <button
+                onClick={() => setShowAllTags(true)}
+                className="text-sm px-2 py-1 rounded bg-bg-accent text-text-secondary hover:bg-brand-tertiary"
+              >
+                + {remainingTags.length} more
+              </button>
+            )}
           </div>
         )}
       </div>

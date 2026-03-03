@@ -47,6 +47,15 @@ export const CAUSE_COLORS: Record<string, string> = {
 
 export const DEFAULT_CAUSE_COLOR = '#0EA5E9';
 
+export const FEATURED_TAGS = [
+  'food-security',
+  'youth',
+  'education',
+  'homelessness',
+  'health',
+  'environment',
+];
+
 export function causeColor(tags: string[]): string {
   for (const tag of tags) {
     if (CAUSE_COLORS[tag]) return CAUSE_COLORS[tag];
