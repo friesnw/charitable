@@ -167,6 +167,26 @@ Reference for manual QA and automated testing. Each flow covers the happy path a
 
 *(GoodLocal does not process payments — Every.org handles the full donation flow)*
 
+### 7c. Post-donation confirmation — new or unverified user
+1. Donor completes donation on Every.org; webhook fires to `/api/webhooks/every-org`
+2. `donation_intents` row inserted with `donor_email` set, `user_id` NULL
+3. No verified GoodLocal account found for that email
+4. Magic link token generated and inserted into `magic_link_tokens`
+5. "Thanks for supporting [Charity]" email sent to donor with "View my giving history" button
+6. Donor clicks button → `/auth/verify?token=<token>`
+7. `verifyMagicLink` runs: user created or found; all `donation_intents` with matching `donor_email` and `user_id IS NULL` updated to set `user_id`
+
+**Edge cases:**
+- Donor ignores the email — donations remain in DB with `donor_email` set; associated if they ever sign up with the same email
+- Magic link expires — donations still stored; a fresh sign-in via `/login` will also trigger retroactive association
+
+### 7d. Post-donation confirmation — known verified user
+1. Donor completes donation on Every.org; webhook fires
+2. `donation_intents` row inserted with `donor_email` set
+3. Verified GoodLocal account found for that email
+4. `user_id` set immediately on the inserted row
+5. Simple receipt email sent ("Thanks for supporting [Charity]" with link to GoodLocal homepage; no magic link)
+
 ---
 
 ## 8. User Preferences (`/preferences`) — Auth Required

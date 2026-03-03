@@ -7,6 +7,7 @@ import { resolvers } from './resolvers/index.js';
 import { runMigrations } from './db.js';
 import { env } from './env.js';
 import { verifyToken, Context } from './auth.js';
+import { handleEveryOrgWebhook } from './webhooks/everyOrg.js';
 
 const app = express();
 
@@ -22,6 +23,8 @@ async function main() {
   app.get('/.well-known/apollo/server-health', (_req, res) => {
     res.status(200).json({ status: 'pass' });
   });
+
+  app.post('/api/webhooks/every-org', express.json(), handleEveryOrgWebhook);
 
   app.use(
     '/graphql',

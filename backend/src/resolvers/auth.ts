@@ -92,6 +92,12 @@ export const authResolvers = {
         );
       }
 
+      // Retroactively associate any donations made before this user verified
+      await pool.query(
+        'UPDATE donation_intents SET user_id = $1 WHERE donor_email = $2 AND user_id IS NULL',
+        [user.id, email]
+      );
+
       // Generate JWT
       const jwt = signToken({ userId: user.id, email: user.email, isAdmin: user.is_admin ?? false });
 

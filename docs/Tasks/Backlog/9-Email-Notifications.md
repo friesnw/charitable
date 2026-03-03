@@ -23,16 +23,20 @@
 
 **Trigger:** When webhook receives successful donation from Every.org
 
-- [ ] **Create `backend/src/emails/donation-confirmation.ts`**
-  - Charity name and logo
-  - Donation amount
-  - Date
-  - "Thank you" message
-  - Link to giving history (if logged in)
+**Status:** Basic version shipped in Phase 5 (webhook + donate-first flow). Needs redesign.
 
-- [ ] **Update webhook handler** to send confirmation email
-  - Only send if user has email on file
-  - Handle anonymous donations (no email)
+**What's implemented:**
+- `sendDonationConfirmation(email, charityName, token?)` in `backend/src/services/email.ts`
+- Known verified user → simple receipt with homepage link
+- New/unverified user → magic link button ("View my giving history")
+
+**What's missing / needs improvement:**
+- [ ] **Distinct templates for each path** — known-user receipt and new-user magic link currently share the same boilerplate layout; they should feel meaningfully different
+- [ ] **Donation details in body** — amount, frequency (one-time vs monthly), and date are available on the `donation_intents` row but not yet passed into the email
+- [ ] **Charity branding** — logo, short description; requires passing more charity fields through the webhook handler
+- [ ] **Personalization** — donor first name is in the Every.org webhook payload (`firstName`); use it in the greeting
+- [ ] **Move templates out of inline strings** — inline HTML in `email.ts` gets unwieldy; consider `backend/src/emails/` directory with one file per template
+- [ ] **Template management** — see note below
 
 **Example content:**
 ```
@@ -94,6 +98,22 @@ Thank you for making an impact in Denver.
 | Recurring processed | Monthly charge | Medium |
 | Monthly summary | Scheduled | Low |
 | Year-end summary | Scheduled (January) | Low |
+
+---
+
+### Email Template Management
+
+Right now templates are inline HTML strings inside TypeScript functions. This works but has downsides as the number of emails grows: no preview, hard to iterate on design, no separation between content and code.
+
+**Options to research:**
+
+- **[React Email](https://react.email/)** — write email templates as React components; preview them in a browser at `localhost:3000`; render to HTML string at send time. First-class Resend integration. Probably the right call for this stack.
+
+- **[Resend's template editor](https://resend.com/emails)** — visual drag-and-drop editor in the Resend dashboard; templates stored in Resend and referenced by ID at send time. Easier for non-engineers to edit, but templates live outside the codebase (no version control).
+
+- **Handlebars / Mjml** — older approach; more portable but more setup; less relevant given we're already in a React/TS stack.
+
+**Recommendation when ready to revisit:** Adopt React Email. Templates become `.tsx` files in `backend/src/emails/`, previewable locally, version-controlled, and rendered server-side before Resend sends them. Resend has a [`@react-email/components`](https://react.email/docs/components/html) package that handles cross-client compatibility.
 
 ---
 

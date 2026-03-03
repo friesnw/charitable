@@ -18,6 +18,7 @@ const envSchema = z.object({
   RESEND_API_KEY: z.string().startsWith('re_'),
   FRONTEND_URL: z.string().url().default('http://localhost:5173'),
   ADMIN_EMAIL: z.string().email().optional(),
+  EVERY_ORG_WEBHOOK_TOKEN: z.string().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);
