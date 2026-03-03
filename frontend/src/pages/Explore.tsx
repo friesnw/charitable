@@ -5,7 +5,7 @@ import { useAuth } from '../hooks/useAuth';
 import { CharityPreviewDrawer, type DrawerCharity } from '../components/CharityPreviewDrawer';
 import { NearbyCharityCard } from '../components/NearbyCharityCard';
 import { useGeolocation, nearestLocation } from '../lib/geo';
-import { causeColor, causeIcon } from '../lib/causeColors';
+import { causeColor, causeIcon, causesToTagLabels } from '../lib/causeColors';
 
 const ExploreMap = lazy(() =>
   import('../components/ExploreMap').then((m) => ({ default: m.ExploreMap }))
@@ -120,9 +120,7 @@ export function Explore() {
 
   const { data: causesData } = useQuery(GET_CAUSES);
 
-  const tagLabels = new Map<string, string>(
-    (causesData?.causes ?? []).map((c: { tag: string; label: string }) => [c.tag, c.label])
-  );
+  const tagLabels = causesToTagLabels(causesData?.causes ?? []);
 
   const charities: ExploreCharity[] = data?.charities ?? [];
 

@@ -27,6 +27,8 @@ interface CharityMapProps {
 
 const DENVER_CENTER = { longitude: -104.98832, latitude: 39.73669 };
 const DEFAULT_ZOOM = 9.57;
+// Zip-level zoom is slightly tighter than ideal for a city map view
+const ZIP_ZOOM_OFFSET = -1;
 
 function CauseDot({ color, icon }: { color: string; icon: string }) {
   return (
@@ -68,7 +70,7 @@ export function CharityMap({
     if (mapRef.current?.isStyleLoaded()) {
       mapRef.current.flyTo({
         center: [initialCenter.longitude, initialCenter.latitude],
-        zoom: initialCenter.zoom - 1,
+        zoom: initialCenter.zoom + ZIP_ZOOM_OFFSET,
         duration: 800,
       });
     } else {
@@ -82,7 +84,7 @@ export function CharityMap({
     if (center && mapRef.current) {
       mapRef.current.flyTo({
         center: [center.longitude, center.latitude],
-        zoom: center.zoom - 1,
+        zoom: center.zoom + ZIP_ZOOM_OFFSET,
         duration: 0,
       });
       pendingCenterRef.current = null;

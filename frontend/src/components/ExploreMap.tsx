@@ -20,6 +20,8 @@ interface ExploreMapProps {
 
 const DENVER_CENTER = { longitude: -104.98832, latitude: 39.73669 };
 const DEFAULT_ZOOM = 11;
+// Zip-level zoom is slightly tighter than ideal for a city map view
+const ZIP_ZOOM_OFFSET = -1;
 
 function CauseDot({ color, icon }: { color: string; icon: string }) {
   return (
@@ -76,7 +78,7 @@ export function ExploreMap({
     if (mapRef.current?.isStyleLoaded()) {
       mapRef.current.flyTo({
         center: [initialCenter.lng, initialCenter.lat],
-        zoom: (initialCenter.zoom ?? DEFAULT_ZOOM) - 1,
+        zoom: (initialCenter.zoom ?? DEFAULT_ZOOM) + ZIP_ZOOM_OFFSET,
         duration: 800,
       });
     } else {
@@ -89,7 +91,7 @@ export function ExploreMap({
     if (center && mapRef.current) {
       mapRef.current.flyTo({
         center: [center.lng, center.lat],
-        zoom: (center.zoom ?? DEFAULT_ZOOM) - 1,
+        zoom: (center.zoom ?? DEFAULT_ZOOM) + ZIP_ZOOM_OFFSET,
         duration: 0,
       });
       pendingCenterRef.current = null;

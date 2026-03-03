@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery, useLazyQuery, gql } from '@apollo/client';
 import { useAuth } from '../hooks/useAuth';
 import { cloudinaryUrl } from '../lib/cloudinary';
-import { causeColor, causeIcon, FEATURED_TAGS } from '../lib/causeColors';
+import { causeColor, causeIcon, FEATURED_TAGS, causesToTagLabels } from '../lib/causeColors';
 import { nearestNeighborhood } from '../lib/neighborhoods';
 import { CharityPreviewDrawer } from '../components/CharityPreviewDrawer';
 
@@ -173,9 +173,7 @@ export function Charities() {
 
   const { data: causesData } = useQuery(GET_CAUSES);
 
-  const tagLabels = new Map<string, string>(
-    (causesData?.causes ?? []).map((c: { tag: string; label: string }) => [c.tag, c.label])
-  );
+  const tagLabels = causesToTagLabels(causesData?.causes ?? []);
 
   const charities: Charity[] = data?.charities || [];
 

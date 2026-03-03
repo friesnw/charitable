@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, gql } from '@apollo/client';
 import { cloudinaryUrl, pickAndUploadImage } from '../lib/cloudinary';
+import { Initials } from '../components/ui/Initials';
 
 // ── Queries & mutations ──────────────────────────────────────────────────────
 
@@ -158,18 +159,6 @@ function initLocForm(loc: FlatLocation): LocationForm {
     latitude: loc.latitude?.toString() ?? '',
     longitude: loc.longitude?.toString() ?? '',
   };
-}
-
-function Initials({ name, size = 40 }: { name: string; size?: number }) {
-  const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
-  return (
-    <div
-      className="flex items-center justify-center rounded bg-bg-accent text-text-secondary text-xs font-bold flex-shrink-0"
-      style={{ width: size, height: size }}
-    >
-      {initials}
-    </div>
-  );
 }
 
 // ── Sub-components ───────────────────────────────────────────────────────────

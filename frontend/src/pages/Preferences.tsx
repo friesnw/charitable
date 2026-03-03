@@ -66,27 +66,22 @@ export function Preferences() {
   const [zipNotFound, setZipNotFound] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  // Populate from saved preferences on load
+  // Populate zip input from saved preferences (priority) or localStorage fallback.
+  // Waits for the preferences query to resolve before checking localStorage so the
+  // saved zip always wins if present.
   useEffect(() => {
-    if (prefsData?.myPreferences) {
-      const prefs = prefsData.myPreferences;
-      if (prefs.zipCode) {
-        setZipInput(prefs.zipCode);
-        setNeighborhoodInput(prefs.neighborhood ?? '');
-        // Resolve the saved zip to show confirmation
-        resolveZip({ variables: { zip: prefs.zipCode } }).then(({ data }) => {
-          if (data?.resolveZip) {
-            setZipInfo(data.resolveZip);
-            setZipNotFound(false);
-          }
-        });
-      }
-    }
-  }, [prefsData]);
-
-  // Also pre-fill from localStorage (anonymous zip set on Charities page)
-  useEffect(() => {
-    if (!prefsData?.myPreferences?.zipCode) {
+    const prefs = prefsData?.myPreferences;
+    if (prefs?.zipCode) {
+      setZipInput(prefs.zipCode);
+      setNeighborhoodInput(prefs.neighborhood ?? '');
+      resolveZip({ variables: { zip: prefs.zipCode } }).then(({ data }) => {
+        if (data?.resolveZip) {
+          setZipInfo(data.resolveZip);
+          setZipNotFound(false);
+        }
+      });
+    } else if (prefsData !== undefined) {
+      // Preferences loaded but no saved zip — fall back to anonymous localStorage zip
       const localZip = localStorage.getItem('userZip');
       if (localZip) {
         setZipInput(localZip);

@@ -2,6 +2,7 @@ import { useParams } from 'react-router-dom';
 import { useQuery, gql } from '@apollo/client';
 import { CharityDetailStory } from '../components/CharityDetailStory';
 import { useGeolocation, nearestLocation } from '../lib/geo';
+import { causesToTagLabels } from '../lib/causeColors';
 
 const GET_CAUSES = gql`
   query GetCauses {
@@ -77,9 +78,7 @@ export function CharityDetail() {
   const { data: causesData } = useQuery(GET_CAUSES);
   const userPos = useGeolocation();
 
-  const tagLabels = new Map<string, string>(
-    (causesData?.causes ?? []).map((c: { tag: string; label: string }) => [c.tag, c.label])
-  );
+  const tagLabels = causesToTagLabels(causesData?.causes ?? []);
 
   if (loading) {
     return <p className="text-text-secondary">Loading...</p>;

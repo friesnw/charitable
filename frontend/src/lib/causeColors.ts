@@ -62,3 +62,7 @@ export function causeColor(tags: string[]): string {
   }
   return DEFAULT_CAUSE_COLOR;
 }
+
+export function causesToTagLabels(causes: { tag: string; label: string }[]): Map<string, string> {
+  return new Map(causes.map(c => [c.tag, c.label]));
+}

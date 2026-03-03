@@ -1,6 +1,7 @@
 import { useQuery, gql } from '@apollo/client';
 import { NearbyCharityCard, type NearbyCharity } from '../components/NearbyCharityCard';
 import { useGeolocation, nearestLocation } from '../lib/geo';
+import { causesToTagLabels } from '../lib/causeColors';
 
 const DENVER_CENTER = { lat: 39.73669, lng: -104.98832 };
 
@@ -43,9 +44,7 @@ export function Nearby() {
   const { data, loading, error } = useQuery(GET_CHARITIES_NEARBY);
   const { data: causesData } = useQuery(GET_CAUSES);
 
-  const tagLabels = new Map<string, string>(
-    (causesData?.causes ?? []).map((c: { tag: string; label: string }) => [c.tag, c.label])
-  );
+  const tagLabels = causesToTagLabels(causesData?.causes ?? []);
 
   const charities: NearbyCharity[] = data?.charities ?? [];
 
