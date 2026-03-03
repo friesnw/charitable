@@ -3,6 +3,9 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery, useLazyQuery, gql } from '@apollo/client';
 import { useAuth } from '../hooks/useAuth';
 import { cloudinaryUrl } from '../lib/cloudinary';
+import { causeColor, causeIcon } from '../lib/causeColors';
+import { nearestNeighborhood } from '../lib/neighborhoods';
+import { CharityPreviewDrawer } from '../components/CharityPreviewDrawer';
 
 const CharityMap = lazy(() =>
   import('../components/CharityMap').then((m) => ({ default: m.CharityMap }))
@@ -47,11 +50,13 @@ const GET_CHARITIES = gql`
       primaryAddress
       foundedYear
       causeTags
+      everyOrgSlug
       locations {
         id
         label
         description
         address
+        photoUrl
         latitude
         longitude
       }
@@ -68,11 +73,13 @@ interface Charity {
   primaryAddress: string | null;
   foundedYear: number | null;
   causeTags: string[];
+  everyOrgSlug: string | null;
   locations: {
     id: string;
     label: string;
     description: string | null;
     address: string | null;
+    photoUrl: string | null;
     latitude: number | null;
     longitude: number | null;
   }[];
@@ -86,6 +93,7 @@ export function Charities() {
     searchParams.get('tag') ?? null
   );
   const [selectedCharityId, setSelectedCharityId] = useState<string | null>(null);
+  const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
   const viewMode = searchParams.get('view') === 'list' ? 'list' : 'map';
 
   // Zip-based map centering
@@ -152,6 +160,7 @@ export function Charities() {
       return next;
     });
     setSelectedCharityId(null);
+    setSelectedLocationId(null);
   };
 
   const { loading, error, data } = useQuery(GET_CHARITIES, {
@@ -175,67 +184,20 @@ export function Charities() {
 
   if (viewMode === 'map') {
     return (
-      <div className="flex flex-col" style={{ height: 'calc(100vh - 65px)' }}>
-        {/* Top bar: title, search, tag filters, view toggle */}
-        <div className="px-4 py-3 border-b border-brand-tertiary flex-shrink-0 space-y-3">
-          <div className="flex items-center justify-between gap-4">
-            <h1 className="text-xl font-bold text-text-primary flex-shrink-0">Find Charities</h1>
-            <input
-              type="text"
-              placeholder="Search by name..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="flex-1 px-3 py-1.5 border border-brand-tertiary rounded-md text-text-primary focus:border-brand-primary outline-none text-sm"
-            />
-            <div className="flex rounded-md border border-brand-tertiary overflow-hidden flex-shrink-0">
-              <button
-                onClick={() => setViewMode('map')}
-                className="text-sm px-3 py-1 bg-brand-accent text-white"
-              >
-                Map
-              </button>
-              <button
-                onClick={() => setViewMode('list')}
-                className="text-sm px-3 py-1 bg-bg-accent text-text-secondary hover:bg-brand-tertiary"
-              >
-                List
-              </button>
-            </div>
-          </div>
-          {allTags.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => setSelectedTag(null)}
-                className={`text-sm px-2 py-1 rounded ${
-                  !selectedTag
-                    ? 'bg-brand-accent text-white'
-                    : 'bg-bg-accent text-text-secondary hover:bg-brand-tertiary'
-                }`}
-              >
-                All
-              </button>
-              {allTags.map((tag) => (
-                <button
-                  key={tag}
-                  onClick={() => setSelectedTag(tag === selectedTag ? null : tag)}
-                  className={`text-sm px-2 py-1 rounded ${
-                    tag === selectedTag
-                      ? 'bg-brand-accent text-white'
-                      : 'bg-bg-accent text-text-secondary hover:bg-brand-tertiary'
-                  }`}
-                >
-                  {tagLabels.get(tag) ?? tag}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+      <div className="flex" style={{ height: 'calc(100vh - 65px)' }}>
 
         {/* Split panel */}
         <div className="flex flex-1 overflow-hidden">
           {/* Left panel */}
           <div className="w-96 flex-shrink-0 flex flex-col border-r border-brand-tertiary bg-bg-primary">
-            {/* Charity list */}
+            {selectedCharityId !== null && (
+              <button
+                onClick={() => { setSelectedCharityId(null); setSelectedLocationId(null); }}
+                className="w-full text-left px-4 py-3 border-b border-brand-tertiary text-sm text-brand-secondary hover:bg-bg-accent flex items-center gap-1 flex-shrink-0"
+              >
+                ← Back to all charities
+              </button>
+            )}
             <div className="overflow-y-auto flex-1">
               {loading && (
                 <p className="text-text-secondary p-4">Loading charities...</p>
@@ -246,71 +208,140 @@ export function Charities() {
               {!loading && !error && charities.length === 0 && (
                 <p className="text-text-secondary p-4">No charities found.</p>
               )}
-              {charities.map((charity) => {
+              {charities.filter((c) => selectedCharityId === null || c.id === selectedCharityId).map((charity) => {
                 const isSelected = charity.id === selectedCharityId;
+                const validLocs = charity.locations.filter(
+                  (l) => l.latitude != null && l.longitude != null
+                );
                 return (
-                  <button
-                    key={charity.id}
-                    onClick={() =>
-                      setSelectedCharityId(isSelected ? null : charity.id)
-                    }
-                    className={`w-full text-left px-4 py-4 border-b border-brand-tertiary transition-colors ${
-                      isSelected
-                        ? 'bg-amber-50 border-l-4 border-l-amber-400'
-                        : 'hover:bg-bg-accent'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 mb-1">
-                      {charity.logoUrl ? (
-                        <img
-                          src={cloudinaryUrl(charity.logoUrl, { w: 40, h: 40 })}
-                          alt={charity.name}
-                          className="w-10 h-10 object-cover rounded flex-shrink-0"
-                        />
-                      ) : (
-                        <div className="w-10 h-10 flex-shrink-0 rounded bg-bg-accent flex items-center justify-center text-text-secondary text-xs font-bold">
-                          {charity.name.slice(0, 2).toUpperCase()}
+                  <div key={charity.id}>
+                    {/* Charity card */}
+                    <button
+                      onClick={() => {
+                        if (isSelected) {
+                          setSelectedCharityId(null);
+                          setSelectedLocationId(null);
+                        } else {
+                          setSelectedCharityId(charity.id);
+                          setSelectedLocationId(null);
+                        }
+                      }}
+                      className="w-full text-left px-4 py-4 border-b border-brand-tertiary transition-colors hover:bg-bg-accent"
+                    >
+                      <div className="flex items-center gap-2 mb-1">
+                        {charity.logoUrl ? (
+                          <img
+                            src={cloudinaryUrl(charity.logoUrl, { w: 40, h: 40 })}
+                            alt={charity.name}
+                            className="w-10 h-10 object-cover rounded flex-shrink-0"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 flex-shrink-0 rounded bg-bg-accent flex items-center justify-center text-text-secondary text-xs font-bold">
+                            {charity.name.slice(0, 2).toUpperCase()}
+                          </div>
+                        )}
+                        <div className="font-bold text-text-primary text-sm">
+                          {charity.name}
+                        </div>
+                      </div>
+                      {charity.foundedYear && (
+                        <div className="text-text-secondary text-xs mt-0.5">
+                          Founded {charity.foundedYear}
                         </div>
                       )}
-                      <div className="font-bold text-text-primary text-sm">
-                        {charity.name}
-                      </div>
-                    </div>
-                    {charity.foundedYear && (
-                      <div className="text-text-secondary text-xs mt-0.5">
-                        Founded {charity.foundedYear}
-                      </div>
-                    )}
-                    {charity.description && (
-                      <p className="text-text-secondary text-xs mt-1 line-clamp-2">
-                        {charity.description}
-                      </p>
-                    )}
-                    {charity.primaryAddress && (
-                      <p className="text-text-secondary text-xs mt-1">
-                        {charity.primaryAddress}
-                      </p>
-                    )}
-                    {charity.causeTags.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {charity.causeTags.map((tag) => (
-                          <span
-                            key={tag}
-                            className="text-xs px-1.5 py-0.5 bg-bg-accent text-text-secondary rounded"
+                      {charity.description && (
+                        <p className="text-text-secondary text-xs mt-1 line-clamp-2">
+                          {charity.description}
+                        </p>
+                      )}
+                      {charity.causeTags.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {charity.causeTags.map((tag) => (
+                            <span
+                              key={tag}
+                              className="text-xs px-1.5 py-0.5 bg-bg-accent text-text-secondary rounded"
+                            >
+                              {tagLabels.get(tag) ?? tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {isSelected && (
+                        <div className="flex gap-2 mt-3" onClick={(e) => e.stopPropagation()}>
+                          <Link
+                            to={`/charities/${charity.slug}`}
+                            className="flex-1 text-center py-2 rounded-lg border border-gray-300 text-xs font-medium text-gray-700 hover:bg-gray-50"
                           >
-                            {tagLabels.get(tag) ?? tag}
-                          </span>
-                        ))}
+                            Learn more →
+                          </Link>
+                          {charity.everyOrgSlug && (
+                            <a
+                              href={`https://www.every.org/${charity.everyOrgSlug}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex-1 text-center py-2 rounded-lg text-xs font-medium text-white bg-brand-secondary hover:opacity-90"
+                            >
+                              Donate
+                            </a>
+                          )}
+                        </div>
+                      )}
+                    </button>
+
+                    {/* Inline location expansion when selected */}
+                    {isSelected && validLocs.length > 0 && (
+                      <div className="border-b border-brand-tertiary">
+                        <div className="px-4 pt-2 pb-1 text-xs font-semibold text-text-secondary uppercase tracking-wide">
+                          Locations ({validLocs.length})
+                        </div>
+                        {validLocs.map((loc) => {
+                          const isHighlighted = loc.id === selectedLocationId;
+                          return (
+                            <button
+                              key={loc.id}
+                              onClick={() => setSelectedLocationId(isHighlighted ? null : loc.id)}
+                              className={`w-full text-left pl-8 pr-4 py-2.5 transition-colors flex items-center gap-3 ${
+                                isHighlighted
+                                  ? 'bg-brand-accent/30 border-l-4 border-l-brand-accent'
+                                  : 'hover:bg-bg-accent'
+                              }`}
+                            >
+                              {loc.photoUrl ? (
+                                <img
+                                  src={cloudinaryUrl(loc.photoUrl, { w: 72, h: 72, fit: 'fill' })}
+                                  alt={loc.label}
+                                  className="w-14 h-14 rounded object-cover flex-shrink-0"
+                                />
+                              ) : (
+                                <div className="w-14 h-14 rounded bg-bg-accent border border-brand-tertiary flex-shrink-0 flex items-center justify-center text-text-secondary text-sm font-bold">
+                                  {(() => {
+                                    const words = loc.label.trim().split(/\s+/);
+                                    return words.length > 1
+                                      ? (words[0][0] + words[1][0]).toUpperCase()
+                                      : words[0][0].toUpperCase();
+                                  })()}
+                                </div>
+                              )}
+                              <div className="min-w-0">
+                                <div className="font-medium text-text-primary text-sm">
+                                  {loc.label}
+                                </div>
+                                {loc.description && (
+                                  <p className="text-text-secondary text-xs mt-0.5 truncate">{loc.description}</p>
+                                )}
+                                {loc.latitude != null && loc.longitude != null && (() => {
+                                  const hood = nearestNeighborhood(loc.latitude, loc.longitude);
+                                  return hood ? (
+                                    <span className="inline-block mt-1 text-xs px-2 py-0.5 rounded-full border border-flair-green text-flair-green">{hood}</span>
+                                  ) : null;
+                                })()}
+                              </div>
+                            </button>
+                          );
+                        })}
                       </div>
                     )}
-                    <Link
-                      to={`/charities/${charity.slug}`}
-                      onClick={(e) => e.stopPropagation()}
-                      className="text-xs text-brand-primary hover:underline mt-2 inline-block"
-                    >
-                      View details →
-                    </Link>
-                  </button>
+                  </div>
                 );
               })}
             </div>
@@ -318,8 +349,67 @@ export function Charities() {
 
           {/* Map */}
           <div className="flex-1 relative">
-            {/* Persistent zip indicator — top right of map */}
-            <div className="absolute top-3 right-3 z-10">
+            {/* Floating controls — search, toggle, tag chips */}
+            <div className="absolute top-0 left-0 right-0 z-10 p-3 flex flex-col gap-2 pointer-events-none">
+              <div className="pointer-events-auto flex items-center gap-2">
+                <input
+                  type="text"
+                  placeholder="Search charities..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="flex-1 px-4 py-2.5 rounded-xl shadow-lg border border-gray-200 bg-white/90 backdrop-blur-sm text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                />
+                <div className="flex rounded-xl overflow-hidden shadow-lg border border-gray-200 bg-white/90 backdrop-blur-sm flex-shrink-0">
+                  <button
+                    onClick={() => setViewMode('map')}
+                    className="px-3 py-2.5 text-sm font-medium transition-colors bg-gray-900 text-white"
+                  >
+                    Map
+                  </button>
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className="px-3 py-2.5 text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100"
+                  >
+                    List
+                  </button>
+                </div>
+              </div>
+              {allTags.length > 0 && (
+                <div className="pointer-events-auto flex gap-2 overflow-x-auto pb-1">
+                  <button
+                    onClick={() => setSelectedTag(null)}
+                    className={`flex-shrink-0 text-xs px-3 py-1.5 rounded-full shadow font-medium transition-colors ${
+                      !selectedTag
+                        ? 'bg-gray-900 text-white'
+                        : 'bg-white/90 backdrop-blur-sm text-gray-700 border border-gray-200 hover:bg-white'
+                    }`}
+                  >
+                    All
+                  </button>
+                  {allTags.map((tag) => {
+                    const isActive = tag === selectedTag;
+                    return (
+                      <button
+                        key={tag}
+                        onClick={() => setSelectedTag(tag === selectedTag ? null : tag)}
+                        className="flex-shrink-0 text-xs px-3 py-1.5 rounded-full shadow font-medium transition-all flex items-center gap-1"
+                        style={
+                          isActive
+                            ? { backgroundColor: causeColor([tag]), color: 'white', border: `2px solid ${causeColor([tag])}` }
+                            : { backgroundColor: 'rgba(255,255,255,0.9)', color: '#374151', border: '1px solid #e5e7eb', backdropFilter: 'blur(8px)' }
+                        }
+                      >
+                        <span style={{ fontSize: 11 }}>{causeIcon([tag])}</span>
+                        {tagLabels.get(tag) ?? tag}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Zip indicator — bottom right */}
+            <div className="absolute bottom-3 right-3 z-10">
               {zipEditing ? (
                 <div className="bg-white border border-brand-tertiary rounded-md shadow px-3 py-2 flex items-center gap-2 text-sm">
                   <input
@@ -350,7 +440,7 @@ export function Charities() {
               ) : (
                 <button
                   onClick={() => { setZipInputValue(activeZip ?? ''); setZipEditing(true); }}
-                  className="bg-white border border-brand-tertiary rounded-md shadow px-3 py-2 text-sm text-text-secondary hover:border-brand-primary hover:text-text-primary"
+                  className="bg-white/90 backdrop-blur-sm border border-gray-200 rounded-full shadow px-3 py-1.5 text-sm text-gray-600 hover:bg-white"
                 >
                   {activeZip ? `Near ${activeZip}` : 'Set location'}
                 </button>
@@ -360,12 +450,35 @@ export function Charities() {
               <CharityMap
                 charities={charities}
                 selectedCharityId={selectedCharityId}
+                selectedLocationId={selectedLocationId}
+                onMarkerClick={(charityId, locationId) => {
+                  setSelectedCharityId(charityId);
+                  setSelectedLocationId(locationId);
+                }}
                 initialCenter={initialCenter}
                 className="w-full h-full"
               />
             </Suspense>
           </div>
         </div>
+
+        {/* Bottom-right drawer on pin click — same as /explore */}
+        {selectedLocationId !== null && selectedCharityId !== null && (() => {
+          const fc = charities.find((c) => c.id === selectedCharityId);
+          if (!fc) return null;
+          return (
+            <CharityPreviewDrawer
+              charity={fc}
+              selectedLocationId={selectedLocationId}
+              distance={null}
+              tagLabels={tagLabels}
+              onClose={() => {
+                setSelectedCharityId(null);
+                setSelectedLocationId(null);
+              }}
+            />
+          );
+        })()}
       </div>
     );
   }
@@ -375,16 +488,16 @@ export function Charities() {
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-xl font-bold text-text-primary">Find Charities</h1>
-        <div className="flex rounded-md border border-brand-tertiary overflow-hidden">
+        <div className="flex rounded-xl overflow-hidden border border-gray-200">
           <button
             onClick={() => setViewMode('map')}
-            className="text-sm px-3 py-1 bg-bg-accent text-text-secondary hover:bg-brand-tertiary"
+            className="text-sm px-3 py-1 font-medium transition-colors text-gray-600 hover:bg-gray-100"
           >
             Map
           </button>
           <button
             onClick={() => setViewMode('list')}
-            className="text-sm px-3 py-1 bg-brand-accent text-white"
+            className="text-sm px-3 py-1 font-medium transition-colors bg-gray-900 text-white"
           >
             List
           </button>

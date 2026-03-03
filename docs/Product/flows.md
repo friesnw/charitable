@@ -55,9 +55,11 @@ Reference for manual QA and automated testing. Each flow covers the happy path a
 ## 3. Charity Discovery — Explore (`/explore`)
 
 ### 3a. Default Load
-1. Page loads with map centered on Denver
-2. Charity pins render on map
-3. Cause filter chips appear above map
+1. Page loads with map initially centered on Denver
+2. If authenticated and home zip is saved → map flies to home zip
+3. If unauthenticated and zip stored in localStorage → map flies to that zip
+4. Charity pins render on map
+5. Cause filter chips appear above map
 
 ### 3b. Filter by Cause
 1. Click a cause chip
@@ -90,17 +92,27 @@ Reference for manual QA and automated testing. Each flow covers the happy path a
 
 ### 4a. Default Load
 1. Split panel: charity list (left) + map (right)
-2. All charities listed with logo, name, description, tags
+2. Map initially centered on Denver, then flies to home zip if available
+3. Authenticated users: home zip loaded from saved preferences
+4. Unauthenticated users: zip loaded from localStorage (`userZip` key)
+5. All charities listed with logo, name, description, tags
 
-### 4b. Filter + Search
+### 4b. Zip Location Indicator
+1. Top-right corner of map shows a persistent zip pill ("Near 80205")
+2. Authenticated users: pill pre-populated from saved preferences zip
+3. Unauthenticated users: pill pre-populated from localStorage zip, or shows "Set location" if none
+4. Click pill → inline input to enter/change zip
+5. Submit valid zip → map flies to that location; pill updates; zip saved to localStorage (unauthenticated) or displayed only (authenticated — to change their home zip they use `/preferences`)
+
+### 4c. Filter + Search
 1. Filter by cause tag → list and map update
 2. Search by name → list and map update
 3. Both can be combined
 
-### 4c. List → Map Interaction
+### 4d. List → Map Interaction
 1. Click charity card in list → corresponding pin highlights on map
 
-### 4d. View Toggle
+### 4e. View Toggle
 1. Toggle to list-only view → map hidden
 2. URL param `?view=list` persists the state
 
@@ -163,14 +175,44 @@ Reference for manual QA and automated testing. Each flow covers the happy path a
 1. Visit `/preferences`
 2. Name and email displayed (read-only from JWT)
 
-### 8b. Save Preferences
-1. Change location setting (Denver / Other)
-2. Click save
-3. Confirmation or success state shown
+### 8b. Set Location (Onboarding + Ongoing)
+1. Enter a 5-digit zip code
+2. Live lookup resolves city, state, and neighborhood (if mapped)
+3. Colorado zips show "City, CO · Neighborhood" confirmation
+4. Non-Colorado zips show "City, State — pilot currently covers Colorado only"
+5. Unrecognized zip shows "Zip code not recognized"
+6. Neighborhood field auto-fills from the zip lookup (editable, optional)
+7. Click Save → `savePreferences` mutation fires; `onboardingCompleted` set to true
+8. Anonymous zip from localStorage (`userZip`) is pre-filled if present and no saved zip exists
+9. On save, `userZip` is cleared from localStorage (now stored in account)
+
+### 8c. Pre-fill Behavior
+- Returning users: zip and neighborhood pre-fill from saved preferences
+- New users coming from the map: zip pre-fills from localStorage anonymous zip
 
 ---
 
-## 9. Admin — Charity Management (`/admin`) — Admin Auth Required
+## 9. Anonymous Zip → Account Handoff
+
+### 9a. Anonymous User Sets Location
+1. Visit `/charities` unauthenticated
+2. Click "Set location" pill → enter zip → map centers on it
+3. Zip stored in localStorage as `userZip`
+
+### 9b. Anonymous User Signs Up
+1. User logs in via magic link after browsing
+2. On `/preferences`, zip input pre-fills from localStorage `userZip`
+3. User saves preferences → `userZip` cleared from localStorage
+4. Zip is now saved to their account; future visits use account zip
+
+### 9c. Authenticated User Returns
+1. Visit `/charities` or `/explore`
+2. Map auto-centers on saved preferences zip — no prompt shown
+
+---
+
+## 10. Admin — Charity Management (`/admin`) — Admin Auth Required
+
 
 ### 9a. Charities Tab
 1. Lists all charities with name, slug, tags, location count, status
@@ -195,7 +237,7 @@ Reference for manual QA and automated testing. Each flow covers the happy path a
 
 ---
 
-## 10. Admin — Charity Edit (`/admin/charities/:id`) — Admin Auth Required
+## 11. Admin — Charity Edit (`/admin/charities/:id`) — Admin Auth Required
 
 ### 10a. Edit Charity Details
 1. Form pre-populated: name, description, URLs, address, founded year, cause tags, Every.org slug
@@ -268,9 +310,11 @@ Reference for manual QA and automated testing. Each flow covers the happy path a
 	  - Functionality:
 	    - Extracts token from URL (`?token=...`)
 	    - Calls `verifyMagicLink` mutation
-	    - Stores JWT, redirects to /dashboard
+	    - Stores JWT
+	    - If `onboardingCompleted` is false → redirects to /preferences
+	    - If `onboardingCompleted` is true → redirects to /dashboard
 	    - New users are created automatically on first verification
-	  - Links to: /dashboard
+	  - Links to: /preferences (new/incomplete users), /dashboard (returning users)
 	
 	- **Dashboard**
 	  - Route: `/dashboard`
@@ -285,12 +329,15 @@ Reference for manual QA and automated testing. Each flow covers the happy path a
 	- **Preferences**
 	  - Route: `/preferences`
 	  - Access: Authenticated only
-	  - Description: View profile info and manage account preferences; serves as both the post-signup onboarding step and an ongoing settings page
+	  - Description: View profile info and set home location; serves as both the post-signup onboarding step and an ongoing settings page
 	  - Functionality:
 	    - Display profile (name and email, read-only)
-	    - Set location preference (Denver, CO or Other)
-	    - Saves via `savePreferences` mutation (returns `onboardingCompleted`)
-	  - Accessible from: Profile menu dropdown in the header
+	    - Zip code input with live lookup — resolves city, state, neighborhood
+	    - Neighborhood field auto-fills from zip, user-editable
+	    - Saves via `savePreferences` mutation; sets `onboardingCompleted = true`
+	    - Pre-fills from saved preferences or anonymous localStorage zip
+	    - Clears `userZip` from localStorage on save
+	  - Accessible from: Profile menu dropdown in the header; redirected here post-login if onboarding not complete
 	  - Links to: (stays on page after save)
 	
 	- **Find Charities**
@@ -299,6 +346,9 @@ Reference for manual QA and automated testing. Each flow covers the happy path a
 	  - Description: Discover and browse local nonprofits with a map or list view
 	  - Functionality:
 	    - Map view by default (Mapbox); toggle to list view via `?view=list`
+	    - Map auto-centers on home zip (auth users: from preferences; anon users: from localStorage)
+	    - Persistent zip pill in top-right of map — shows active zip, click to change
+	    - Anonymous zip entered on map is saved to localStorage for pre-fill on signup
 	    - Search by name
 	    - Filter by cause tag (dynamically derived from results)
 	    - Map pins link to charity detail; list rows link to charity detail

@@ -15,6 +15,7 @@ export interface DrawerCharity {
   locations: {
     id: string;
     label: string;
+    description?: string | null;
     address: string | null;
     photoUrl: string | null;
     latitude: number | null;
@@ -109,16 +110,19 @@ export function CharityPreviewDrawer({
 
         {/* Content */}
         <div className="px-4 pt-3 pb-6 overflow-y-auto flex-1">
+          <p className="text-xs text-gray-500 mb-0.5">{charity.name}</p>
           <h2 className="text-lg font-bold text-gray-900 leading-snug mb-1">
-            {charity.name}
+            {selectedLocation?.label ?? charity.name}
           </h2>
 
           {selectedLocation?.address && (
             <p className="text-sm text-gray-500 mb-2">{selectedLocation.address}</p>
           )}
 
-          {charity.description && (
-            <p className="text-sm text-gray-700 line-clamp-2 mb-3">{charity.description}</p>
+          {(selectedLocation?.description ?? charity.description) && (
+            <p className="text-sm text-gray-700 line-clamp-2 mb-3">
+              {selectedLocation?.description ?? charity.description}
+            </p>
           )}
 
           {charity.causeTags.length > 0 && (

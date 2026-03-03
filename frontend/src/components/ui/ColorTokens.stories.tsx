@@ -18,10 +18,17 @@ const tokenGroups = [
     ],
   },
   {
+    label: 'Palette Accents',
+    tokens: [
+      { name: '--flair-green', value: '#607F75' },
+      { name: '--flair-terracotta', value: '#DC8D6D' },
+    ],
+  },
+  {
     label: 'Semantic',
     tokens: [
-      { name: '--color-success', value: '#607F75' },
-      { name: '--color-error', value: '#DC8D6D' },
+      { name: '--color-success', value: '#22c55e' },
+      { name: '--color-error', value: '#ef4444' },
     ],
   },
   {

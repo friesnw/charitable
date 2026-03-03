@@ -14,6 +14,8 @@
   --color-brand-secondary: var(--brand-secondary);
   --color-brand-tertiary: var(--brand-tertiary);
   --color-brand-accent: var(--brand-accent);
+  --color-flair-green: var(--flair-green);
+  --color-flair-terracotta: var(--flair-terracotta);
   --color-success: var(--color-success);
   --color-error: var(--color-error);
 

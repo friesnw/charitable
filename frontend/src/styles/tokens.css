@@ -9,9 +9,13 @@
   --brand-tertiary: #e2e8f0;  /* neutral light — borders, dividers */
   --brand-accent: #E9D8B2;    /* warm cream — pairs against dark primary */
 
+  /* Palette accents */
+  --flair-green: #607F75;
+  --flair-terracotta: #DC8D6D;
+
   /* Semantic */
-  --color-success: #607F75; /* muted green */
-  --color-error: #DC8D6D;   /* warm orange-red */
+  --color-success: #22c55e;
+  --color-error: #ef4444;
 
   /* Text */
   --text-primary: #343D47;
