@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { ButtonLink } from '../components/ui/Button';
 import { useQuery, gql } from '@apollo/client';
 import { useAuth } from '../hooks/useAuth';
 import { NEIGHBORHOODS } from '../lib/neighborhoods';
@@ -75,19 +76,13 @@ export function Home() {
             Donate to local charities and track your impact across Denver.
           </h1>
           <div className="flex items-center justify-center gap-4 mt-8 flex-wrap">
-            <Link
-              to="/explore"
-              className="inline-flex items-center justify-center px-6 py-3 font-sans text-base font-medium rounded-md bg-brand-secondary text-white hover:opacity-90 transition-opacity"
-            >
+            <ButtonLink to="/explore" variant="primary">
               Get started
-            </Link>
+            </ButtonLink>
             {!isAuthenticated && (
-              <Link
-                to="/login"
-                className="inline-flex items-center justify-center px-6 py-3 font-sans text-base font-medium rounded-md bg-white/10 text-white border border-white/20 hover:bg-white/20 transition-opacity"
-              >
+              <ButtonLink to="/login" variant="secondary-dark">
                 I already have an account
-              </Link>
+              </ButtonLink>
             )}
           </div>
         </div>
@@ -139,12 +134,9 @@ export function Home() {
               </li>
             </ol>
             <div className="mt-10">
-              <Link
-                to="/explore"
-                className="inline-flex items-center justify-center px-6 py-3 font-sans text-base font-medium rounded-md bg-brand-secondary text-white hover:opacity-90 transition-opacity"
-              >
+              <ButtonLink to="/explore" variant="primary">
                 Get started
-              </Link>
+              </ButtonLink>
             </div>
           </div>
 
@@ -202,14 +194,11 @@ export function Home() {
             selectedSurveyTag ? 'opacity-100' : 'opacity-0 pointer-events-none'
           }`}
         >
-          <Link
-            to={`/charities?tag=${selectedSurveyTag ?? ''}`}
-            className="inline-flex items-center gap-1 font-sans text-base font-medium text-brand-secondary hover:underline"
-          >
+          <ButtonLink to={`/charities?tag=${selectedSurveyTag ?? ''}`} variant="link">
             {charityCount !== null
               ? `Find ${charityCount} charities helping with ${selectedSurveyLabel} →`
               : `Find charities helping with ${selectedSurveyLabel} →`}
-          </Link>
+          </ButtonLink>
         </div>
       </section>
     </div>

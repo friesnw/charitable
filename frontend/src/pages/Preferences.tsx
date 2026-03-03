@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { gql, useMutation, useQuery, useLazyQuery } from '@apollo/client';
 import { useAuth } from '../hooks/useAuth';
+import { Button } from '../components/ui/Button';
 
 const MY_PREFERENCES = gql`
   query MyPreferences {
@@ -207,13 +208,9 @@ export function Preferences() {
           </div>
         </div>
 
-        <button
-          type="submit"
-          disabled={!canSave || saving}
-          className="w-full bg-brand-secondary text-white px-4 py-2 rounded-md hover:opacity-90 disabled:opacity-50"
-        >
-          {saving ? 'Saving...' : 'Save'}
-        </button>
+        <Button type="submit" disabled={!canSave} loading={saving} className="w-full">
+          Save
+        </Button>
 
         {saved && (
           <p className="text-sm text-green-600 text-center">Preferences saved.</p>

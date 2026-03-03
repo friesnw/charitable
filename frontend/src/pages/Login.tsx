@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useMutation, gql } from '@apollo/client';
+import { Button } from '../components/ui/Button';
 
 const REQUEST_MAGIC_LINK = gql`
   mutation RequestMagicLink($email: String!) {
@@ -62,13 +63,9 @@ export function Login() {
           <p className="text-error">{error.message}</p>
         )}
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-brand-secondary text-white px-4 py-2 rounded-md hover:opacity-90 disabled:opacity-50"
-        >
-          {loading ? 'Sending...' : 'Send magic link'}
-        </button>
+        <Button type="submit" loading={loading} className="w-full">
+          Send magic link
+        </Button>
       </form>
     </div>
   );

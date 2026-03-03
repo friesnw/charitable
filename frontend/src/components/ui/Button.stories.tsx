@@ -18,6 +18,19 @@ export const Secondary: Story = {
   args: { children: 'Learn More', variant: 'secondary' },
 };
 
+export const SecondaryDark: Story = {
+  args: { children: 'I already have an account', variant: 'secondary-dark' },
+  parameters: { backgrounds: { default: 'dark' } },
+};
+
+export const Outline: Story = {
+  args: { children: 'View Details', variant: 'outline' },
+};
+
+export const Link: Story = {
+  args: { children: 'Find charities →', variant: 'link' },
+};
+
 export const Disabled: Story = {
   args: { children: 'Unavailable', disabled: true },
 };

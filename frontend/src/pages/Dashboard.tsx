@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { ButtonLink } from '../components/ui/Button';
 
 export function Dashboard() {
   const { user } = useAuth();
@@ -19,12 +19,9 @@ export function Dashboard() {
         </p>
       </div>
 
-      <Link
-        to="/charities"
-        className="inline-block bg-brand-secondary text-white px-4 py-2 rounded-md hover:opacity-90"
-      >
+      <ButtonLink to="/charities" variant="primary">
         Discover charities
-      </Link>
+      </ButtonLink>
     </div>
   );
 }

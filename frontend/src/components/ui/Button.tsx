@@ -1,16 +1,35 @@
 import { type ButtonHTMLAttributes } from 'react';
+import { Link, type LinkProps } from 'react-router-dom';
 
-type ButtonVariant = 'primary' | 'secondary';
+export type ButtonVariant = 'primary' | 'secondary' | 'secondary-dark' | 'outline' | 'link';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   loading?: boolean;
 }
 
-const variantClasses: Record<ButtonVariant, string> = {
-  primary: 'bg-brand-secondary text-white hover:opacity-90',
-  secondary: 'bg-brand-tertiary text-text-primary hover:opacity-80',
+export const variantClasses: Record<ButtonVariant, string> = {
+  primary:          'bg-brand-secondary text-white hover:opacity-90',
+  secondary:        'bg-brand-tertiary text-text-primary hover:opacity-80',
+  'secondary-dark': 'bg-white/10 text-white border border-white/20 hover:bg-white/20',
+  outline:          'bg-transparent text-text-primary border border-brand-tertiary hover:border-brand-secondary hover:text-brand-secondary',
+  link:             'bg-transparent text-brand-secondary hover:underline px-0 py-0',
 };
+
+const baseClasses = 'inline-flex items-center justify-center px-4 py-2 font-sans text-base rounded-md transition-colors';
+
+export function ButtonLink({
+  variant = 'primary',
+  className = '',
+  ...props
+}: LinkProps & { variant?: ButtonVariant; className?: string }) {
+  return (
+    <Link
+      className={`${baseClasses} ${variantClasses[variant]} ${className}`}
+      {...props}
+    />
+  );
+}
 
 export function Button({
   variant = 'primary',
@@ -22,7 +41,7 @@ export function Button({
 }: ButtonProps) {
   return (
     <button
-      className={`inline-flex items-center justify-center px-4 py-2 font-sans text-base rounded-md transition-opacity ${variantClasses[variant]} ${disabled || loading ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
+      className={`${baseClasses} ${variantClasses[variant]} ${disabled || loading ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
       disabled={disabled || loading}
       {...props}
     >

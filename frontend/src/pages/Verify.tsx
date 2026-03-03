@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useMutation, gql } from '@apollo/client';
 import { useAuth } from '../hooks/useAuth';
+import { ButtonLink } from '../components/ui/Button';
 
 const VERIFY_MAGIC_LINK = gql`
   mutation VerifyMagicLink($token: String!) {
@@ -54,9 +55,9 @@ export function Verify() {
       <div className="max-w-md mx-auto text-center">
         <h1 className="text-xl font-bold text-text-primary mb-4">Verification failed</h1>
         <p className="text-error mb-4">{error}</p>
-        <a href="/login" className="text-brand-primary hover:underline">
+        <ButtonLink to="/login" variant="link">
           Try again
-        </a>
+        </ButtonLink>
       </div>
     );
   }

@@ -12,12 +12,15 @@ Reference for manual QA and automated testing. Each flow covers the happy path a
 2. Enter email → submit
 3. Check email → click magic link
 4. Redirect to `/auth/verify?token=<token>`
-5. JWT stored in localStorage → redirect to `/dashboard`
+5. JWT stored in localStorage
+6. If `onboardingCompleted` is false → redirect to `/preferences` (onboarding step)
+7. If `onboardingCompleted` is true → redirect to `/dashboard`
 
 **Edge cases:**
 - Expired token (>15 min) → error state on verify page
 - Invalid/malformed token → error state
 - Already authenticated user visits `/login` → redirect to `/dashboard`
+- New users always land on `/preferences` first; existing users without a saved zip also land there
 
 ### 1b. Protected Route Redirect
 1. Visit any protected route (e.g. `/preferences`, `/dashboard`) while unauthenticated
