@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import Map, { MapRef } from 'react-map-gl/mapbox';
 import { ButtonLink } from '../components/ui/Button';
 import { useQuery, gql } from '@apollo/client';
 import { useAuth } from '../hooks/useAuth';
@@ -52,9 +53,33 @@ const neighborhoodPills = HERO_NEIGHBORHOODS.map((name) => {
   return n ? { name, lat: n.lat, lng: n.lng } : null;
 }).filter(Boolean) as { name: string; lat: number; lng: number }[];
 
+const PAN_STOPS = [
+  { longitude: -104.9903, latitude: 39.7392 }, // Downtown
+  { longitude: -104.9719, latitude: 39.7508 }, // RiNo
+  { longitude: -104.9842, latitude: 39.7554 }, // Highland
+  { longitude: -104.9628, latitude: 39.7318 }, // Capitol Hill
+  { longitude: -104.9738, latitude: 39.7483 }, // Five Points
+  { longitude: -104.9509, latitude: 39.7207 }, // Cherry Creek
+];
+
 export function Home() {
   const { isAuthenticated } = useAuth();
   const [selectedSurveyTag, setSelectedSurveyTag] = useState<string | null>(null);
+  const mapRef = useRef<MapRef>(null);
+  const stopIndexRef = useRef(0);
+
+  const panToNext = useCallback(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    stopIndexRef.current = (stopIndexRef.current + 1) % PAN_STOPS.length;
+    const { longitude, latitude } = PAN_STOPS[stopIndexRef.current];
+    map.easeTo({ center: [longitude, latitude], duration: 18000, easing: (t) => t });
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(panToNext, 20000);
+    return () => clearInterval(interval);
+  }, [panToNext]);
 
   const selectedSurveyLabel = SURVEY_TAGS.find((t) => t.slug === selectedSurveyTag)?.label;
 
@@ -71,11 +96,44 @@ export function Home() {
         className="relative bg-brand-primary"
         style={{ height: 'calc(100vh - 65px)' }}
       >
-        <div className="flex flex-col items-center justify-center h-full px-6 text-center">
-          <h1 className="font-heading font-bold text-4xl md:text-5xl text-white leading-tight max-w-3xl">
+        {/* Map background */}
+        <div className="absolute inset-0 pointer-events-none">
+          <Map
+            ref={mapRef}
+            mapboxAccessToken={import.meta.env.VITE_MAPBOX_TOKEN}
+            initialViewState={{ longitude: -104.9903, latitude: 39.7392, zoom: 12 }}
+            mapStyle="mapbox://styles/mapbox/dark-v11"
+            interactive={false}
+            attributionControl={false}
+            style={{ width: '100%', height: '100%' }}
+            onLoad={(e) => {
+              const map = e.target;
+              map.getStyle().layers.forEach((layer) => {
+                if (layer.type === 'symbol') {
+                  map.setLayoutProperty(layer.id, 'visibility', 'none');
+                }
+              });
+            }}
+          />
+          {/* Radial vignette — dark at edges, map visible in center */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background: 'radial-gradient(ellipse 60% 55% at 50% 50%, rgba(52,61,71,0.50) 0%, rgba(52,61,71,0.80) 55%, rgba(52,61,71,0.97) 100%)',
+            }}
+          />
+          {/* Bottom fade to #2B323B */}
+          <div
+            className="absolute inset-x-0 bottom-0"
+            style={{ height: '28%', background: 'linear-gradient(to bottom, transparent, #22282F)' }}
+          />
+        </div>
+
+        <div className="relative flex flex-col items-center justify-center h-full px-6 text-center">
+          <h1 className="font-heading font-bold text-4xl md:text-5xl text-white leading-tight max-w-6xl">
             There's a good cause just around the corner
           </h1>
-          <p className="font-sans text-lg text-white/70 mt-4 max-w-xl">
+          <p className="font-sans text-xl text-white/80 mt-4 max-w-xl">
             Discover and support high-impact Denver charities.
           </p>
           <div className="flex items-center justify-center gap-4 mt-8 flex-wrap">
@@ -115,11 +173,8 @@ export function Home() {
           {/* Left: text */}
           <div className="flex-1">
             <h2 className="font-heading font-bold text-2xl md:text-3xl text-text-primary leading-snug">
-              There's a good cause just around the corner.
+             A connection to non-profits in our community, so we can give better.
             </h2>
-            <p className="font-sans text-lg text-text-secondary mt-4">
-              GoodLocal connects you to non-profits that make an impact in your community, so you can give better.
-            </p>
             <ol className="mt-8 flex flex-col gap-4">
               <li className="flex items-start gap-3">
                 <span className="flex-shrink-0 w-7 h-7 rounded-full bg-brand-secondary text-white text-sm font-bold flex items-center justify-center">
