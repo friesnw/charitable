@@ -65,6 +65,7 @@ const PAN_STOPS = [
 export function Home() {
   const { isAuthenticated } = useAuth();
   const [selectedSurveyTag, setSelectedSurveyTag] = useState<string | null>(null);
+  const [mapReady, setMapReady] = useState(false);
   const mapRef = useRef<MapRef>(null);
   const stopIndexRef = useRef(0);
 
@@ -106,10 +107,19 @@ export function Home() {
             interactive={false}
             attributionControl={false}
             style={{ width: '100%', height: '100%' }}
-            transformStyle={(_, nextStyle) => ({
-              ...nextStyle,
-              layers: nextStyle.layers.filter((layer) => layer.type !== 'symbol'),
-            })}
+            onLoad={(e) => {
+              e.target.getStyle().layers.forEach((layer) => {
+                if (layer.type === 'symbol') {
+                  e.target.setLayoutProperty(layer.id, 'visibility', 'none');
+                }
+              });
+              setMapReady(true);
+            }}
+          />
+          {/* Solid cover fades out after labels are suppressed, preventing flicker */}
+          <div
+            className="absolute inset-0 transition-opacity duration-700"
+            style={{ backgroundColor: '#343D47', opacity: mapReady ? 0 : 1, pointerEvents: 'none' }}
           />
           {/* Radial vignette — dark at edges, map visible in center */}
           <div
