@@ -72,9 +72,12 @@ export function Home() {
         style={{ height: 'calc(100vh - 65px)' }}
       >
         <div className="flex flex-col items-center justify-center h-full px-6 text-center">
-          <h1 className="font-sans font-bold text-4xl md:text-5xl text-white leading-tight max-w-3xl">
-            Donate to local charities and track your impact across Denver.
+          <h1 className="font-heading font-bold text-4xl md:text-5xl text-white leading-tight max-w-3xl">
+            There's a good cause just around the corner
           </h1>
+          <p className="font-sans text-lg text-white/70 mt-4 max-w-xl">
+            Discover and support high-impact Denver charities.
+          </p>
           <div className="flex items-center justify-center gap-4 mt-8 flex-wrap">
             <ButtonLink to="/explore" variant="primary">
               Get started
@@ -89,7 +92,7 @@ export function Home() {
 
         {/* Neighborhood strip — pinned to bottom */}
         <div className="absolute bottom-0 left-0 right-0 px-4 pb-5">
-          <p className="text-xs text-white/50 text-center mb-2 font-medium uppercase tracking-wider">
+          <p className="text-sm text-white/50 text-center mb-2 font-subheading font-medium">
             Explore by neighborhood
           </p>
           <div className="flex gap-2 overflow-x-auto pb-1 justify-start md:justify-center">
@@ -111,7 +114,7 @@ export function Home() {
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-12 md:gap-20">
           {/* Left: text */}
           <div className="flex-1">
-            <h2 className="font-sans font-bold text-2xl md:text-3xl text-text-primary leading-snug">
+            <h2 className="font-heading font-bold text-2xl md:text-3xl text-text-primary leading-snug">
               There's a good cause just around the corner.
             </h2>
             <p className="font-sans text-lg text-text-secondary mt-4">
@@ -168,7 +171,7 @@ export function Home() {
 
       {/* Section 3 — Survey */}
       <section className="py-20 text-center px-6 bg-bg-accent">
-        <h2 className="font-sans font-bold text-2xl md:text-3xl text-text-primary max-w-xl mx-auto leading-snug">
+        <h2 className="font-heading font-bold text-2xl md:text-3xl text-text-primary max-w-xl mx-auto leading-snug">
           Where could Denver use the most support?
         </h2>
         <div className="mt-8 flex flex-wrap gap-3 justify-center max-w-lg mx-auto">

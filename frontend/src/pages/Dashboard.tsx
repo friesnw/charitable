@@ -6,7 +6,7 @@ export function Dashboard() {
 
   return (
     <div>
-      <h1 className="text-xl font-bold text-text-primary mb-4">Dashboard</h1>
+      <h1 className="text-xl font-heading font-bold text-text-primary mb-4">Dashboard</h1>
 
       <p className="text-text-secondary mb-6">
         Welcome back{user?.name ? `, ${user.name}` : ''}!

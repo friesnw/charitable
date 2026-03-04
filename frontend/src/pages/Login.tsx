@@ -28,7 +28,7 @@ export function Login() {
   if (submitted) {
     return (
       <div className="max-w-md mx-auto">
-        <h1 className="text-xl font-bold text-text-primary mb-4">Check your email</h1>
+        <h1 className="text-xl font-heading font-bold text-text-primary mb-4">Check your email</h1>
         <p className="text-text-secondary">
           We sent a login link to <strong>{email}</strong>. Click the link to sign in.
         </p>
@@ -38,7 +38,7 @@ export function Login() {
 
   return (
     <div className="max-w-md mx-auto">
-      <h1 className="text-xl font-bold text-text-primary mb-4">Log in</h1>
+      <h1 className="text-xl font-heading font-bold text-text-primary mb-4">Log in</h1>
       <p className="text-text-secondary mb-6">
         Enter your email to receive a magic link.
       </p>

@@ -22,7 +22,10 @@
   --text-secondary: #64748b;
 
   /* Typography */
-  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-sans: 'Fustat', system-ui, sans-serif;
+  --font-heading: 'Cal Sans', system-ui, sans-serif;
+  --font-subheading: 'Cal Sans', system-ui, sans-serif;
+  --letter-spacing-subheading: 0.02em;
 
 
   /* Spacing */

@@ -53,7 +53,7 @@ export function Verify() {
   if (error) {
     return (
       <div className="max-w-md mx-auto text-center">
-        <h1 className="text-xl font-bold text-text-primary mb-4">Verification failed</h1>
+        <h1 className="text-xl font-heading font-bold text-text-primary mb-4">Verification failed</h1>
         <p className="text-error mb-4">{error}</p>
         <ButtonLink to="/login" variant="link">
           Try again
@@ -64,7 +64,7 @@ export function Verify() {
 
   return (
     <div className="max-w-md mx-auto text-center">
-      <h1 className="text-xl font-bold text-text-primary mb-4">Verifying...</h1>
+      <h1 className="text-xl font-heading font-bold text-text-primary mb-4">Verifying...</h1>
       <p className="text-text-secondary">Please wait while we verify your login.</p>
     </div>
   );

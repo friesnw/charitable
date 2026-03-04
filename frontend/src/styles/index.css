@@ -1,6 +1,23 @@
 @import "tailwindcss";
 @import './tokens.css';
+
+@font-face {
+  font-family: 'Cal Sans';
+  src: url('/fonts/CalSans-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
 @import 'mapbox-gl/dist/mapbox-gl.css';
+
+.font-heading {
+  font-family: var(--font-heading);
+}
+
+.font-subheading {
+  font-family: var(--font-subheading);
+  letter-spacing: var(--letter-spacing-subheading);
+}
 
 /* Enable content scanning for class detection */
 @source "../**/*.{js,ts,jsx,tsx}";

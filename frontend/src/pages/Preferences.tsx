@@ -146,7 +146,7 @@ export function Preferences() {
 
   return (
     <div className="max-w-md mx-auto">
-      <h1 className="text-xl font-bold text-text-primary mb-6">Preferences</h1>
+      <h1 className="text-xl font-heading font-bold text-text-primary mb-6">Preferences</h1>
 
       <div className="mb-8">
         <h2 className="text-sm font-medium text-text-secondary mb-2">Profile</h2>
