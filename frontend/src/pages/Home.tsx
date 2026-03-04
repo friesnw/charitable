@@ -106,14 +106,10 @@ export function Home() {
             interactive={false}
             attributionControl={false}
             style={{ width: '100%', height: '100%' }}
-            onLoad={(e) => {
-              const map = e.target;
-              map.getStyle().layers.forEach((layer) => {
-                if (layer.type === 'symbol') {
-                  map.setLayoutProperty(layer.id, 'visibility', 'none');
-                }
-              });
-            }}
+            transformStyle={(_, nextStyle) => ({
+              ...nextStyle,
+              layers: nextStyle.layers.filter((layer) => layer.type !== 'symbol'),
+            })}
           />
           {/* Radial vignette — dark at edges, map visible in center */}
           <div
