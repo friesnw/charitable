@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import Map from 'react-map-gl/mapbox';
+import Map, { MapRef } from 'react-map-gl/mapbox';
 import { ButtonLink } from '../components/ui/Button';
 import { useQuery, gql } from '@apollo/client';
 import { useAuth } from '../hooks/useAuth';
@@ -53,9 +53,33 @@ const neighborhoodPills = HERO_NEIGHBORHOODS.map((name) => {
   return n ? { name, lat: n.lat, lng: n.lng } : null;
 }).filter(Boolean) as { name: string; lat: number; lng: number }[];
 
+const PAN_STOPS = [
+  { longitude: -104.9903, latitude: 39.7392 }, // Downtown
+  { longitude: -104.9719, latitude: 39.7508 }, // RiNo
+  { longitude: -104.9842, latitude: 39.7554 }, // Highland
+  { longitude: -104.9628, latitude: 39.7318 }, // Capitol Hill
+  { longitude: -104.9738, latitude: 39.7483 }, // Five Points
+  { longitude: -104.9509, latitude: 39.7207 }, // Cherry Creek
+];
+
 export function Home() {
   const { isAuthenticated } = useAuth();
   const [selectedSurveyTag, setSelectedSurveyTag] = useState<string | null>(null);
+  const mapRef = useRef<MapRef>(null);
+  const stopIndexRef = useRef(0);
+
+  const panToNext = useCallback(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    stopIndexRef.current = (stopIndexRef.current + 1) % PAN_STOPS.length;
+    const { longitude, latitude } = PAN_STOPS[stopIndexRef.current];
+    map.easeTo({ center: [longitude, latitude], duration: 6000, easing: (t) => t });
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(panToNext, 7000);
+    return () => clearInterval(interval);
+  }, [panToNext]);
 
   const selectedSurveyLabel = SURVEY_TAGS.find((t) => t.slug === selectedSurveyTag)?.label;
 
@@ -75,14 +99,15 @@ export function Home() {
         {/* Map background */}
         <div className="absolute inset-0 pointer-events-none">
           <Map
+            ref={mapRef}
             mapboxAccessToken={import.meta.env.VITE_MAPBOX_TOKEN}
-            initialViewState={{ longitude: -104.9903, latitude: 39.7392, zoom: 11 }}
+            initialViewState={{ longitude: -104.9903, latitude: 39.7392, zoom: 13 }}
             mapStyle="mapbox://styles/mapbox/dark-v11"
             interactive={false}
             style={{ width: '100%', height: '100%' }}
           />
-          {/* Dark overlay to keep text readable */}
-          <div className="absolute inset-0" style={{ backgroundColor: 'rgba(52,61,71,0.82)' }} />
+          {/* Dark overlay */}
+          <div className="absolute inset-0" style={{ backgroundColor: 'rgba(52,61,71,0.80)' }} />
         </div>
 
         <div className="relative flex flex-col items-center justify-center h-full px-6 text-center">
