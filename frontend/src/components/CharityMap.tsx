@@ -147,7 +147,7 @@ export function CharityMap({
         mapboxAccessToken={import.meta.env.VITE_MAPBOX_TOKEN}
         initialViewState={{ ...DENVER_CENTER, zoom: DEFAULT_ZOOM }}
         style={{ width: '100%', height: '100%' }}
-        mapStyle="mapbox://styles/mapbox/standard"
+        mapStyle="mapbox://styles/mapbox/light-v11"
         onLoad={handleMapLoad}
       >
         {charities.flatMap((charity) =>

@@ -20,6 +20,7 @@ interface EveryOrgPayload {
   currency?: string;
   frequency: 'one-time' | 'monthly';
   donationDate: string;
+  partnerMetadata?: string; // base64-encoded JSON set via the embed widget
 }
 
 export async function handleEveryOrgWebhook(req: Request, res: Response) {
@@ -43,7 +44,18 @@ export async function handleEveryOrgWebhook(req: Request, res: Response) {
     }
   }
 
-  const { chargeId, toNonprofit, amount, frequency, donationDate, email } = payload;
+  const { chargeId, toNonprofit, amount, frequency, donationDate, email, partnerMetadata } = payload;
+
+  // Decode partnerMetadata if present — used to associate the donation without an email lookup
+  let metadataUserId: number | null = null;
+  if (partnerMetadata) {
+    try {
+      const decoded = JSON.parse(Buffer.from(partnerMetadata, 'base64').toString('utf8'));
+      if (typeof decoded.userId === 'number') metadataUserId = decoded.userId;
+    } catch {
+      console.warn('[every-org webhook] Failed to decode partnerMetadata');
+    }
+  }
 
   if (!chargeId || !toNonprofit?.slug || !amount || !frequency || !donationDate) {
     console.warn('[every-org webhook] Missing required fields', payload);
@@ -84,15 +96,23 @@ export async function handleEveryOrgWebhook(req: Request, res: Response) {
     const donationId = insertResult.rows[0].id;
     console.log(`[every-org webhook] Recorded donation ${chargeId} → charity ${charityId} (id: ${donationId})`);
 
-    // Send confirmation email if we have a donor email
-    if (donorEmail) {
+    // Associate and notify donor
+    if (metadataUserId != null) {
+      // Fast path: userId came directly from the embed widget partnerMetadata
+      await pool.query(
+        'UPDATE donation_intents SET user_id = $1 WHERE id = $2',
+        [metadataUserId, donationId]
+      );
+      if (donorEmail) await sendDonationConfirmation(donorEmail, charityName);
+      console.log(`[every-org webhook] Associated donation ${donationId} to user ${metadataUserId} via partnerMetadata`);
+    } else if (donorEmail) {
       const verifiedUserResult = await pool.query(
         'SELECT id FROM users WHERE email = $1 AND email_verified = TRUE',
         [donorEmail]
       );
 
       if (verifiedUserResult.rows.length > 0) {
-        // Known verified user — associate immediately and send simple receipt
+        // Known verified user — associate and send simple receipt
         const userId = verifiedUserResult.rows[0].id;
         await pool.query(
           'UPDATE donation_intents SET user_id = $1 WHERE id = $2',

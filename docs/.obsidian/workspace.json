@@ -62,9 +62,23 @@
               "icon": "lucide-file",
               "title": "01-Integrate-Donations"
             }
+          },
+          {
+            "id": "7d09a1c30e27b5a8",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Tasks/Todo/05-good-local-emails.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "05-good-local-emails"
+            }
           }
         ],
-        "currentTab": 3
+        "currentTab": 4
       }
     ],
     "direction": "vertical"
@@ -226,27 +240,28 @@
       "bases:Create new base": false
     }
   },
-  "active": "48642f9b0979e9d1",
+  "active": "7d09a1c30e27b5a8",
   "lastOpenFiles": [
-    "Architecture-Decisions.md",
     "Tasks/Todo/04-Data-updates.md",
+    "Tasks/Backlog/04-Mobile-Optimization.md",
+    "Tasks/Backlog/9-Email-Notifications.md",
+    "Untitled.md",
     "Tasks/Todo/01-Integrate-Donations.md",
+    "Architecture-Decisions.md",
     "Tasks/Done/01-Outline-content-flow.md",
     "Tasks/Done/9-Improve-Charities-map.md",
-    "Tasks/Todo/good-local-emails.md",
+    "Tasks/Todo/05-good-local-emails.md",
     "Tasks/Done/8-Preferences-Onboarding.md",
     "Tasks/Backlog/5-Incorporate beta pilot experience.md",
     "Tasks/Backlog/Create onboarding experience.md",
     "Tasks/Backlog/Auth-Enhancements.md",
     "Untitled 1.md",
     "Screenshot 2026-02-12 at 9.14.23 PM.png",
-    "Untitled.md",
     "Tasks/Backlog/Pre-Launch-Branding.md",
     "Tasks/Backlog/MVP Measurement Plan.md",
     "Tasks/Backlog/Name Confirmation.md",
     "Tasks/Backlog/7-Analytics-Beacon.md",
     "Tasks/Backlog/6-Styling Updates.md",
-    "Tasks/Backlog/9-Email-Notifications.md",
     "Tasks/Backlog/17-Database-Backup-Process.md",
     "Tasks/Backlog/11-Tag cleanup.md",
     "Tasks/Todo/17-Database-Backup-Process.md",
@@ -254,7 +269,6 @@
     "Tasks/Todo/01-Outline content flow.md",
     "Product/flows.md",
     "Tasks/Backlog/8-Preferences-Onboarding.md",
-    "Tasks/Todo/Outline the content push flow from dev to prod.md",
     "Research/Archive",
     "Product/Policies",
     "Product/Marketing-copy",

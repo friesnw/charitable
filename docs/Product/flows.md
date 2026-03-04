@@ -79,7 +79,7 @@ Reference for manual QA and automated testing. Each flow covers the happy path a
 2. `CharityPreviewDrawer` slides up
 3. Shows: name, address, description, cause tags, photo
 4. "Learn more" → `/charities/:slug`
-5. "Donate" → opens Every.org in new tab
+5. "Donate" → opens Every.org donation modal in-page (embedded widget)
 
 ### 3f. Geolocation
 1. Browser prompts for location permission
@@ -126,7 +126,7 @@ Reference for manual QA and automated testing. Each flow covers the happy path a
 3. All locations listed with photo, address, description
 
 ### 5b. Donate CTA
-1. Click "Donate" → opens Every.org page in new tab
+1. Click "Donate" → Every.org donation modal opens in-page (embedded widget)
 
 ### 5c. External Links
 1. Website URL → opens in new tab
@@ -158,17 +158,37 @@ Reference for manual QA and automated testing. Each flow covers the happy path a
 ## 7. Donation
 
 ### 7a. Donate via Drawer
-1. Open charity in Explore drawer
-2. Click "Donate" → every.org opens in new tab
+1. Open charity in Explore drawer or Charities map view
+2. Click "Donate" → Every.org donation modal opens in-page (embedded widget)
+3. If user is logged in: email and first name are pre-filled in the modal
 
 ### 7b. Donate via Detail Page
 1. Visit `/charities/:slug`
-2. Click "Donate" → every.org opens in new tab
+2. Click "Donate" → Every.org donation modal opens in-page (embedded widget)
+3. If user is logged in: email and first name are pre-filled in the modal
 
 *(GoodLocal does not process payments — Every.org handles the full donation flow)*
 
-### 7c. Post-donation confirmation — new or unverified user
-1. Donor completes donation on Every.org; webhook fires to `/api/webhooks/every-org`
+**Edge case:**
+- If the Every.org script (`button.js`) hasn't loaded yet, the button renders as an empty container; the widget attaches once the script loads
+
+### 7c. Post-donation confirmation — logged-in user (fast path)
+1. Logged-in user clicks Donate → modal opens with `partnerMetadata` containing base64-encoded `{ userId }`
+2. Donor completes donation; webhook fires to `/api/webhooks/every-org` with `partnerMetadata` in payload
+3. `donation_intents` row inserted
+4. Backend decodes `partnerMetadata` → `userId` extracted immediately
+5. `user_id` set on the row without any email lookup
+6. Confirmation email sent if `donor_email` is present in the payload
+
+### 7d. Post-donation confirmation — known verified user (email lookup)
+1. Donor completes donation on Every.org; webhook fires (no `partnerMetadata` or userId not found)
+2. `donation_intents` row inserted with `donor_email` set
+3. Verified GoodLocal account found for that email
+4. `user_id` set immediately on the inserted row
+5. Simple receipt email sent ("Thanks for supporting [Charity]" with link to GoodLocal homepage; no magic link)
+
+### 7e. Post-donation confirmation — new or unverified user
+1. Donor completes donation on Every.org; webhook fires
 2. `donation_intents` row inserted with `donor_email` set, `user_id` NULL
 3. No verified GoodLocal account found for that email
 4. Magic link token generated and inserted into `magic_link_tokens`
@@ -179,13 +199,6 @@ Reference for manual QA and automated testing. Each flow covers the happy path a
 **Edge cases:**
 - Donor ignores the email — donations remain in DB with `donor_email` set; associated if they ever sign up with the same email
 - Magic link expires — donations still stored; a fresh sign-in via `/login` will also trigger retroactive association
-
-### 7d. Post-donation confirmation — known verified user
-1. Donor completes donation on Every.org; webhook fires
-2. `donation_intents` row inserted with `donor_email` set
-3. Verified GoodLocal account found for that email
-4. `user_id` set immediately on the inserted row
-5. Simple receipt email sent ("Thanks for supporting [Charity]" with link to GoodLocal homepage; no magic link)
 
 ---
 
@@ -381,7 +394,7 @@ Reference for manual QA and automated testing. Each flow covers the happy path a
 	  - Functionality:
 	    - Display name, EIN, founded year, description, cause tags, primary address
 	    - Locations list (label, address, description per location)
-	    - Donate button (links to Every.org)
+	    - Donate button — opens Every.org embedded modal in-page; pre-fills donor email/name if logged in; passes partnerMetadata with userId for immediate association on webhook
 	    - Volunteer button (links to charity volunteer URL)
 	    - Visit website link (links to charity website)
 	  - Links to: External (Every.org, charity website, volunteer URL), /charities (back link)

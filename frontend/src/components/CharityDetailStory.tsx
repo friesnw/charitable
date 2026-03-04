@@ -4,6 +4,7 @@ import { cloudinaryUrl } from '../lib/cloudinary';
 import { distanceLabel } from '../lib/geo';
 import { causeColor } from '../lib/causeColors';
 import { nearestNeighborhood } from '../lib/neighborhoods';
+import { DonateButton } from './ui/DonateButton';
 
 interface StoryLocation {
   id: string;
@@ -167,15 +168,11 @@ export function CharityDetailStory({ charity, tagLabels, userDistance }: Charity
       {/* Sticky action buttons */}
       <div className="sticky bottom-0 bg-white border-t border-gray-200 px-4 py-3 flex gap-3">
         {charity.everyOrgSlug && (
-          <a
-            href={`https://www.every.org/${charity.everyOrgSlug}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 text-center py-3 rounded-xl text-sm font-semibold text-white"
-            style={{ backgroundColor: color }}
-          >
-            Donate
-          </a>
+          <DonateButton
+            nonprofitSlug={charity.everyOrgSlug}
+            color={color}
+            className="flex-1"
+          />
         )}
         {charity.volunteerUrl && (
           <a
