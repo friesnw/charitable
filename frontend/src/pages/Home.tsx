@@ -125,7 +125,7 @@ export function Home() {
           {/* Bottom fade to #2B323B */}
           <div
             className="absolute inset-x-0 bottom-0"
-            style={{ height: '28%', background: 'linear-gradient(to bottom, transparent, #2B323B)' }}
+            style={{ height: '28%', background: 'linear-gradient(to bottom, transparent, #22282F)' }}
           />
         </div>
 
@@ -173,11 +173,8 @@ export function Home() {
           {/* Left: text */}
           <div className="flex-1">
             <h2 className="font-heading font-bold text-2xl md:text-3xl text-text-primary leading-snug">
-              There's a good cause just around the corner.
+             A connection to non-profits in our community, so we can give better.
             </h2>
-            <p className="font-sans text-lg text-text-secondary mt-4">
-              GoodLocal connects you to non-profits that make an impact in your community, so you can give better.
-            </p>
             <ol className="mt-8 flex flex-col gap-4">
               <li className="flex items-start gap-3">
                 <span className="flex-shrink-0 w-7 h-7 rounded-full bg-brand-secondary text-white text-sm font-bold flex items-center justify-center">
