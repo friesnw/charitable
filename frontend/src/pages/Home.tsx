@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import Map from 'react-map-gl/mapbox';
 import { ButtonLink } from '../components/ui/Button';
 import { useQuery, gql } from '@apollo/client';
 import { useAuth } from '../hooks/useAuth';
@@ -71,11 +72,24 @@ export function Home() {
         className="relative bg-brand-primary"
         style={{ height: 'calc(100vh - 65px)' }}
       >
-        <div className="flex flex-col items-center justify-center h-full px-6 text-center">
-          <h1 className="font-heading font-bold text-4xl md:text-5xl text-white leading-tight max-w-3xl">
+        {/* Map background */}
+        <div className="absolute inset-0 pointer-events-none">
+          <Map
+            mapboxAccessToken={import.meta.env.VITE_MAPBOX_TOKEN}
+            initialViewState={{ longitude: -104.9903, latitude: 39.7392, zoom: 11 }}
+            mapStyle="mapbox://styles/mapbox/dark-v11"
+            interactive={false}
+            style={{ width: '100%', height: '100%' }}
+          />
+          {/* Dark overlay to keep text readable */}
+          <div className="absolute inset-0" style={{ backgroundColor: 'rgba(52,61,71,0.82)' }} />
+        </div>
+
+        <div className="relative flex flex-col items-center justify-center h-full px-6 text-center">
+          <h1 className="font-heading font-bold text-4xl md:text-5xl text-white leading-tight max-w-6xl">
             There's a good cause just around the corner
           </h1>
-          <p className="font-sans text-lg text-white/70 mt-4 max-w-xl">
+          <p className="font-sans text-xl text-white/80 mt-4 max-w-xl">
             Discover and support high-impact Denver charities.
           </p>
           <div className="flex items-center justify-center gap-4 mt-8 flex-wrap">
