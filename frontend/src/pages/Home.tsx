@@ -114,6 +114,7 @@ export function Home() {
                 }
               });
               setMapReady(true);
+              panToNext();
             }}
           />
           {/* Solid cover fades out after labels are suppressed, preventing flicker */}
@@ -143,7 +144,7 @@ export function Home() {
             Discover and support high-impact Denver charities.
           </p>
           <div className="flex items-center justify-center gap-4 mt-8 flex-wrap">
-            <ButtonLink to="/explore" variant="primary">
+            <ButtonLink to="/charities" variant="primary">
               Get started
             </ButtonLink>
             {!isAuthenticated && (
