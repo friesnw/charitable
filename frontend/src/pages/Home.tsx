@@ -73,11 +73,11 @@ export function Home() {
     if (!map) return;
     stopIndexRef.current = (stopIndexRef.current + 1) % PAN_STOPS.length;
     const { longitude, latitude } = PAN_STOPS[stopIndexRef.current];
-    map.easeTo({ center: [longitude, latitude], duration: 6000, easing: (t) => t });
+    map.easeTo({ center: [longitude, latitude], duration: 18000, easing: (t) => t });
   }, []);
 
   useEffect(() => {
-    const interval = setInterval(panToNext, 7000);
+    const interval = setInterval(panToNext, 20000);
     return () => clearInterval(interval);
   }, [panToNext]);
 
@@ -106,8 +106,18 @@ export function Home() {
             interactive={false}
             style={{ width: '100%', height: '100%' }}
           />
-          {/* Dark overlay */}
-          <div className="absolute inset-0" style={{ backgroundColor: 'rgba(52,61,71,0.80)' }} />
+          {/* Radial vignette — dark at edges, map visible in center */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background: 'radial-gradient(ellipse 60% 55% at 50% 50%, rgba(52,61,71,0.50) 0%, rgba(52,61,71,0.80) 55%, rgba(52,61,71,0.97) 100%)',
+            }}
+          />
+          {/* Extra bottom fade for neighborhood strip legibility */}
+          <div
+            className="absolute inset-x-0 bottom-0"
+            style={{ height: '28%', background: 'linear-gradient(to bottom, transparent, rgba(52,61,71,0.95))' }}
+          />
         </div>
 
         <div className="relative flex flex-col items-center justify-center h-full px-6 text-center">
