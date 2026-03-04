@@ -4,7 +4,6 @@ import { cloudinaryUrl } from '../lib/cloudinary';
 import { distanceLabel } from '../lib/geo';
 import { causeColor } from '../lib/causeColors';
 import { nearestNeighborhood } from '../lib/neighborhoods';
-import { DonateButton } from './ui/DonateButton';
 
 export interface DrawerCharity {
   id: string;
@@ -142,18 +141,12 @@ export function CharityPreviewDrawer({
           <div className="flex gap-3">
             <Link
               to={`/charities/${charity.slug}`}
-              className="flex-1 text-center py-2.5 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="flex-1 text-center py-2.5 rounded-lg text-sm font-medium text-white"
+              style={{ backgroundColor: color }}
               onClick={onClose}
             >
-              Learn more →
+              View charity →
             </Link>
-            {charity.everyOrgSlug && (
-              <DonateButton
-                nonprofitSlug={charity.everyOrgSlug}
-                color={color}
-                className="flex-1"
-              />
-            )}
           </div>
         </div>
       </div>

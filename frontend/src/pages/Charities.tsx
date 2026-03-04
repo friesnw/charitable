@@ -6,7 +6,6 @@ import { cloudinaryUrl } from '../lib/cloudinary';
 import { causeColor, causeIcon, FEATURED_TAGS, causesToTagLabels } from '../lib/causeColors';
 import { nearestNeighborhood } from '../lib/neighborhoods';
 import { CharityPreviewDrawer } from '../components/CharityPreviewDrawer';
-import { DonateButton } from '../components/ui/DonateButton';
 
 const CharityMap = lazy(() =>
   import('../components/CharityMap').then((m) => ({ default: m.CharityMap }))
@@ -283,16 +282,10 @@ export function Charities() {
                       <div className="flex gap-2 mt-3" onClick={(e) => e.stopPropagation()}>
                         <Link
                           to={`/charities/${charity.slug}`}
-                          className="flex-1 text-center py-2 rounded-lg border border-gray-300 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                          className="flex-1 text-center py-2 rounded-lg text-xs font-medium text-white bg-brand-secondary hover:opacity-90"
                         >
-                          Learn more →
+                          View charity →
                         </Link>
-                        {charity.everyOrgSlug && (
-                          <DonateButton
-                            nonprofitSlug={charity.everyOrgSlug}
-                            className="flex-1"
-                          />
-                        )}
                       </div>
                     )}
                   </button>

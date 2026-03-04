@@ -9,6 +9,7 @@
 		3. Make a donation
 		4. Create an account
 
+Donation page: number of views, number of "donate" button clicks?
 ### Learn: Giving types
 - What is the appetite for financial donations compared to donating time?
 - Measure: 
