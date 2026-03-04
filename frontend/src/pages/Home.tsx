@@ -115,12 +115,17 @@ export function Home() {
               });
             }}
           />
-          {/* Dark overlay */}
-          <div className="absolute inset-0" style={{ backgroundColor: 'rgba(52,61,71,0.75)' }} />
+          {/* Radial vignette — dark at edges, map visible in center */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background: 'radial-gradient(ellipse 60% 55% at 50% 50%, rgba(52,61,71,0.50) 0%, rgba(52,61,71,0.80) 55%, rgba(52,61,71,0.97) 100%)',
+            }}
+          />
           {/* Bottom fade to #2B323B */}
           <div
             className="absolute inset-x-0 bottom-0"
-            style={{ height: '40%', background: 'linear-gradient(to bottom, transparent, #2B323B)' }}
+            style={{ height: '28%', background: 'linear-gradient(to bottom, transparent, #2B323B)' }}
           />
         </div>
 
