@@ -24,8 +24,6 @@ interface EveryDotOrgDonateButton {
   setOptions(options: Record<string, unknown>): void;
 }
 
-declare global {
-  interface Window {
-    everyDotOrgDonateButton?: EveryDotOrgDonateButton;
-  }
+interface Window {
+  everyDotOrgDonateButton?: EveryDotOrgDonateButton;
 }
