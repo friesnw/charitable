@@ -101,7 +101,7 @@ export function Home() {
           <Map
             ref={mapRef}
             mapboxAccessToken={import.meta.env.VITE_MAPBOX_TOKEN}
-            initialViewState={{ longitude: -104.9903, latitude: 39.7392, zoom: 13 }}
+            initialViewState={{ longitude: -104.9903, latitude: 39.7392, zoom: 12 }}
             mapStyle="mapbox://styles/mapbox/dark-v11"
             interactive={false}
             style={{ width: '100%', height: '100%' }}
