@@ -107,6 +107,7 @@ interface CharityData {
 interface EditForm {
   name: string;
   description: string;
+  logoUrl: string | null;
   websiteUrl: string;
   volunteerUrl: string;
   primaryAddress: string;
@@ -129,6 +130,7 @@ function initEditForm(c: CharityData): EditForm {
   return {
     name: c.name,
     description: c.description ?? '',
+    logoUrl: c.logoUrl,
     websiteUrl: c.websiteUrl ?? '',
     volunteerUrl: c.volunteerUrl ?? '',
     primaryAddress: c.primaryAddress ?? '',
@@ -204,6 +206,7 @@ export function AdminCharityEdit() {
           id: charity.id,
           name: editForm.name,
           description: editForm.description || null,
+          logoUrl: editForm.logoUrl,
           websiteUrl: editForm.websiteUrl || null,
           volunteerUrl: editForm.volunteerUrl || null,
           primaryAddress: editForm.primaryAddress || null,
@@ -225,12 +228,11 @@ export function AdminCharityEdit() {
   }
 
   async function handleUploadLogo() {
-    if (!charity) return;
     setUploadingField('logo');
     try {
       const url = await pickAndUploadImage();
       if (url) {
-        await updateCharity({ variables: { id: charity.id, logoUrl: url } });
+        setEditForm(f => f && ({ ...f, logoUrl: url }));
       }
     } finally {
       setUploadingField(null);
@@ -314,9 +316,9 @@ export function AdminCharityEdit() {
       <div className="flex items-center gap-3 mb-6">
         {charity.logoUrl ? (
           <img
-            src={cloudinaryUrl(charity.logoUrl, { w: 48, h: 48 })}
+            src={cloudinaryUrl(charity.logoUrl, { w: 48, h: 36 })}
             alt={charity.name}
-            className="w-12 h-12 object-cover rounded"
+            className="w-12 h-9 object-cover rounded"
           />
         ) : (
           <Initials name={charity.name} size={48} />
@@ -433,11 +435,11 @@ export function AdminCharityEdit() {
         <div>
           <label className={labelCls}>Logo</label>
           <div className="flex items-center gap-3 mt-1">
-            {charity.logoUrl ? (
+            {editForm.logoUrl ? (
               <img
-                src={cloudinaryUrl(charity.logoUrl, { w: 64, h: 64 })}
+                src={cloudinaryUrl(editForm.logoUrl, { w: 80, h: 60 })}
                 alt="Logo"
-                className="w-16 h-16 object-cover rounded border border-brand-tertiary"
+                className="w-20 h-[60px] object-cover rounded border border-brand-tertiary"
               />
             ) : (
               <Initials name={charity.name} size={64} />

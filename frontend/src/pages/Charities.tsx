@@ -248,9 +248,9 @@ export function Charities() {
                     <div className="flex items-center gap-2 mb-1">
                       {charity.logoUrl ? (
                         <img
-                          src={cloudinaryUrl(charity.logoUrl, { w: 40, h: 40 })}
+                          src={cloudinaryUrl(charity.logoUrl, { w: 48, h: 36 })}
                           alt={charity.name}
-                          className="w-10 h-10 object-cover rounded flex-shrink-0"
+                          className="w-12 h-9 object-cover rounded flex-shrink-0"
                         />
                       ) : (
                         <div className="w-10 h-10 flex-shrink-0 rounded bg-bg-accent flex items-center justify-center text-text-secondary text-xs font-bold">
