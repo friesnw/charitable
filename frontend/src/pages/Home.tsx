@@ -105,6 +105,14 @@ export function Home() {
             mapStyle="mapbox://styles/mapbox/dark-v11"
             interactive={false}
             style={{ width: '100%', height: '100%' }}
+            onLoad={(e) => {
+              const map = e.target;
+              map.getStyle().layers.forEach((layer) => {
+                if (layer.type === 'symbol') {
+                  map.setLayoutProperty(layer.id, 'visibility', 'none');
+                }
+              });
+            }}
           />
           {/* Radial vignette — dark at edges, map visible in center */}
           <div
