@@ -126,7 +126,7 @@ export function Home() {
           <div
             className="absolute inset-0"
             style={{
-              background: 'radial-gradient(ellipse 60% 55% at 50% 50%, rgba(52,61,71,0.35) 0%, rgba(52,61,71,0.80) 55%, rgba(52,61,71,0.97) 100%)',
+              background: 'radial-gradient(ellipse 60% 55% at 50% 50%, rgba(52,61,71,0.35) 0%, rgba(52,61,71,0.70) 55%, rgba(52,61,71,0.97) 100%)',
             }}
           />
           {/* Bottom fade to #2B323B */}

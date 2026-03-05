@@ -69,12 +69,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Tasks/Todo/06-charity-page-optimization.md",
+                "file": "Research/Donation-Processing-Options.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "06-charity-page-optimization"
+              "title": "Donation-Processing-Options"
             }
           }
         ],
@@ -242,11 +242,16 @@
   },
   "active": "7d09a1c30e27b5a8",
   "lastOpenFiles": [
+    "Tasks/Todo/06-charity-page-optimization.md",
+    "Tasks/Todo/05-good-local-emails.md",
+    "Research/Donation-Processing-Options.md",
+    "Tasks/Backlog/Implement search.md",
+    "Tasks/Done/Implement search.md",
+    "Product/Operations.md",
+    "Product/Architecture-Decisions.md",
     "Tasks/Backlog/MVP Measurement Plan.md",
     "Tasks/Todo/01-Integrate-Donations.md",
-    "Tasks/Todo/06-charity-page-optimization.md",
     "Tasks/Todo/04-Data-updates.md",
-    "Tasks/Todo/05-good-local-emails.md",
     "Tasks/Backlog/04-Mobile-Optimization.md",
     "Tasks/Backlog/9-Email-Notifications.md",
     "Untitled.md",
@@ -264,11 +269,6 @@
     "Tasks/Backlog/7-Analytics-Beacon.md",
     "Tasks/Backlog/6-Styling Updates.md",
     "Tasks/Backlog/17-Database-Backup-Process.md",
-    "Tasks/Backlog/11-Tag cleanup.md",
-    "Tasks/Todo/17-Database-Backup-Process.md",
-    "Operations.md",
-    "Tasks/Todo/01-Outline content flow.md",
-    "Product/flows.md",
     "Research/Archive",
     "Product/Policies",
     "Product/Marketing-copy",
