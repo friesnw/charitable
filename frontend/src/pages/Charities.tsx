@@ -104,7 +104,6 @@ function SkeletonCard() {
 
 export function Charities() {
   const { isAuthenticated } = useAuth();
-  const [search, setSearch] = useState('');
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedTag, setSelectedTag] = useState<string | null>(
     searchParams.get('tag') ?? null
@@ -185,7 +184,6 @@ export function Charities() {
   const { loading, error, data } = useQuery(GET_CHARITIES, {
     variables: {
       tags: selectedTag ? [selectedTag] : undefined,
-      search: search || undefined,
     },
   });
 
@@ -390,17 +388,8 @@ export function Charities() {
             viewMode === 'list' ? 'hidden' : 'flex-1',
           ].join(' ')}
         >
-          {/* Floating controls — search, tag chips, mobile toggle */}
+          {/* Floating controls — tag chips */}
           <div className="absolute top-0 left-0 right-0 z-10 p-3 flex flex-col gap-2 pointer-events-none">
-            <div className="pointer-events-auto flex items-center gap-2">
-              <input
-                type="text"
-                placeholder="Search charities..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="flex-1 px-4 py-2.5 rounded-xl shadow-lg border border-gray-200 bg-white/90 backdrop-blur-sm text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              />
-            </div>
             {availableTags.length > 0 && (
               <div className="pointer-events-auto flex gap-2 overflow-x-auto pb-1">
                 <button
