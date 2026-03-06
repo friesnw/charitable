@@ -54,8 +54,10 @@ export function DonateButton({ nonprofitSlug, charityName, color, className }: D
 
   const handleContinue = () => {
     setIntroOpen(false);
-    // Let the modal unmount before the Every.org overlay opens
-    requestAnimationFrame(() => window.everyDotOrgDonateButton?.show());
+    // Let our modal unmount before triggering the Every.org overlay
+    requestAnimationFrame(() => {
+      document.getElementById(elementId)?.click();
+    });
   };
 
   const displayName = charityName ?? 'this organization';
@@ -88,7 +90,7 @@ export function DonateButton({ nonprofitSlug, charityName, color, className }: D
           style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
           onClick={(e) => { if (e.target === e.currentTarget) setIntroOpen(false); }}
         >
-          <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-sm p-6 relative">
+          <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-md p-6 relative">
             {/* Close */}
             <button
               onClick={() => setIntroOpen(false)}
@@ -110,6 +112,7 @@ export function DonateButton({ nonprofitSlug, charityName, color, className }: D
                 `0% platform fee — 100% of your donation reaches ${displayName}`,
                 'Tax-deductible receipt sent to your email',
                 'Pay by card, bank transfer, PayPal, Venmo, and more',
+                'Your donation is saved to your GoodLocal giving history — track contributions across all your supported charities in one place',
               ].map((item) => (
                 <li key={item} className="flex items-start gap-2 text-sm text-gray-700">
                   <span className="text-green-500 font-bold flex-shrink-0 mt-0.5">✓</span>
