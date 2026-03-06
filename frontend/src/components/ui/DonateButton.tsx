@@ -125,7 +125,7 @@ export function DonateButton({ nonprofitSlug, charityName, color, className }: D
             <button
               onClick={handleContinue}
               className="w-full py-3 rounded-xl text-sm font-semibold text-white"
-              style={{ backgroundColor: color ?? 'var(--color-brand-secondary)' }}
+              style={{ backgroundColor: '#CB6740' }}
             >
               Continue to donate →
             </button>
