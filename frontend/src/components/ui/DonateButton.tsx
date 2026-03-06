@@ -1,19 +1,20 @@
-import { useContext, useEffect, useRef } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { AuthContext } from '../../context/AuthContext';
 
 interface DonateButtonProps {
   nonprofitSlug: string;
+  charityName?: string;
   color?: string;
   className?: string;
 }
 
-export function DonateButton({ nonprofitSlug, color, className }: DonateButtonProps) {
-  // Use context directly (null-safe) so this works outside AuthProvider (e.g. Storybook)
+export function DonateButton({ nonprofitSlug, charityName, color, className }: DonateButtonProps) {
   const auth = useContext(AuthContext);
   const user = auth?.user ?? null;
 
-  // Stable per-instance ID — safe across re-renders but unique per mount
   const elementId = useRef(`donate-${nonprofitSlug}-${Math.random().toString(36).slice(2)}`).current;
+  const [introOpen, setIntroOpen] = useState(false);
 
   useEffect(() => {
     const webhookToken = import.meta.env.VITE_EVERY_ORG_WEBHOOK_TOKEN;
@@ -51,13 +52,84 @@ export function DonateButton({ nonprofitSlug, color, className }: DonateButtonPr
     }
   }, [elementId, nonprofitSlug, color, user]);
 
+  const handleContinue = () => {
+    setIntroOpen(false);
+    // Let the modal unmount before the Every.org overlay opens
+    requestAnimationFrame(() => window.everyDotOrgDonateButton?.show());
+  };
+
+  const displayName = charityName ?? 'this organization';
+
   return (
-    <div
-      id={elementId}
-      className={`text-center py-2.5 rounded-lg text-sm font-medium text-white cursor-pointer${className ? ` ${className}` : ''}`}
-      style={{ backgroundColor: color ?? 'var(--color-brand-secondary)' }}
-    >
-      Donate
-    </div>
+    <>
+      {/* Hidden Every.org widget target — initialized off-screen so .show() works */}
+      <div
+        id={elementId}
+        aria-hidden="true"
+        style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, overflow: 'hidden' }}
+      />
+
+      {/* Visible button — opens our intro modal */}
+      <div
+        className={`text-center py-2.5 rounded-lg text-sm font-medium text-white cursor-pointer${className ? ` ${className}` : ''}`}
+        style={{ backgroundColor: color ?? 'var(--color-brand-secondary)' }}
+        onClick={() => setIntroOpen(true)}
+      >
+        Donate
+      </div>
+
+      {/* Intro modal — portaled to body to avoid stacking context issues */}
+      {introOpen && createPortal(
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4"
+          style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+          onClick={(e) => { if (e.target === e.currentTarget) setIntroOpen(false); }}
+        >
+          <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-sm p-6 relative">
+            {/* Close */}
+            <button
+              onClick={() => setIntroOpen(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 leading-none"
+              aria-label="Close"
+            >
+              ✕
+            </button>
+
+            <h2 className="text-lg font-bold text-gray-900 mb-1">
+              Support {displayName}
+            </h2>
+            <p className="text-sm text-gray-500 mb-5">
+              GoodLocal partners with Every.org to process donations. Every.org is a trusted nonprofit platform that powers giving for thousands of organizations. Aside from standard credit card processing fees, 100% of your donation will reach {displayName}.
+            </p>
+
+            <ul className="space-y-2.5 mb-5">
+              {[
+                `0% platform fee — 100% of your donation reaches ${displayName}`,
+                'Tax-deductible receipt sent to your email',
+                'Pay by card, bank transfer, PayPal, Venmo, and more',
+              ].map((item) => (
+                <li key={item} className="flex items-start gap-2 text-sm text-gray-700">
+                  <span className="text-green-500 font-bold flex-shrink-0 mt-0.5">✓</span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+
+            <p className="text-xs text-gray-400 mb-5">
+              Your payment information is handled entirely by Every.org — GoodLocal never sees it.
+            </p>
+
+            <button
+              onClick={handleContinue}
+              className="w-full py-3 rounded-xl text-sm font-semibold text-white"
+              style={{ backgroundColor: color ?? 'var(--color-brand-secondary)' }}
+            >
+              Continue to donate →
+            </button>
+          </div>
+        </div>,
+        document.body
+      )}
+    </>
   );
 }

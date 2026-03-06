@@ -85,6 +85,23 @@ interface Charity {
   }[];
 }
 
+function SkeletonCard() {
+  return (
+    <div className="px-4 py-4 border-b border-brand-tertiary animate-pulse">
+      <div className="flex items-center gap-2 mb-2">
+        <div className="w-8 h-8 rounded-full bg-bg-accent flex-shrink-0" />
+        <div className="h-3.5 bg-bg-accent rounded w-2/5" />
+      </div>
+      <div className="h-2.5 bg-bg-accent rounded w-full mb-1.5" />
+      <div className="h-2.5 bg-bg-accent rounded w-3/4 mb-3" />
+      <div className="flex gap-1.5">
+        <div className="h-4 bg-bg-accent rounded w-14" />
+        <div className="h-4 bg-bg-accent rounded w-16" />
+      </div>
+    </div>
+  );
+}
+
 export function Charities() {
   const { isAuthenticated } = useAuth();
   const [search, setSearch] = useState('');
@@ -199,12 +216,15 @@ export function Charities() {
           ].join(' ')}
         >
           {/* Mobile-only: switch to map view */}
-          <div className="lg:hidden flex-shrink-0 border-b border-brand-tertiary px-4 py-2.5">
+          <div className="lg:hidden flex-shrink-0 border-b border-brand-tertiary">
             <button
               onClick={() => setViewMode('map')}
-              className="text-sm font-medium text-brand-secondary"
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold text-text-primary hover:bg-bg-accent transition-colors"
             >
-              ← Show map
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-text-secondary">
+                <path fillRule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 0 0 .281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 1 0 3 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 0 0 2.273 1.765 11.842 11.842 0 0 0 .976.544l.062.029.018.008.006.003ZM10 11.25a2.25 2.25 0 1 0 0-4.5 2.25 2.25 0 0 0 0 4.5Z" clipRule="evenodd" />
+              </svg>
+              Show map
             </button>
           </div>
 
@@ -218,7 +238,12 @@ export function Charities() {
           )}
           <div className="overflow-y-auto flex-1">
             {loading && (
-              <p className="text-text-secondary p-4">Loading charities...</p>
+              <>
+                <SkeletonCard />
+                <SkeletonCard />
+                <SkeletonCard />
+                <SkeletonCard />
+              </>
             )}
             {error && (
               <p className="text-error p-4">Error: {error.message}</p>
@@ -254,9 +279,9 @@ export function Charities() {
                     <div className="flex items-center gap-2 mb-1">
                       {charity.logoUrl ? (
                         <img
-                          src={cloudinaryUrl(charity.logoUrl, { w: 40, h: 40, fit: 'fit' })}
+                          src={cloudinaryUrl(charity.logoUrl, { w: 32, h: 32, fit: 'fit' })}
                           alt={charity.name}
-                          className="w-10 h-10 object-contain rounded-full flex-shrink-0"
+                          className="w-8 h-8 object-contain rounded-full flex-shrink-0"
                         />
                       ) : (
                         <div className="w-10 h-10 flex-shrink-0 rounded bg-bg-accent flex items-center justify-center text-text-secondary text-xs font-bold">
@@ -375,21 +400,6 @@ export function Charities() {
                 onChange={(e) => setSearch(e.target.value)}
                 className="flex-1 px-4 py-2.5 rounded-xl shadow-lg border border-gray-200 bg-white/90 backdrop-blur-sm text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
               />
-              {/* Map/List toggle — mobile only */}
-              <div className="lg:hidden flex rounded-xl overflow-hidden shadow-lg border border-gray-200 bg-white/90 backdrop-blur-sm flex-shrink-0">
-                <button
-                  onClick={() => setViewMode('map')}
-                  className="px-3 py-2.5 text-sm font-medium transition-colors bg-gray-900 text-white"
-                >
-                  Map
-                </button>
-                <button
-                  onClick={() => setViewMode('list')}
-                  className="px-3 py-2.5 text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100"
-                >
-                  List
-                </button>
-              </div>
             </div>
             {availableTags.length > 0 && (
               <div className="pointer-events-auto flex gap-2 overflow-x-auto pb-1">
@@ -433,6 +443,24 @@ export function Charities() {
             )}
           </div>
 
+          {/* Map/List toggle pill — mobile only, bottom center */}
+          <div className="lg:hidden absolute bottom-3 left-1/2 -translate-x-1/2 z-10">
+            <div className="flex rounded-full shadow-lg border border-gray-200 bg-white/95 backdrop-blur-sm overflow-hidden">
+              <button
+                onClick={() => setViewMode('map')}
+                className="flex items-center gap-1.5 px-5 py-2.5 text-sm font-semibold transition-colors bg-gray-900 text-white"
+              >
+                Map
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className="flex items-center gap-1.5 px-5 py-2.5 text-sm font-semibold transition-colors text-gray-600 hover:bg-gray-50"
+              >
+                List
+              </button>
+            </div>
+          </div>
+
           {/* Zip indicator — bottom right */}
           <div className="absolute bottom-3 right-3 z-10">
             {zipEditing ? (
@@ -471,7 +499,7 @@ export function Charities() {
               </button>
             )}
           </div>
-          <Suspense fallback={<p className="text-text-secondary p-4">Loading map...</p>}>
+          <Suspense fallback={null}>
             <CharityMap
               charities={charities}
               selectedCharityId={selectedCharityId}

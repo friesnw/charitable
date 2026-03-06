@@ -35,3 +35,8 @@ What are things that I would assume are not feasible at scale that actually coul
 
 
 Example: Boys and Girls clubs, giving a lot more info on each location
+
+
+
+
+Make the "locations" page orient the user on a map

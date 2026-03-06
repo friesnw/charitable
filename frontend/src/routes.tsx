@@ -13,7 +13,6 @@ import { Charities } from './pages/Charities';
 import { CharityDetail } from './pages/CharityDetail';
 import { Admin } from './pages/Admin';
 import { AdminCharityEdit } from './pages/AdminCharityEdit';
-import { Nearby } from './pages/Nearby';
 
 export const router = createBrowserRouter([
   {
@@ -44,10 +43,7 @@ export const router = createBrowserRouter([
       </ProtectedRoute>
     ),
   },
-  {
-    path: '/nearby',
-    element: <PageShell><Nearby /></PageShell>,
-  },
+
   {
     path: '/charities',
     element: <PageShell fullWidth><Charities /></PageShell>,

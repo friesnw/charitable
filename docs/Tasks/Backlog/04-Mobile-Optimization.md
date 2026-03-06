@@ -5,3 +5,4 @@ Header nav - center the icon, create hamburger.
 Hero section
 - condense 
 
+consider a bottom  nav bar with icons for Home / etc

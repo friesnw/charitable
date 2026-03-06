@@ -69,12 +69,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Product/Operations.md",
+                "file": "Tasks/Todo/Airbnb enahncements.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Operations"
+              "title": "Airbnb enahncements"
             }
           }
         ],
@@ -242,20 +242,23 @@
   },
   "active": "7d09a1c30e27b5a8",
   "lastOpenFiles": [
-    "Tasks/Todo/05-good-local-emails.md",
+    "Tasks/Backlog/04-Mobile-Optimization.md",
+    "Tasks/Todo/Airbnb enahncements.md",
     "Tasks/Todo/06-charity-experience-optimization.md",
     "2026-03-05.md",
-    "Tasks/Todo/04-Data-updates.md",
     "Tasks/Todo/01-Integrate-Donations.md",
-    "Tasks/Backlog/Pre-Launch-Branding.md",
+    "Research/Archive/Homepage-Design-Benchmarks.md",
+    "Research/Revenue-and-Market-Opportunities.md",
     "Research/User-Journey-and-Activation.md",
     "Product/Operations.md",
+    "Tasks/Todo/05-good-local-emails.md",
+    "Tasks/Todo/04-Data-updates.md",
+    "Tasks/Backlog/Pre-Launch-Branding.md",
     "Research/Donation-Processing-Options.md",
     "Tasks/Backlog/Implement search.md",
     "Tasks/Done/Implement search.md",
     "Product/Architecture-Decisions.md",
     "Tasks/Backlog/MVP Measurement Plan.md",
-    "Tasks/Backlog/04-Mobile-Optimization.md",
     "Tasks/Backlog/9-Email-Notifications.md",
     "Untitled.md",
     "Architecture-Decisions.md",
@@ -265,10 +268,7 @@
     "Tasks/Backlog/5-Incorporate beta pilot experience.md",
     "Tasks/Backlog/Create onboarding experience.md",
     "Tasks/Backlog/Auth-Enhancements.md",
-    "Untitled 1.md",
     "Screenshot 2026-02-12 at 9.14.23 PM.png",
-    "Tasks/Backlog/Name Confirmation.md",
-    "Tasks/Backlog/7-Analytics-Beacon.md",
     "Research/Archive",
     "Product/Policies",
     "Product/Marketing-copy",

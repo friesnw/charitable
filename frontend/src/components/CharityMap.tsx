@@ -80,19 +80,6 @@ export function CharityMap({
     }
   }, [initialCenter]);
 
-  // Apply any queued center once the map style has loaded
-  function handleMapLoad() {
-    const center = pendingCenterRef.current;
-    if (center && mapRef.current) {
-      mapRef.current.flyTo({
-        center: [center.longitude, center.latitude],
-        zoom: center.zoom + ZIP_ZOOM_OFFSET,
-        duration: 0,
-      });
-      pendingCenterRef.current = null;
-    }
-  }
-
   // Fly to selected location, or fit bounds of selected charity's locations
   useEffect(() => {
     if (!mapRef.current) return;
@@ -141,6 +128,20 @@ export function CharityMap({
       );
     }
   }, [selectedCharityId, selectedLocationId, charities]);
+
+  // Apply any queued center once the map style has loaded
+  function handleMapLoad() {
+    const center = pendingCenterRef.current;
+    if (center && mapRef.current) {
+      mapRef.current.flyTo({
+        center: [center.longitude, center.latitude],
+        zoom: center.zoom + ZIP_ZOOM_OFFSET,
+        duration: 0,
+      });
+      pendingCenterRef.current = null;
+    }
+  }
+
 
   return (
     <div className={className} style={{ width: '100%', height: '100%' }}>

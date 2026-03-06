@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { cloudinaryUrl } from '../lib/cloudinary';
 import { distanceLabel } from '../lib/geo';
@@ -39,6 +39,7 @@ export function CharityPreviewDrawer({
   onClose,
 }: CharityPreviewDrawerProps) {
   const [visible, setVisible] = useState(false);
+  const touchStartY = useRef<number>(0);
 
   // Slide in after mount so the CSS transition fires
   useEffect(() => {
@@ -69,8 +70,12 @@ export function CharityPreviewDrawer({
       aria-label={charity.name}
     >
       <div className="bg-white rounded-t-2xl lg:rounded-2xl shadow-2xl overflow-hidden max-h-[85vh] flex flex-col">
-        {/* Drag handle — hidden on desktop */}
-        <div className="flex justify-center pt-3 pb-1 flex-shrink-0 lg:hidden">
+        {/* Drag handle — swipe down to dismiss on mobile */}
+        <div
+          className="flex justify-center pt-3 pb-1 flex-shrink-0 lg:hidden"
+          onTouchStart={(e) => { touchStartY.current = e.touches[0].clientY; }}
+          onTouchEnd={(e) => { if (e.changedTouches[0].clientY - touchStartY.current > 80) onClose(); }}
+        >
           <div className="w-10 h-1 rounded-full bg-gray-300" />
         </div>
 

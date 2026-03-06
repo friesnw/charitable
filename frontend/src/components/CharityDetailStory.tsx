@@ -170,6 +170,7 @@ export function CharityDetailStory({ charity, tagLabels, userDistance }: Charity
         {charity.everyOrgSlug && (
           <DonateButton
             nonprofitSlug={charity.everyOrgSlug}
+            charityName={charity.name}
             color={color}
             className="flex-1"
           />
