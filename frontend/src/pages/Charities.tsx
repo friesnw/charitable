@@ -95,6 +95,7 @@ export function Charities() {
   const [showAllTags, setShowAllTags] = useState(false);
   const [selectedCharityId, setSelectedCharityId] = useState<string | null>(null);
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
+  const [hoveredCharityId, setHoveredCharityId] = useState<string | null>(null);
   // viewMode only affects mobile layout; desktop always shows both columns
   const viewMode = searchParams.get('view') === 'list' ? 'list' : 'map';
 
@@ -239,10 +240,15 @@ export function Charities() {
                         setSelectedCharityId(null);
                         setSelectedLocationId(null);
                       } else {
+                        const firstValidLoc = charity.locations.find(
+                          (l) => l.latitude != null && l.longitude != null
+                        );
                         setSelectedCharityId(charity.id);
-                        setSelectedLocationId(null);
+                        setSelectedLocationId(firstValidLoc?.id ?? null);
                       }
                     }}
+                    onMouseEnter={() => setHoveredCharityId(charity.id)}
+                    onMouseLeave={() => setHoveredCharityId(null)}
                     className="w-full text-left px-4 py-4 border-b border-brand-tertiary transition-colors hover:bg-bg-accent"
                   >
                     <div className="flex items-center gap-2 mb-1">
@@ -470,6 +476,7 @@ export function Charities() {
               charities={charities}
               selectedCharityId={selectedCharityId}
               selectedLocationId={selectedLocationId}
+              hoveredCharityId={hoveredCharityId}
               onMarkerClick={(charityId, locationId) => {
                 setSelectedCharityId(charityId);
                 setSelectedLocationId(locationId);

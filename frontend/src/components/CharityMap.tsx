@@ -20,6 +20,7 @@ interface CharityMapProps {
   }[];
   selectedCharityId?: string | null;
   selectedLocationId?: string | null;
+  hoveredCharityId?: string | null;
   onMarkerClick?: (charityId: string, locationId: string) => void;
   initialCenter?: { longitude: number; latitude: number; zoom: number };
   className?: string;
@@ -57,6 +58,7 @@ export function CharityMap({
   charities,
   selectedCharityId,
   selectedLocationId,
+  hoveredCharityId,
   onMarkerClick,
   initialCenter,
   className,
@@ -156,8 +158,11 @@ export function CharityMap({
             .map((loc) => {
               const isSelected =
                 charity.id === selectedCharityId && loc.id === selectedLocationId;
+              const isHovered = charity.id === hoveredCharityId;
               const isDimmed =
-                selectedCharityId != null && charity.id !== selectedCharityId;
+                selectedCharityId != null &&
+                charity.id !== selectedCharityId &&
+                !isHovered;
               const color = causeColor(charity.causeTags);
               const icon = causeIcon(charity.causeTags);
 
@@ -175,7 +180,7 @@ export function CharityMap({
                   <div
                     style={{
                       opacity: isDimmed ? 0.35 : 1,
-                      transform: isSelected ? 'scale(1.35)' : 'scale(1)',
+                      transform: isSelected ? 'scale(1.45)' : isHovered ? 'scale(1.2)' : 'scale(1)',
                       transition: 'transform 0.15s, opacity 0.15s',
                     }}
                   >
