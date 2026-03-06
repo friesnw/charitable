@@ -125,7 +125,7 @@ export function CharityPreviewDrawer({
           )}
 
           {(selectedLocation?.description ?? charity.description) && (
-            <p className="text-sm text-gray-700 line-clamp-2 mb-3">
+            <p className="text-sm text-gray-700 mb-3">
               {selectedLocation?.description ?? charity.description}
             </p>
           )}
@@ -146,8 +146,7 @@ export function CharityPreviewDrawer({
           <div className="flex gap-3">
             <Link
               to={`/charities/${charity.slug}`}
-              className="flex-1 text-center py-2.5 rounded-lg text-sm font-medium text-white"
-              style={{ backgroundColor: color }}
+              className="flex-1 text-center py-2.5 rounded-lg text-sm font-medium text-white bg-brand-secondary hover:opacity-90 transition-opacity"
               onClick={onClose}
             >
               View charity →
