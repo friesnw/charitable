@@ -148,3 +148,9 @@ External URLs are in the Render dashboard → PostgreSQL service → Connect tab
 **CORS error in browser:** `FRONTEND_URL` on the backend must match the exact origin of the frontend (e.g. `https://goodlocal.org`). Update and redeploy backend.
 
 **Magic links not sending:** Check `RESEND_API_KEY` is set on the backend. Verify `contact.goodlocal.org` is a verified sending domain in Resend.
+
+
+# Content Management
+
+## Logos
+- Logos should be 5x4 ratio, with a white background

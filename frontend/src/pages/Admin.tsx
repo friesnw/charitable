@@ -724,7 +724,7 @@ export function Admin() {
             <table className="w-full text-sm">
               <thead className="bg-bg-accent border-b border-brand-tertiary">
                 <tr>
-                  <th className="text-left px-3 py-2 text-text-secondary font-medium w-12"></th>
+                  <th className="text-left px-3 py-2 text-text-secondary font-medium w-16"></th>
                   <th className="text-left px-3 py-2 text-text-secondary font-medium">Name</th>
                   <th className="text-left px-3 py-2 text-text-secondary font-medium hidden md:table-cell">Tags</th>
                   <th className="text-left px-3 py-2 text-text-secondary font-medium w-24 hidden sm:table-cell">Locations</th>
@@ -743,9 +743,9 @@ export function Admin() {
                     <td className="px-3 py-2">
                       {charity.logoUrl ? (
                         <img
-                          src={cloudinaryUrl(charity.logoUrl, { w: 40, h: 40 })}
+                          src={cloudinaryUrl(charity.logoUrl, { w: 40, h: 32 })}
                           alt={charity.name}
-                          className="w-10 h-10 object-cover rounded"
+                          className="w-10 h-8 object-contain rounded"
                         />
                       ) : (
                         <Initials name={charity.name} size={40} />

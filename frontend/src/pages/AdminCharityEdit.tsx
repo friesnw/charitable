@@ -316,9 +316,9 @@ export function AdminCharityEdit() {
       <div className="flex items-center gap-3 mb-6">
         {charity.logoUrl ? (
           <img
-            src={cloudinaryUrl(charity.logoUrl, { w: 48, h: 36 })}
+            src={cloudinaryUrl(charity.logoUrl, { w: 40, h: 32 })}
             alt={charity.name}
-            className="w-12 h-9 object-cover rounded"
+            className="w-10 h-8 object-contain rounded"
           />
         ) : (
           <Initials name={charity.name} size={48} />
@@ -437,9 +437,9 @@ export function AdminCharityEdit() {
           <div className="flex items-center gap-3 mt-1">
             {editForm.logoUrl ? (
               <img
-                src={cloudinaryUrl(editForm.logoUrl, { w: 80, h: 60 })}
+                src={cloudinaryUrl(editForm.logoUrl, { w: 80, h: 64 })}
                 alt="Logo"
-                className="w-20 h-[60px] object-cover rounded border border-brand-tertiary"
+                className="w-20 h-16 object-contain rounded border border-brand-tertiary"
               />
             ) : (
               <Initials name={charity.name} size={64} />

@@ -16,3 +16,22 @@ Goal: Optimize the charity detail page for better conversion (more donations cli
 	- [ ] On large viewports, the field can sit 50/50 split with the charity description, on the righthand column. on medium / small viewports it can sit beneath.
 - [ ] Donate CTA should be one unified color
 - [ ] Remove the "x miles away" as this is not relevant when only knowing a zip code. We don't need any "x miles away" across the entire site.
+
+
+# Charity Location Optimization
+
+Goal: Give more of a "wow, this is in my neighborhood and now I know about it" feeling. This means 
+
+- [ ] Add link to location specific page, assuming this exists
+- 
+- 
+\
+
+- 
+1. Link t
+
+What are things that I would assume are not feasible at scale that actually could work for the AI? 
+- Stale data check - make sure no 404s on location pages or charity page links
+
+
+Example: Boys and Girls clubs, giving a lot more info on each location
