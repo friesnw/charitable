@@ -22,7 +22,6 @@ export function Header() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
-  const [searchExpanded, setSearchExpanded] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -35,7 +34,6 @@ export function Header() {
       }
       if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
         setSearchOpen(false);
-        setSearchExpanded(false);
         setSearchQuery('');
       }
     }
@@ -57,13 +55,7 @@ export function Header() {
   function handleSelectCharity(slug: string) {
     setSearchQuery('');
     setSearchOpen(false);
-    setSearchExpanded(false);
     navigate(`/charities/${slug}`);
-  }
-
-  function handleSearchIconClick() {
-    setSearchExpanded(true);
-    setTimeout(() => searchInputRef.current?.focus(), 0);
   }
 
   return (
@@ -75,33 +67,21 @@ export function Header() {
         </Link>
 
         <div className="flex items-center gap-4">
-          <Link to="/charities" className="text-white/70 hover:text-white">
-            Find Charities
-          </Link>
-
           <div className="relative" ref={searchRef}>
-            {searchExpanded ? (
+            <div className="relative">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none">
+                <path fillRule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z" clipRule="evenodd" />
+              </svg>
               <input
                 ref={searchInputRef}
                 type="text"
                 value={searchQuery}
                 onChange={handleSearchChange}
                 onFocus={() => searchQuery.trim().length > 1 && setSearchOpen(true)}
-                placeholder="search a charity"
-                className="w-44 px-2.5 py-1 rounded-md bg-white/10 border border-white/20 text-white placeholder-white/40 text-sm focus:outline-none focus:bg-white/15 focus:border-white/40"
+                placeholder="Search charities..."
+                className="w-48 pl-8 pr-3 py-1.5 rounded-full bg-white/10 border border-white/20 text-white placeholder-white/40 text-sm focus:outline-none focus:bg-white/15 focus:border-white/40"
               />
-            ) : (
-              <button
-                onClick={handleSearchIconClick}
-                className="flex items-center gap-1.5 text-white/70 hover:text-white text-sm"
-                aria-label="Search charities"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                  <path fillRule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z" clipRule="evenodd" />
-                </svg>
-                <span>Search</span>
-              </button>
-            )}
+            </div>
             {searchOpen && searchData?.charities && searchData.charities.length > 0 && (
               <ul className="absolute top-full mt-1 right-0 w-64 bg-bg-primary border border-brand-tertiary rounded-md shadow-lg z-50 max-h-64 overflow-y-auto">
                 {searchData.charities.map((charity: { id: string; name: string; slug: string }) => (
