@@ -13,7 +13,7 @@ export async function uploadToCloudinary(file: File): Promise<string> {
 
 export function cloudinaryUrl(
   url: string,
-  opts: { w?: number; h?: number; fit?: 'fill' | 'scale' | 'crop' } = {}
+  opts: { w?: number; h?: number; fit?: 'fill' | 'fit' | 'scale' | 'crop' } = {}
 ): string {
   const { w, h, fit = 'fill' } = opts;
   const transforms = ['q_auto', 'f_auto', fit && `c_${fit}`, w && `w_${w}`, h && `h_${h}`]

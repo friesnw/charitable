@@ -743,9 +743,9 @@ export function Admin() {
                     <td className="px-3 py-2">
                       {charity.logoUrl ? (
                         <img
-                          src={cloudinaryUrl(charity.logoUrl, { w: 40, h: 32 })}
+                          src={cloudinaryUrl(charity.logoUrl, { w: 40, h: 40, fit: 'fit' })}
                           alt={charity.name}
-                          className="w-10 h-8 object-contain rounded"
+                          className="w-10 h-10 object-contain rounded-full"
                         />
                       ) : (
                         <Initials name={charity.name} size={40} />

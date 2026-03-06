@@ -68,9 +68,9 @@ export function CharityDetailStory({ charity, tagLabels, userDistance }: Charity
         ) : charity.logoUrl ? (
           <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: `${color}22` }}>
             <img
-              src={cloudinaryUrl(charity.logoUrl, { w: 160, h: 160, fit: 'fill' })}
+              src={cloudinaryUrl(charity.logoUrl, { w: 160, h: 160, fit: 'fit' })}
               alt={charity.name}
-              className="w-28 h-28 object-contain rounded-xl shadow-lg"
+              className="w-40 h-40 object-contain rounded-full shadow-lg"
             />
           </div>
         ) : (
