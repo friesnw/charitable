@@ -12,17 +12,26 @@ interface ImportMeta {
 
 interface EveryDotOrgDonateButton {
   createWidget(options: {
-    selector: string;
+    selector?: string;
     nonprofitSlug: string;
-    webhookToken?: string;
+    fundraiserSlug?: string;
+    methods?: string[];
+    openAt?: string;
+    show?: boolean;
     primaryColor?: string;
+    defaultDonationAmount?: number;
+    amount?: number;
+    minDonationAmount?: number;
+    frequency?: 'once' | 'monthly';
+    defaultFrequency?: 'once' | 'monthly';
+    addAmounts?: number[];
+    completeDonationInNewTab?: boolean;
+    noExit?: boolean;
+    showGiftCardOption?: boolean;
+    webhookToken?: string;
     email?: string;
     firstName?: string;
     partnerMetadata?: string;
-    defaultDonationAmount?: number;
-    minDonationAmount?: number;
-    addAmounts?: number[];
-    defaultFrequency?: 'once' | 'monthly';
   }): void;
   show(): void;
   setOptions(options: Record<string, unknown>): void;

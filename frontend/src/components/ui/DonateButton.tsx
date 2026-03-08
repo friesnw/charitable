@@ -63,7 +63,7 @@ export function DonateButton({ nonprofitSlug, className }: DonateButtonProps) {
         primaryColor: DONATE_COLOR,
         minDonationAmount: 1,
         addAmounts: [10, 20, 50, 100],
-        defaultFrequency: frequency,
+        defaultFrequency: frequency
       };
 
       if (webhookToken) options.webhookToken = webhookToken;
