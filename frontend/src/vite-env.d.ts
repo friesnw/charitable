@@ -19,6 +19,10 @@ interface EveryDotOrgDonateButton {
     email?: string;
     firstName?: string;
     partnerMetadata?: string;
+    defaultDonationAmount?: number;
+    minDonationAmount?: number;
+    addAmounts?: number[];
+    defaultFrequency?: 'once' | 'monthly';
   }): void;
   show(): void;
   setOptions(options: Record<string, unknown>): void;
