@@ -72,12 +72,12 @@ const CREATE_CHARITY = gql`
   mutation CreateCharity(
     $name: String! $ein: String! $slug: String! $description: String
     $websiteUrl: String $volunteerUrl: String $primaryAddress: String
-    $causeTags: [String!] $everyOrgSlug: String $foundedYear: Int
+    $causeTags: [String!] $donateUrl: String $foundedYear: Int
   ) {
     createCharity(
       name: $name ein: $ein slug: $slug description: $description
       websiteUrl: $websiteUrl volunteerUrl: $volunteerUrl primaryAddress: $primaryAddress
-      causeTags: $causeTags everyOrgSlug: $everyOrgSlug foundedYear: $foundedYear
+      causeTags: $causeTags donateUrl: $donateUrl foundedYear: $foundedYear
     ) {
       id name slug
     }
@@ -138,11 +138,11 @@ interface CreateForm {
   ein: string;
   slug: string;
   description: string;
-  everyOrgSlug: string;
+  donateUrl: string;
 }
 
 const EMPTY_CREATE_FORM: CreateForm = {
-  name: '', ein: '', slug: '', description: '', everyOrgSlug: '',
+  name: '', ein: '', slug: '', description: '', donateUrl: '',
 };
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -628,7 +628,7 @@ export function Admin() {
           ein: createForm.ein,
           slug: createForm.slug,
           description: createForm.description || null,
-          everyOrgSlug: createForm.everyOrgSlug || null,
+          donateUrl: createForm.donateUrl || null,
         },
       });
       setCreateForm(EMPTY_CREATE_FORM);
@@ -693,9 +693,9 @@ export function Admin() {
                     onChange={e => setCreateForm(f => ({ ...f, slug: e.target.value }))} />
                 </div>
                 <div>
-                  <label className={labelCls}>Every.org Slug</label>
-                  <input className={inputCls} value={createForm.everyOrgSlug}
-                    onChange={e => setCreateForm(f => ({ ...f, everyOrgSlug: e.target.value }))} />
+                  <label className={labelCls}>Donate URL</label>
+                  <input className={inputCls} value={createForm.donateUrl}
+                    onChange={e => setCreateForm(f => ({ ...f, donateUrl: e.target.value }))} />
                 </div>
                 <div className="col-span-2">
                   <label className={labelCls}>Description</label>

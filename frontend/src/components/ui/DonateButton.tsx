@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useContext, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
@@ -10,94 +10,28 @@ interface DonateButtonProps {
   className?: string;
 }
 
-type Step = 1 | 2 | 3 | 4;
+type Step = 1 | 2 | 4;
 
 const DONATE_COLOR = '#CB6740';
-const BRAND_COLOR = '#343D47';
 
 export function DonateButton({ nonprofitSlug, className }: DonateButtonProps) {
   const auth = useContext(AuthContext);
   const user = auth?.user ?? null;
 
-  const observerRef = useRef<MutationObserver | null>(null);
-  const widgetElRef = useRef<HTMLDivElement | null>(null);
-
   const [step, setStep] = useState<Step | null>(null);
   const [frequency, setFrequency] = useState<'once' | 'monthly'>('monthly');
-
-  useEffect(() => {
-    return () => {
-      observerRef.current?.disconnect();
-      widgetElRef.current?.remove();
-    };
-  }, []);
 
   const openModal = () => {
     setStep(1);
     setFrequency('monthly');
   };
 
-  const closeModal = () => {
-    setStep(null);
-    observerRef.current?.disconnect();
-    observerRef.current = null;
-  };
+  const closeModal = () => setStep(null);
 
   const handleStep2Continue = () => {
-    const webhookToken = import.meta.env.VITE_EVERY_ORG_WEBHOOK_TOKEN;
-
-    widgetElRef.current?.remove();
-    const tempId = `donate-${nonprofitSlug}-${Date.now()}`;
-    const tempEl = document.createElement('div');
-    tempEl.id = tempId;
-    Object.assign(tempEl.style, {
-      position: 'absolute', left: '-9999px', width: '1px', height: '1px', overflow: 'hidden',
-    });
-    document.body.appendChild(tempEl);
-    widgetElRef.current = tempEl;
-
-    if (window.everyDotOrgDonateButton) {
-      const options: Parameters<typeof window.everyDotOrgDonateButton.createWidget>[0] = {
-        selector: `#${tempId}`,
-        nonprofitSlug,
-        primaryColor: DONATE_COLOR,
-        minDonationAmount: 1,
-        addAmounts: [10, 20, 50, 100],
-        defaultFrequency: frequency
-      };
-
-      if (webhookToken) options.webhookToken = webhookToken;
-      if (user?.email) options.email = user.email;
-      if (user?.name) options.firstName = user.name.split(' ')[0];
-      if (user?.id) {
-        const numericId = parseInt(user.id, 10);
-        if (!isNaN(numericId)) {
-          options.partnerMetadata = btoa(JSON.stringify({ userId: numericId }));
-        }
-      }
-
-      window.everyDotOrgDonateButton.createWidget(options);
-    }
-
-    setStep(3);
-
-    requestAnimationFrame(() => {
-      tempEl.click();
-
-      let iframeWasOpen = false;
-      const observer = new MutationObserver(() => {
-        const iframe = document.querySelector('iframe[src*="every.org"]');
-        if (iframe) {
-          iframeWasOpen = true;
-        } else if (iframeWasOpen) {
-          observer.disconnect();
-          observerRef.current = null;
-          setStep(4);
-        }
-      });
-      observer.observe(document.body, { childList: true, subtree: true });
-      observerRef.current = observer;
-    });
+    const url = `https://www.every.org/${nonprofitSlug}/donate#frequency=${frequency}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+    setStep(4);
   };
 
   return (
@@ -114,8 +48,7 @@ export function DonateButton({ nonprofitSlug, className }: DonateButtonProps) {
         Donate
       </div>
 
-      {/* Modal — portaled to body; hidden during step 3 while Every.org overlay is open */}
-      {step !== null && step !== 3 && createPortal(
+      {step !== null && createPortal(
         <div
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4"
           style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
@@ -223,7 +156,7 @@ export function DonateButton({ nonprofitSlug, className }: DonateButtonProps) {
                   Thanks for supporting your community
                 </h2>
                 <p className="text-sm text-gray-600 mb-6">
-                  If you completed your donation, Every.org will send a receipt to your email. Your GoodLocal giving history updates automatically.
+                  We've opened Every.org in a new tab so you can complete your donation securely. Once done, Every.org will email you a tax-deductible receipt.
                 </p>
                 <div className="flex flex-col gap-3">
                   <button

@@ -27,7 +27,7 @@ export interface StoryCharity {
   primaryAddress: string | null;
   ein: string;
   foundedYear: number | null;
-  everyOrgSlug: string | null;
+  donateUrl: string | null;
   causeTags: string[];
   locations: StoryLocation[];
 }
@@ -167,9 +167,9 @@ export function CharityDetailStory({ charity, tagLabels, userDistance }: Charity
 
       {/* Sticky action buttons */}
       <div className="sticky bottom-0 bg-white border-t border-gray-200 px-4 py-3 flex gap-3">
-        {charity.everyOrgSlug && (
+        {charity.donateUrl && (
           <DonateButton
-            nonprofitSlug={charity.everyOrgSlug}
+            donateUrl={charity.donateUrl}
             charityName={charity.name}
             color={color}
             className="flex-1"

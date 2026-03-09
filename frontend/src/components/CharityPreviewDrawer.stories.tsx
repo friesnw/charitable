@@ -8,7 +8,7 @@ const MOCK_CHARITY = {
   slug: 'denver-food-bank',
   description: 'Feeding families across the Denver metro since 1978. We distribute millions of pounds of food annually through a network of partner agencies.',
   causeTags: ['food-security', 'hunger'],
-  everyOrgSlug: 'denver-food-bank',
+  donateUrl: 'https://www.foodbankrockies.org/donate',
   locations: [
     {
       id: 'loc-1',

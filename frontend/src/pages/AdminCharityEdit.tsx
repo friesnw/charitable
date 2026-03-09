@@ -8,7 +8,7 @@ const GET_ADMIN_CHARITY = gql`
   query GetAdminCharity($id: ID!) {
     charity(id: $id) {
       id name slug ein description logoUrl websiteUrl volunteerUrl
-      primaryAddress causeTags everyOrgSlug everyOrgClaimed foundedYear isActive
+      primaryAddress causeTags donateUrl foundedYear isActive
       locations {
         id label description address latitude longitude photoUrl
       }
@@ -26,17 +26,17 @@ const UPDATE_CHARITY = gql`
   mutation UpdateCharity(
     $id: ID! $name: String $description: String $websiteUrl: String
     $volunteerUrl: String $primaryAddress: String $causeTags: [String!]
-    $everyOrgSlug: String $everyOrgClaimed: Boolean $foundedYear: Int
+    $donateUrl: String $foundedYear: Int
     $isActive: Boolean $logoUrl: String
   ) {
     updateCharity(
       id: $id name: $name description: $description websiteUrl: $websiteUrl
       volunteerUrl: $volunteerUrl primaryAddress: $primaryAddress causeTags: $causeTags
-      everyOrgSlug: $everyOrgSlug everyOrgClaimed: $everyOrgClaimed foundedYear: $foundedYear
+      donateUrl: $donateUrl foundedYear: $foundedYear
       isActive: $isActive logoUrl: $logoUrl
     ) {
       id name slug ein description logoUrl websiteUrl volunteerUrl
-      primaryAddress causeTags everyOrgSlug everyOrgClaimed foundedYear isActive
+      primaryAddress causeTags donateUrl foundedYear isActive
       locations { id label description address latitude longitude photoUrl }
     }
   }
@@ -97,8 +97,7 @@ interface CharityData {
   volunteerUrl: string | null;
   primaryAddress: string | null;
   causeTags: string[];
-  everyOrgSlug: string | null;
-  everyOrgClaimed: boolean;
+  donateUrl: string | null;
   foundedYear: number | null;
   isActive: boolean;
   locations: LocationData[];
@@ -112,8 +111,7 @@ interface EditForm {
   volunteerUrl: string;
   primaryAddress: string;
   foundedYear: string;
-  everyOrgSlug: string;
-  everyOrgClaimed: boolean;
+  donateUrl: string;
   isActive: boolean;
   causeTags: string[];
 }
@@ -135,8 +133,7 @@ function initEditForm(c: CharityData): EditForm {
     volunteerUrl: c.volunteerUrl ?? '',
     primaryAddress: c.primaryAddress ?? '',
     foundedYear: c.foundedYear?.toString() ?? '',
-    everyOrgSlug: c.everyOrgSlug ?? '',
-    everyOrgClaimed: c.everyOrgClaimed,
+    donateUrl: c.donateUrl ?? '',
     isActive: c.isActive,
     causeTags: c.causeTags,
   };
@@ -211,8 +208,7 @@ export function AdminCharityEdit() {
           volunteerUrl: editForm.volunteerUrl || null,
           primaryAddress: editForm.primaryAddress || null,
           causeTags: editForm.causeTags,
-          everyOrgSlug: editForm.everyOrgSlug || null,
-          everyOrgClaimed: editForm.everyOrgClaimed,
+          donateUrl: editForm.donateUrl || null,
           foundedYear: editForm.foundedYear ? parseInt(editForm.foundedYear) : null,
           isActive: editForm.isActive,
         },
@@ -385,19 +381,14 @@ export function AdminCharityEdit() {
               onChange={e => setEditForm(f => f && ({ ...f, primaryAddress: e.target.value }))} />
           </div>
           <div>
-            <label className={labelCls}>Every.org Slug</label>
-            <input className={inputCls} value={editForm.everyOrgSlug}
-              onChange={e => setEditForm(f => f && ({ ...f, everyOrgSlug: e.target.value }))} />
+            <label className={labelCls}>Donate URL</label>
+            <input className={inputCls} value={editForm.donateUrl}
+              onChange={e => setEditForm(f => f && ({ ...f, donateUrl: e.target.value }))} />
           </div>
         </div>
 
         {/* Checkboxes */}
         <div className="flex gap-6">
-          <label className="flex items-center gap-2 text-sm text-text-primary cursor-pointer">
-            <input type="checkbox" checked={editForm.everyOrgClaimed}
-              onChange={e => setEditForm(f => f && ({ ...f, everyOrgClaimed: e.target.checked }))} />
-            Every.org claimed
-          </label>
           <label className="flex items-center gap-2 text-sm text-text-primary cursor-pointer">
             <input type="checkbox" checked={editForm.isActive}
               onChange={e => setEditForm(f => f && ({ ...f, isActive: e.target.checked }))} />

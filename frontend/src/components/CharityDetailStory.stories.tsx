@@ -14,7 +14,7 @@ const MOCK_CHARITY = {
   primaryAddress: '10700 E 45th Ave, Denver, CO 80239',
   ein: '84-0772722',
   foundedYear: 1978,
-  everyOrgSlug: 'food-bank-of-the-rockies',
+  donateUrl: 'https://www.foodbankrockies.org/donate',
   causeTags: ['food-security', 'hunger'],
   locations: [
     {

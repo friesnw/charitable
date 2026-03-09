@@ -26,7 +26,7 @@ const GET_CHARITY = gql`
       primaryAddress
       ein
       foundedYear
-      everyOrgSlug
+      donateUrl
       causeTags
       locations {
         id
@@ -62,7 +62,7 @@ interface Charity {
   primaryAddress: string | null;
   ein: string;
   foundedYear: number | null;
-  everyOrgSlug: string | null;
+  donateUrl: string | null;
   causeTags: string[];
   locations: CharityLocation[];
 }

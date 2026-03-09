@@ -70,7 +70,7 @@ interface LocationRow {
 
 async function main() {
   const source = new Pool({ connectionString: SOURCE_DATABASE_URL, ssl: SOURCE_DATABASE_URL.includes('localhost') ? false : { rejectUnauthorized: false } });
-  const target = new Pool({ connectionString: TARGET_DATABASE_URL, ssl: { rejectUnauthorized: false } });
+  const target = new Pool({ connectionString: TARGET_DATABASE_URL, ssl: TARGET_DATABASE_URL.includes('localhost') ? false : { rejectUnauthorized: false } });
 
   try {
     // -----------------------------------------------------------------------
@@ -165,6 +165,25 @@ async function main() {
               primary_address   = $13,
               updated_at        = NOW()
             WHERE every_org_slug = $7
+            RETURNING id
+          `, params));
+        } else if (err.code === '23505' && err.constraint === 'charities_slug_key') {
+          ({ rows } = await target.query<{ id: number }>(`
+            UPDATE charities SET
+              name              = $1,
+              description       = $3,
+              website_url       = $4,
+              logo_url          = $5,
+              cause_tags        = $6,
+              every_org_slug    = $7,
+              ein               = $8,
+              founded_year      = $9,
+              volunteer_url     = $10,
+              every_org_claimed = $11,
+              is_active         = $12,
+              primary_address   = $13,
+              updated_at        = NOW()
+            WHERE slug = $2
             RETURNING id
           `, params));
         } else {

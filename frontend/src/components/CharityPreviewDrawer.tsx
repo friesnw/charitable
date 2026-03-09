@@ -11,7 +11,7 @@ export interface DrawerCharity {
   slug: string;
   description: string | null;
   causeTags: string[];
-  everyOrgSlug: string | null;
+  donateUrl: string | null;
   locations: {
     id: string;
     label: string;

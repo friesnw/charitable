@@ -17,7 +17,7 @@ export const typeDefs = `#graphql
     volunteerUrl: String
     primaryAddress: String
     causeTags: [String!]!
-    everyOrgSlug: String
+    donateUrl: String
     ein: String!
     foundedYear: Int
     everyOrgClaimed: Boolean!
@@ -95,8 +95,7 @@ export const typeDefs = `#graphql
       volunteerUrl: String
       primaryAddress: String
       causeTags: [String!]
-      everyOrgSlug: String
-      everyOrgClaimed: Boolean
+      donateUrl: String
       foundedYear: Int
       isActive: Boolean
       logoUrl: String
@@ -111,7 +110,7 @@ export const typeDefs = `#graphql
       volunteerUrl: String
       primaryAddress: String
       causeTags: [String!]
-      everyOrgSlug: String
+      donateUrl: String
       foundedYear: Int
     ): Charity!
 

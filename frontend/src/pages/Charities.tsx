@@ -50,7 +50,7 @@ const GET_CHARITIES = gql`
       primaryAddress
       foundedYear
       causeTags
-      everyOrgSlug
+      donateUrl
       locations {
         id
         label
@@ -73,7 +73,7 @@ interface Charity {
   primaryAddress: string | null;
   foundedYear: number | null;
   causeTags: string[];
-  everyOrgSlug: string | null;
+  donateUrl: string | null;
   locations: {
     id: string;
     label: string;
@@ -291,7 +291,7 @@ export function Charities() {
                       </div>
                     </div>
                     {charity.description && (
-                      <p className="text-text-secondary text-xs mt-1 line-clamp-2">
+                      <p className={`text-text-secondary text-xs mt-1${isSelected ? "" : " line-clamp-2"}`}>
                         {charity.description}
                       </p>
                     )}

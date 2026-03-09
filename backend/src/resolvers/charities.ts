@@ -13,7 +13,7 @@ function toCharity(row: Record<string, unknown>) {
     volunteerUrl: row.volunteer_url,
     primaryAddress: row.primary_address,
     causeTags: row.cause_tags || [],
-    everyOrgSlug: row.every_org_slug,
+    donateUrl: row.donate_url,
     ein: row.ein,
     foundedYear: row.founded_year,
     everyOrgClaimed: row.every_org_claimed ?? false,
@@ -116,8 +116,7 @@ export const charityResolvers = {
         volunteerUrl: 'volunteer_url',
         primaryAddress: 'primary_address',
         causeTags: 'cause_tags',
-        everyOrgSlug: 'every_org_slug',
-        everyOrgClaimed: 'every_org_claimed',
+        donateUrl: 'donate_url',
         foundedYear: 'founded_year',
         isActive: 'is_active',
         logoUrl: 'logo_url',
@@ -153,14 +152,14 @@ export const charityResolvers = {
       requireAdmin(context);
 
       const result = await pool.query(
-        `INSERT INTO charities (name, ein, slug, description, website_url, volunteer_url, primary_address, cause_tags, every_org_slug, founded_year)
+        `INSERT INTO charities (name, ein, slug, description, website_url, volunteer_url, primary_address, cause_tags, donate_url, founded_year)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
          RETURNING *`,
         [
           args.name, args.ein, args.slug,
           args.description ?? null, args.websiteUrl ?? null,
           args.volunteerUrl ?? null, args.primaryAddress ?? null,
-          args.causeTags ?? [], args.everyOrgSlug ?? null,
+          args.causeTags ?? [], args.donateUrl ?? null,
           args.foundedYear ?? null,
         ]
       );
