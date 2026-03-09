@@ -6,45 +6,6 @@ const resend = new Resend(env.RESEND_API_KEY);
 // From address — update domain once verified with Resend
 const FROM_ADDRESS = 'GoodLocal <hello@contact.goodlocal.org>';
 
-export async function sendDonationConfirmation(
-  email: string,
-  charityName: string,
-  token?: string
-): Promise<void> {
-  const ctaHtml = token
-    ? `
-        <a href="${env.FRONTEND_URL}/auth/verify?token=${token}"
-           style="display: inline-block; background: #2563eb; color: white; padding: 14px 28px;
-                  text-decoration: none; border-radius: 6px; font-weight: 500;">
-          View my giving history
-        </a>
-        <p style="color: #999; font-size: 14px; margin-top: 32px;">
-          This link expires in 15 minutes. If you didn't make this donation, you can safely ignore it.
-        </p>`
-    : `
-        <a href="${env.FRONTEND_URL}"
-           style="display: inline-block; background: #2563eb; color: white; padding: 14px 28px;
-                  text-decoration: none; border-radius: 6px; font-weight: 500;">
-          Visit GoodLocal
-        </a>`;
-
-  await resend.emails.send({
-    from: FROM_ADDRESS,
-    to: email,
-    subject: `Thanks for supporting ${charityName} on GoodLocal`,
-    html: `
-      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 20px;">
-        <h1 style="font-size: 24px; color: #333; margin-bottom: 24px;">Thanks for your donation!</h1>
-        <p style="color: #666; font-size: 16px; line-height: 1.5; margin-bottom: 24px;">
-          Your support for <strong>${charityName}</strong> has been recorded. GoodLocal is proud to connect
-          you with local nonprofits making a difference in your community.
-        </p>
-        ${ctaHtml}
-      </div>
-    `,
-  });
-}
-
 export async function sendMagicLink(email: string, token: string): Promise<void> {
   const magicLink = `${env.FRONTEND_URL}/auth/verify?token=${token}`;
 

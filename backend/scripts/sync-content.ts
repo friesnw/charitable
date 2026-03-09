@@ -51,6 +51,7 @@ interface CharityRow {
   every_org_claimed: boolean;
   is_active: boolean;
   primary_address: string | null;
+  donate_url: string | null;
 }
 
 interface LocationRow {
@@ -81,7 +82,7 @@ async function main() {
     const { rows: charities } = await source.query<CharityRow>(`
       SELECT id, name, slug, description, website_url, logo_url, cause_tags,
              every_org_slug, ein, founded_year, volunteer_url, every_org_claimed,
-             is_active, primary_address
+             is_active, primary_address, donate_url
       FROM charities
       ORDER BY id
     `);
@@ -117,7 +118,7 @@ async function main() {
         charity.name, charity.slug, charity.description, charity.website_url,
         charity.logo_url, charity.cause_tags, charity.every_org_slug, charity.ein,
         charity.founded_year, charity.volunteer_url, charity.every_org_claimed,
-        charity.is_active, charity.primary_address,
+        charity.is_active, charity.primary_address, charity.donate_url,
       ];
 
       // Try upsert by EIN first. If every_org_slug conflicts with a different row,
@@ -128,8 +129,8 @@ async function main() {
           INSERT INTO charities
             (name, slug, description, website_url, logo_url, cause_tags,
              every_org_slug, ein, founded_year, volunteer_url, every_org_claimed,
-             is_active, primary_address)
-          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+             is_active, primary_address, donate_url)
+          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
           ON CONFLICT (ein) DO UPDATE SET
             name              = EXCLUDED.name,
             slug              = EXCLUDED.slug,
@@ -143,6 +144,7 @@ async function main() {
             every_org_claimed = EXCLUDED.every_org_claimed,
             is_active         = EXCLUDED.is_active,
             primary_address   = EXCLUDED.primary_address,
+            donate_url        = EXCLUDED.donate_url,
             updated_at        = NOW()
           RETURNING id
         `, params));
@@ -163,6 +165,7 @@ async function main() {
               every_org_claimed = $11,
               is_active         = $12,
               primary_address   = $13,
+              donate_url        = $14,
               updated_at        = NOW()
             WHERE every_org_slug = $7
             RETURNING id
@@ -182,6 +185,7 @@ async function main() {
               every_org_claimed = $11,
               is_active         = $12,
               primary_address   = $13,
+              donate_url        = $14,
               updated_at        = NOW()
             WHERE slug = $2
             RETURNING id

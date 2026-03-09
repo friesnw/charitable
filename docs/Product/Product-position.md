@@ -64,9 +64,9 @@ The app focuses on:
     
 - **Trust**: explaining _why_ each organization is credible
     
-- **Ease**: fast, modern donation UX (Apple Pay / card)
-    
-- **Continuity**: one place to see and understand your giving over time
+- **Ease**: one-tap handoff to the charity's own donation page — no friction, no intermediary
+
+- **Continuity**: one place to see and understand your giving over time *(deferred — planned for post-traction)*
 
 
 
@@ -105,7 +105,8 @@ This is optimized for local charities that:
 
 - local discovery (maps + curation)
 - charity education (trust + explainability)
-- financial UX (payments + records)
+- frictionless donate handoff (direct link to each charity's donation page)
+- financial UX (giving history + records) *(deferred)*
 
   
 

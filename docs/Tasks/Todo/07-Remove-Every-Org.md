@@ -12,48 +12,48 @@ Replace Every.org donation flow with direct links to each charity's external don
 
 ### Data (do this first)
 
-- [ ] **Research `donateUrl` for each charity** — Find and record each charity's direct donation page URL (their website donate page, or a platform like PayPal Giving Fund, Benevity, Stripe, etc.). This is manual research; go through each charity in the DB and find the correct link.
-- [ ] **Add `donate_url` column** — Write migration `backend/migrations/0XX_add_donate_url.sql` adding a nullable `donate_url` text column to `charities`
-- [ ] **Populate `donate_url`** — Update each charity row with the researched URLs (use the sync script or direct DB update)
-- [ ] **Admin interface** — Ensure `donate_url` is editable per charity in the admin panel
+- [x] **Research `donateUrl` for each charity** — Find and record each charity's direct donation page URL (their website donate page, or a platform like PayPal Giving Fund, Benevity, Stripe, etc.). This is manual research; go through each charity in the DB and find the correct link.
+- [x] **Add `donate_url` column** — Write migration `backend/migrations/0XX_add_donate_url.sql` adding a nullable `donate_url` text column to `charities`
+- [x] **Populate `donate_url`** — Update each charity row with the researched URLs (use the sync script or direct DB update)
+- [x] **Admin interface** — Ensure `donate_url` is editable per charity in the admin panel
 
 ### Frontend
 
-- [ ] **`DonateButton.tsx`** — Remove the modal entirely; clicking Donate should call `window.open(charity.donateUrl, '_blank')` directly. No modal needed. (All modal copy is preserved in the Reference section below.)
-- [ ] **Remove "tracking donations" copy** — Delete line: *"Your donation is saved to GoodLocal so you can track all giving history in one place"*
-- [ ] **Remove "View my giving history →" CTA** — Delete the post-donation giving history button shown to authenticated users
-- [ ] **Remove Every.org intro step copy** — Delete: *"To process your payment, GoodLocal partners with Every.org, a nonprofit payment platform for charitable giving without platform fees."*
-- [ ] **`index.html`** — Remove the Every.org embed script tag: `<script async defer src="https://embeds.every.org/0.4/button.js?explicit=1" ...>`
-- [ ] **`vite-env.d.ts`** — Remove `VITE_EVERY_ORG_WEBHOOK_TOKEN` type declaration and `EveryDotOrgDonateButton` interface
-- [ ] **`frontend/.env.example`** — Remove `VITE_EVERY_ORG_WEBHOOK_TOKEN`
-- [ ] **`Charities.tsx`** — Replace `everyOrgSlug` in GraphQL query with `donateUrl`
-- [ ] **`CharityDetail.tsx`** — Same as above
-- [ ] **`CharityDetailStory.tsx`** — Update `<DonateButton>` props; remove `everyOrgSlug` reference
-- [ ] Remove every.org slug from admin view to not distract, same with "every_org_claimed"
+- [x] **`DonateButton.tsx`** — Remove the modal entirely; clicking Donate should call `window.open(charity.donateUrl, '_blank')` directly. No modal needed. (All modal copy is preserved in the Reference section below.)
+- [x] **Remove "tracking donations" copy** — Delete line: *"Your donation is saved to GoodLocal so you can track all giving history in one place"*
+- [x] **Remove "View my giving history →" CTA** — Delete the post-donation giving history button shown to authenticated users
+- [x] **Remove Every.org intro step copy** — Delete: *"To process your payment, GoodLocal partners with Every.org, a nonprofit payment platform for charitable giving without platform fees."*
+- [x] **`index.html`** — Remove the Every.org embed script tag: `<script async defer src="https://embeds.every.org/0.4/button.js?explicit=1" ...>`
+- [x] **`vite-env.d.ts`** — Remove `VITE_EVERY_ORG_WEBHOOK_TOKEN` type declaration and `EveryDotOrgDonateButton` interface
+- [x] **`frontend/.env.example`** — Remove `VITE_EVERY_ORG_WEBHOOK_TOKEN`
+- [x] **`Charities.tsx`** — Replace `everyOrgSlug` in GraphQL query with `donateUrl`
+- [x] **`CharityDetail.tsx`** — Same as above
+- [x] **`CharityDetailStory.tsx`** — Update `<DonateButton>` props; remove `everyOrgSlug` reference
+- [x] Remove every.org slug from admin view to not distract, same with "every_org_claimed"
 
 ### Backend
 
-- [ ] **`everyOrg.ts` webhook handler** — Delete file (`backend/src/webhooks/everyOrg.ts`)
-- [ ] **`index.ts`** — Remove webhook route registration (`app.post('/api/webhooks/every-org', ...)`)
-- [ ] **`env.ts`** — Remove `EVERY_ORG_WEBHOOK_TOKEN` and `EVERY_ORG_AUTH_TOKEN` env vars
-- [ ] **`email.ts`** — Remove `sendDonationConfirmation()` function (or repurpose if still needed elsewhere)
+- [x] **`everyOrg.ts` webhook handler** — Delete file (`backend/src/webhooks/everyOrg.ts`)
+- [x] **`index.ts`** — Remove webhook route registration (`app.post('/api/webhooks/every-org', ...)`)
+- [x] **`env.ts`** — Remove `EVERY_ORG_WEBHOOK_TOKEN` and `EVERY_ORG_AUTH_TOKEN` env vars
+- [x] **`email.ts`** — Remove `sendDonationConfirmation()` function (or repurpose if still needed elsewhere)
 
 ### Database
 
-- [ ] **Decide on `donation_intents` table** — No new data will flow in; we will keep for historical reference 
+- [ ] **`donation_intents` table** — No new data will flow in; we will keep for historical reference 
 - [ ] **`everyOrgSlug` / `everyOrgClaimed` columns** — Keep in schema for reference 
-- [ ] **GraphQL schema (`typeDefs.ts`)** — Remove `everyOrgSlug` and `everyOrgClaimed` from `Charity` type; add `donateUrl: String`; update `createCharity`/`updateCharity` mutations accordingly
-- [ ] **Resolvers** — Remove `everyOrgSlug`/`everyOrgClaimed` from charity resolver mapper; add `donateUrl` mapping from `donate_url` DB column
-- [ ] **Run `npm run codegen`** after schema changes
+- [x] **GraphQL schema (`typeDefs.ts`)** — Remove `everyOrgSlug` and `everyOrgClaimed` from `Charity` type; add `donateUrl: String`; update `createCharity`/`updateCharity` mutations accordingly
+- [x] **Resolvers** — Remove `everyOrgSlug`/`everyOrgClaimed` from charity resolver mapper; add `donateUrl` mapping from `donate_url` DB column
+- [x] **Run `npm run codegen`** after schema changes
 
 ### Docs / Flows
 
-- [ ] **`docs/Product/flows.md`** — Remove or archive sections 7a–7e (drawer donation, detail page donation, post-donation flows); replace with updated direct-link donate flow
+- [x] **`docs/Product/flows.md`** — Remove or archive sections 7a–7e (drawer donation, detail page donation, post-donation flows); replace with updated direct-link donate flow
 
 ### Cleanup
 
-- [ ] **Remove `EVERY_ORG_*` env vars from Render** (dev and prod) after deploy
-- [ ] **Storybook (`DonateButton.stories.tsx`)** — Update stories to reflect new simplified donate behavior; remove note about Every.org `button.js` requirement
+- [x] **Remove `EVERY_ORG_*` env vars from Render** (dev and prod) after deploy
+- [x] **Storybook (`DonateButton.stories.tsx`)** — Update stories to reflect new simplified donate behavior; remove note about Every.org `button.js` requirement
 
 ---
 
