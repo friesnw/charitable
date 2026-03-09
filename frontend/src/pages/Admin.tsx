@@ -9,7 +9,7 @@ import { Initials } from '../components/ui/Initials';
 const GET_ADMIN_CHARITIES = gql`
   query GetAdminCharities {
     charities {
-      id name slug logoUrl causeTags isActive
+      id name slug logoUrl causeTags isActive isReviewed
       locations { id }
     }
   }
@@ -26,7 +26,7 @@ const GET_ADMIN_LOCATIONS = gql`
     charities {
       id name slug
       locations {
-        id label description address latitude longitude photoUrl
+        id label description address latitude longitude photoUrl isReviewed
       }
     }
   }
@@ -84,6 +84,14 @@ const CREATE_CHARITY = gql`
   }
 `;
 
+const UPDATE_CHARITY_REVIEWED = gql`
+  mutation UpdateCharityReviewed($id: ID!, $isReviewed: Boolean!) {
+    updateCharity(id: $id, isReviewed: $isReviewed) {
+      id isReviewed
+    }
+  }
+`;
+
 const UPDATE_LOCATION = gql`
   mutation UpdateCharityLocation(
     $id: ID! $label: String $description: String $address: String
@@ -93,7 +101,15 @@ const UPDATE_LOCATION = gql`
       id: $id label: $label description: $description address: $address
       latitude: $latitude longitude: $longitude photoUrl: $photoUrl
     ) {
-      id label description address latitude longitude photoUrl
+      id label description address latitude longitude photoUrl isReviewed
+    }
+  }
+`;
+
+const UPDATE_LOCATION_REVIEWED = gql`
+  mutation UpdateLocationReviewed($id: ID!, $isReviewed: Boolean!) {
+    updateCharityLocation(id: $id, isReviewed: $isReviewed) {
+      id isReviewed
     }
   }
 `;
@@ -109,6 +125,7 @@ interface CharityRow {
   logoUrl: string | null;
   causeTags: string[];
   isActive: boolean;
+  isReviewed: boolean;
   locations: { id: string }[];
 }
 
@@ -123,6 +140,7 @@ interface FlatLocation {
   latitude: number | null;
   longitude: number | null;
   photoUrl: string | null;
+  isReviewed: boolean;
 }
 
 interface LocationForm {
@@ -192,6 +210,7 @@ function TabBar({ active, onChange }: { active: Tab; onChange: (t: Tab) => void 
 function LocationsTab() {
   const { data, loading, error } = useQuery(GET_ADMIN_LOCATIONS);
   const [updateLocation] = useMutation(UPDATE_LOCATION, { refetchQueries: ['GetAdminLocations'] });
+  const [updateLocationReviewed] = useMutation(UPDATE_LOCATION_REVIEWED, { refetchQueries: ['GetAdminLocations'] });
 
   const [locSearch, setLocSearch] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -200,6 +219,8 @@ function LocationsTab() {
   const [uploadingId, setUploadingId] = useState<string | null>(null);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [savedId, setSavedId] = useState<string | null>(null);
+  const [reviewedOverrides, setReviewedOverrides] = useState<Record<string, boolean>>({});
+  const [savingReviewed, setSavingReviewed] = useState(false);
 
   const flatLocations: FlatLocation[] = (data?.charities ?? []).flatMap(
     (c: { id: string; name: string; slug: string; locations: FlatLocation[] }) =>
@@ -263,6 +284,22 @@ function LocationsTab() {
   const isDirty = (locId: string) =>
     JSON.stringify(locForms[locId]) !== JSON.stringify(initialLocForms.current[locId]);
 
+  const reviewedDirtyIds = Object.keys(reviewedOverrides);
+
+  async function handleSaveReviewed() {
+    setSavingReviewed(true);
+    try {
+      await Promise.all(
+        reviewedDirtyIds.map(id =>
+          updateLocationReviewed({ variables: { id, isReviewed: reviewedOverrides[id] } })
+        )
+      );
+      setReviewedOverrides({});
+    } finally {
+      setSavingReviewed(false);
+    }
+  }
+
   const inputCls = 'w-full px-2 py-1.5 border border-brand-tertiary rounded text-sm text-text-primary focus:border-brand-primary outline-none bg-bg-primary';
   const labelCls = 'block text-xs text-text-secondary mb-0.5';
   const btnCls = 'px-3 py-1.5 text-sm rounded';
@@ -292,6 +329,7 @@ function LocationsTab() {
               <th className="text-left px-3 py-2 text-text-secondary font-medium hidden lg:table-cell">Address</th>
               <th className="text-left px-3 py-2 text-text-secondary font-medium hidden xl:table-cell w-28">Lat / Lng</th>
               <th className="text-left px-3 py-2 text-text-secondary font-medium w-16">Photo</th>
+              <th className="px-3 py-2 text-text-secondary font-medium w-20 text-center">Reviewed</th>
             </tr>
           </thead>
           <tbody>
@@ -335,11 +373,19 @@ function LocationsTab() {
                         <span className="text-text-secondary text-xs">—</span>
                       )}
                     </td>
+                    <td className="px-3 py-2 text-center" onClick={e => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        checked={reviewedOverrides[loc.id] ?? loc.isReviewed}
+                        onChange={e => setReviewedOverrides(r => ({ ...r, [loc.id]: e.target.checked }))}
+                        className="w-4 h-4 accent-brand-primary cursor-pointer"
+                      />
+                    </td>
                   </tr>
 
                   {expanded && form && (
                     <tr key={`${loc.id}-expanded`} className="bg-amber-50 border-b border-brand-tertiary">
-                      <td colSpan={6} className="px-4 py-4">
+                      <td colSpan={7} className="px-4 py-4">
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
                           <div>
                             <label className={labelCls}>Label</label>
@@ -404,7 +450,7 @@ function LocationsTab() {
             })}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-3 py-4 text-text-secondary text-center text-sm">
+                <td colSpan={7} className="px-3 py-4 text-text-secondary text-center text-sm">
                   No locations found.
                 </td>
               </tr>
@@ -413,6 +459,29 @@ function LocationsTab() {
         </table>
       </div>
       <p className="text-text-secondary text-xs mt-2">{filtered.length} location{filtered.length !== 1 ? 's' : ''}</p>
+
+      {reviewedDirtyIds.length > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-3 bg-bg-primary border-t border-brand-tertiary shadow-lg">
+          <span className="text-sm text-text-secondary">
+            {reviewedDirtyIds.length} location{reviewedDirtyIds.length !== 1 ? 's' : ''} changed
+          </span>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setReviewedOverrides({})}
+              className="px-3 py-1.5 text-sm rounded border border-brand-tertiary text-text-secondary hover:bg-bg-accent"
+            >
+              Discard
+            </button>
+            <button
+              onClick={handleSaveReviewed}
+              disabled={savingReviewed}
+              className="px-3 py-1.5 text-sm rounded bg-brand-secondary text-white hover:opacity-90 disabled:opacity-50"
+            >
+              {savingReviewed ? 'Saving...' : 'Save'}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -610,6 +679,9 @@ export function Admin() {
   const { data, loading, error } = useQuery(GET_ADMIN_CHARITIES);
   const { data: causesData } = useQuery(GET_CAUSES);
   const [createCharity] = useMutation(CREATE_CHARITY, { refetchQueries: ['GetAdminCharities'] });
+  const [updateCharityReviewed] = useMutation(UPDATE_CHARITY_REVIEWED, { refetchQueries: ['GetAdminCharities'] });
+  const [charityReviewedOverrides, setCharityReviewedOverrides] = useState<Record<string, boolean>>({});
+  const [savingCharityReviewed, setSavingCharityReviewed] = useState(false);
 
   const charities: CharityRow[] = data?.charities ?? [];
   const causes: { tag: string; label: string }[] = causesData?.causes ?? [];
@@ -637,6 +709,22 @@ export function Admin() {
       if (id) navigate(`/admin/charities/${id}`);
     } catch (e: unknown) {
       setCreateError(e instanceof Error ? e.message : 'Create failed');
+    }
+  }
+
+  const charityReviewedDirtyIds = Object.keys(charityReviewedOverrides);
+
+  async function handleSaveCharityReviewed() {
+    setSavingCharityReviewed(true);
+    try {
+      await Promise.all(
+        charityReviewedDirtyIds.map(id =>
+          updateCharityReviewed({ variables: { id, isReviewed: charityReviewedOverrides[id] } })
+        )
+      );
+      setCharityReviewedOverrides({});
+    } finally {
+      setSavingCharityReviewed(false);
     }
   }
 
@@ -729,6 +817,7 @@ export function Admin() {
                   <th className="text-left px-3 py-2 text-text-secondary font-medium hidden md:table-cell">Tags</th>
                   <th className="text-left px-3 py-2 text-text-secondary font-medium w-24 hidden sm:table-cell">Locations</th>
                   <th className="text-left px-3 py-2 text-text-secondary font-medium w-20">Status</th>
+                  <th className="px-3 py-2 text-text-secondary font-medium w-20 text-center">Reviewed</th>
                 </tr>
               </thead>
               <tbody>
@@ -777,11 +866,19 @@ export function Admin() {
                         {charity.isActive ? 'Active' : 'Inactive'}
                       </span>
                     </td>
+                    <td className="px-3 py-2 text-center" onClick={e => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        checked={charityReviewedOverrides[charity.id] ?? charity.isReviewed}
+                        onChange={e => setCharityReviewedOverrides(r => ({ ...r, [charity.id]: e.target.checked }))}
+                        className="w-4 h-4 accent-brand-primary cursor-pointer"
+                      />
+                    </td>
                   </tr>
                 ))}
                 {filtered.length === 0 && !loading && (
                   <tr>
-                    <td colSpan={5} className="px-3 py-4 text-text-secondary text-center text-sm">
+                    <td colSpan={6} className="px-3 py-4 text-text-secondary text-center text-sm">
                       No charities found.
                     </td>
                   </tr>
@@ -790,6 +887,29 @@ export function Admin() {
             </table>
           </div>
         </>
+      )}
+
+      {charityReviewedDirtyIds.length > 0 && activeTab === 'charities' && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-3 bg-bg-primary border-t border-brand-tertiary shadow-lg">
+          <span className="text-sm text-text-secondary">
+            {charityReviewedDirtyIds.length} {charityReviewedDirtyIds.length !== 1 ? 'charities' : 'charity'} changed
+          </span>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setCharityReviewedOverrides({})}
+              className="px-3 py-1.5 text-sm rounded border border-brand-tertiary text-text-secondary hover:bg-bg-accent"
+            >
+              Discard
+            </button>
+            <button
+              onClick={handleSaveCharityReviewed}
+              disabled={savingCharityReviewed}
+              className="px-3 py-1.5 text-sm rounded bg-brand-secondary text-white hover:opacity-90 disabled:opacity-50"
+            >
+              {savingCharityReviewed ? 'Saving...' : 'Save'}
+            </button>
+          </div>
+        </div>
       )}
 
       {/* ── Locations tab ── */}

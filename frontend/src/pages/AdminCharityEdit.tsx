@@ -8,9 +8,9 @@ const GET_ADMIN_CHARITY = gql`
   query GetAdminCharity($id: ID!) {
     charity(id: $id) {
       id name slug ein description logoUrl websiteUrl volunteerUrl
-      primaryAddress causeTags donateUrl foundedYear isActive
+      primaryAddress causeTags donateUrl foundedYear isActive isReviewed
       locations {
-        id label description address latitude longitude photoUrl
+        id label description address latitude longitude photoUrl isReviewed
       }
     }
   }

@@ -22,6 +22,7 @@ export const typeDefs = `#graphql
     foundedYear: Int
     everyOrgClaimed: Boolean!
     isActive: Boolean!
+    isReviewed: Boolean!
     locations: [CharityLocation!]!
     createdAt: String
     updatedAt: String
@@ -35,6 +36,7 @@ export const typeDefs = `#graphql
     latitude: Float
     longitude: Float
     photoUrl: String
+    isReviewed: Boolean!
   }
 
   type AuthPayload {
@@ -99,6 +101,7 @@ export const typeDefs = `#graphql
       foundedYear: Int
       isActive: Boolean
       logoUrl: String
+      isReviewed: Boolean
     ): Charity!
 
     createCharity(
@@ -122,6 +125,7 @@ export const typeDefs = `#graphql
       latitude: Float
       longitude: Float
       photoUrl: String
+      isReviewed: Boolean
     ): CharityLocation!
 
     createCharityLocation(

@@ -18,6 +18,7 @@ function toCharity(row: Record<string, unknown>) {
     foundedYear: row.founded_year,
     everyOrgClaimed: row.every_org_claimed ?? false,
     isActive: row.is_active ?? true,
+    isReviewed: row.is_reviewed ?? false,
     createdAt: (row.created_at as Date)?.toISOString(),
     updatedAt: (row.updated_at as Date)?.toISOString(),
   };
@@ -32,6 +33,7 @@ function toLocation(row: Record<string, unknown>) {
     latitude: row.latitude != null ? parseFloat(row.latitude as string) : null,
     longitude: row.longitude != null ? parseFloat(row.longitude as string) : null,
     photoUrl: row.photo_url ?? null,
+    isReviewed: row.is_reviewed ?? false,
   };
 }
 
@@ -120,6 +122,7 @@ export const charityResolvers = {
         foundedYear: 'founded_year',
         isActive: 'is_active',
         logoUrl: 'logo_url',
+        isReviewed: 'is_reviewed',
       };
 
       const setClauses: string[] = [];
@@ -177,6 +180,7 @@ export const charityResolvers = {
         latitude: 'latitude',
         longitude: 'longitude',
         photoUrl: 'photo_url',
+        isReviewed: 'is_reviewed',
       };
 
       const setClauses: string[] = [];
