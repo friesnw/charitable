@@ -26,6 +26,22 @@ async function main() {
 
   app.post('/api/webhooks/every-org', express.json(), handleEveryOrgWebhook);
 
+  app.get('/api/favicon', cors(), async (req, res) => {
+    const domain = req.query.domain as string;
+    if (!domain) { res.status(400).json({ error: 'domain required' }); return; }
+    try {
+      const upstream = await fetch(`https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=256`);
+      if (!upstream.ok) { res.status(502).json({ error: 'upstream failed' }); return; }
+      const contentType = upstream.headers.get('content-type') ?? 'image/png';
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Cache-Control', 'public, max-age=86400');
+      const buffer = Buffer.from(await upstream.arrayBuffer());
+      res.send(buffer);
+    } catch {
+      res.status(502).json({ error: 'favicon fetch failed' });
+    }
+  });
+
   app.use(
     '/graphql',
     cors(),

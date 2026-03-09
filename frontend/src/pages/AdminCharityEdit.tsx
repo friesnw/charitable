@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, gql } from '@apollo/client';
-import { cloudinaryUrl, pickAndUploadImage } from '../lib/cloudinary';
+import { cloudinaryUrl, pickAndUploadImage, uploadToCloudinary } from '../lib/cloudinary';
 import { Initials } from '../components/ui/Initials';
 
 const GET_ADMIN_CHARITY = gql`
@@ -235,6 +235,24 @@ export function AdminCharityEdit() {
     }
   }
 
+  async function handleUseFavicon() {
+    if (!editForm?.websiteUrl) return;
+    setUploadingField('favicon');
+    try {
+      const domain = new URL(editForm.websiteUrl).hostname;
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/favicon?domain=${encodeURIComponent(domain)}`);
+      if (!res.ok) throw new Error('Failed to fetch favicon');
+      const blob = await res.blob();
+      const file = new File([blob], 'favicon.png', { type: blob.type || 'image/png' });
+      const url = await uploadToCloudinary(file);
+      setEditForm(f => f && ({ ...f, logoUrl: url }));
+    } catch (e) {
+      console.error('Favicon fetch failed:', e);
+    } finally {
+      setUploadingField(null);
+    }
+  }
+
   async function handleSaveLocation(locId: string) {
     const form = locationForms[locId];
     if (!form) return;
@@ -442,6 +460,15 @@ export function AdminCharityEdit() {
             >
               {uploadingField === 'logo' ? 'Uploading...' : 'Upload logo'}
             </button>
+            {editForm.websiteUrl && (
+              <button
+                onClick={handleUseFavicon}
+                disabled={!!uploadingField}
+                className={`${btnCls} border border-brand-tertiary text-text-secondary hover:bg-bg-accent disabled:opacity-50`}
+              >
+                {uploadingField === 'favicon' ? 'Fetching...' : 'Use favicon'}
+              </button>
+            )}
           </div>
         </div>
 
