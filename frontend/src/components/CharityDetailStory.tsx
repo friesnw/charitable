@@ -142,12 +142,22 @@ export function CharityDetailStory({ charity, tagLabels, userDistance }: Charity
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
               {charity.locations.map((loc) => (
                 <div key={loc.id} className="rounded-lg overflow-hidden border border-gray-200">
-                  {loc.photoUrl && (
+                  {loc.photoUrl ? (
                     <img
                       src={cloudinaryUrl(loc.photoUrl, { w: 800, h: 160, fit: 'fill' })}
                       alt={loc.label}
                       className="w-full h-36 object-cover"
                     />
+                  ) : (
+                    <div
+                      className="w-full h-36 relative"
+                      style={{ backgroundColor: color }}
+                    >
+                      <div
+                        className="absolute inset-0"
+                        style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.4) 0%, transparent 60%)' }}
+                      />
+                    </div>
                   )}
                   <div className="p-3">
                     <p className="font-medium text-gray-900 text-sm">{loc.label}</p>

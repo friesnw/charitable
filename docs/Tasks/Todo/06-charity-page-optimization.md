@@ -40,3 +40,9 @@ Example: Boys and Girls clubs, giving a lot more info on each location
 
 
 Make the "locations" page orient the user on a map
+
+
+add field "highlights" to display in bullets? bgc
+
+
+make map view. use boys and girls club example

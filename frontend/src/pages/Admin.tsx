@@ -221,6 +221,9 @@ function LocationsTab() {
   const [savedId, setSavedId] = useState<string | null>(null);
   const [reviewedOverrides, setReviewedOverrides] = useState<Record<string, boolean>>({});
   const [savingReviewed, setSavingReviewed] = useState(false);
+  const [locationReviewNote, setLocationReviewNote] = useState<string>(
+    () => localStorage.getItem('location-review-note') ?? ''
+  );
 
   const flatLocations: FlatLocation[] = (data?.charities ?? []).flatMap(
     (c: { id: string; name: string; slug: string; locations: FlatLocation[] }) =>
@@ -329,7 +332,16 @@ function LocationsTab() {
               <th className="text-left px-3 py-2 text-text-secondary font-medium hidden lg:table-cell">Address</th>
               <th className="text-left px-3 py-2 text-text-secondary font-medium hidden xl:table-cell w-28">Lat / Lng</th>
               <th className="text-left px-3 py-2 text-text-secondary font-medium w-16">Photo</th>
-              <th className="px-3 py-2 text-text-secondary font-medium w-20 text-center">Reviewed</th>
+              <th className="px-3 py-2 text-text-secondary font-medium w-36 text-center">
+                Reviewed
+                <textarea
+                  rows={2}
+                  placeholder="Notes..."
+                  value={locationReviewNote}
+                  onChange={e => { setLocationReviewNote(e.target.value); localStorage.setItem('location-review-note', e.target.value); }}
+                  className="mt-1 w-full px-1.5 py-1 border border-brand-tertiary rounded text-xs text-text-primary focus:border-brand-primary outline-none bg-bg-primary resize-none font-normal block"
+                />
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -682,6 +694,9 @@ export function Admin() {
   const [updateCharityReviewed] = useMutation(UPDATE_CHARITY_REVIEWED, { refetchQueries: ['GetAdminCharities'] });
   const [charityReviewedOverrides, setCharityReviewedOverrides] = useState<Record<string, boolean>>({});
   const [savingCharityReviewed, setSavingCharityReviewed] = useState(false);
+  const [charityReviewNote, setCharityReviewNote] = useState<string>(
+    () => localStorage.getItem('charity-review-note') ?? ''
+  );
 
   const charities: CharityRow[] = data?.charities ?? [];
   const causes: { tag: string; label: string }[] = causesData?.causes ?? [];
@@ -817,7 +832,16 @@ export function Admin() {
                   <th className="text-left px-3 py-2 text-text-secondary font-medium hidden md:table-cell">Tags</th>
                   <th className="text-left px-3 py-2 text-text-secondary font-medium w-24 hidden sm:table-cell">Locations</th>
                   <th className="text-left px-3 py-2 text-text-secondary font-medium w-20">Status</th>
-                  <th className="px-3 py-2 text-text-secondary font-medium w-20 text-center">Reviewed</th>
+                  <th className="px-3 py-2 text-text-secondary font-medium w-36 text-center">
+                    Reviewed
+                    <textarea
+                      rows={2}
+                      placeholder="Notes..."
+                      value={charityReviewNote}
+                      onChange={e => { setCharityReviewNote(e.target.value); localStorage.setItem('charity-review-note', e.target.value); }}
+                      className="mt-1 w-full px-1.5 py-1 border border-brand-tertiary rounded text-xs text-text-primary focus:border-brand-primary outline-none bg-bg-primary resize-none font-normal block"
+                    />
+                  </th>
                 </tr>
               </thead>
               <tbody>

@@ -65,7 +65,7 @@ export function Header() {
 
   return (
     <header className="bg-brand-primary border-b border-white/10">
-      <nav className="container mx-auto px-4 py-4 flex items-center justify-between">
+      <nav className="container mx-auto px-4 py-2 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2 font-heading font-bold text-white" style={{ fontSize: '1.5rem' }}>
           <span>Good<span style={{ color: 'var(--brand-accent)', marginLeft: '0.05em' }}>Local</span></span>
           <img src="/logo-icon.svg" alt="" aria-hidden="true" className="h-6 w-auto" />
