@@ -100,6 +100,7 @@ interface CharityData {
   donateUrl: string | null;
   foundedYear: number | null;
   isActive: boolean;
+  isReviewed: boolean;
   locations: LocationData[];
 }
 
@@ -291,6 +292,10 @@ export function AdminCharityEdit() {
   async function handleDeleteLocation(locId: string) {
     if (!confirm('Delete this location?')) return;
     await deleteLocation({ variables: { id: locId } });
+  }
+
+  async function handleRemoveLocationPhoto(locId: string) {
+    await updateLocation({ variables: { id: locId, photoUrl: null } });
   }
 
   async function handleAddLocation() {
@@ -580,31 +585,42 @@ export function AdminCharityEdit() {
                                   )}
                                   <button
                                     onClick={e => { e.stopPropagation(); handleUploadLocationPhoto(loc.id); }}
-                                    disabled={uploadingField === `photo-${loc.id}`}
+                                    disabled={!!uploadingField}
                                     className={`${btnCls} border border-brand-tertiary text-text-secondary hover:bg-bg-accent disabled:opacity-50 text-xs`}
                                   >
                                     {uploadingField === `photo-${loc.id}` ? 'Uploading...' : loc.photoUrl ? 'Replace' : 'Upload'}
                                   </button>
+                                  {loc.photoUrl && (
+                                    <button
+                                      onClick={e => { e.stopPropagation(); handleRemoveLocationPhoto(loc.id); }}
+                                      disabled={!!uploadingField}
+                                      className={`${btnCls} border border-red-300 text-red-600 hover:bg-red-50 disabled:opacity-50 text-xs`}
+                                    >
+                                      Remove
+                                    </button>
+                                  )}
                                 </div>
                               </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                              <button
-                                onClick={e => { e.stopPropagation(); handleSaveLocation(loc.id); }}
-                                disabled={!isLocationDirty(loc.id) || savingLocId === loc.id}
-                                className={`${btnCls} bg-brand-secondary text-white hover:opacity-90 disabled:bg-brand-tertiary disabled:text-text-secondary disabled:cursor-not-allowed`}
-                              >
-                                {savingLocId === loc.id ? 'Saving...' : 'Save'}
-                              </button>
-                              {savedLocId === loc.id && (
-                                <span className="text-sm text-green-600">Saved</span>
-                              )}
+                            <div className="flex items-center justify-between mt-1">
                               <button
                                 onClick={e => { e.stopPropagation(); handleDeleteLocation(loc.id); }}
                                 className={`${btnCls} border border-red-300 text-red-600 hover:bg-red-50`}
                               >
-                                Delete
+                                Delete location
                               </button>
+                              <div className="flex items-center gap-2">
+                                {savedLocId === loc.id && (
+                                  <span className="text-sm text-green-600">Saved</span>
+                                )}
+                                <button
+                                  onClick={e => { e.stopPropagation(); handleSaveLocation(loc.id); }}
+                                  disabled={!isLocationDirty(loc.id) || savingLocId === loc.id}
+                                  className={`${btnCls} bg-brand-secondary text-white hover:opacity-90 disabled:bg-brand-tertiary disabled:text-text-secondary disabled:cursor-not-allowed`}
+                                >
+                                  {savingLocId === loc.id ? 'Saving...' : 'Save'}
+                                </button>
+                              </div>
                             </div>
                           </td>
                         </tr>
