@@ -139,7 +139,7 @@ export function CharityDetailStory({ charity, tagLabels }: CharityDetailStoryPro
                   <span
                     key={tag}
                     className="text-xs font-semibold uppercase tracking-wide px-3 py-1 rounded-full border"
-                    style={{ color: 'var(--flair-sage)', borderColor: 'var(--flair-sage)' }}
+                    style={{ color: 'var(--brand-secondary)', borderColor: 'var(--brand-secondary)', backgroundColor: 'rgba(237, 66, 19, 0.08)' }}
                   >
                     {tagLabels.get(tag) ?? tag}
                   </span>

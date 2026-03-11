@@ -135,7 +135,8 @@ export function CharityPreviewDrawer({
               {charity.causeTags.map((tag) => (
                 <span
                   key={tag}
-                  className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600"
+                  className="text-xs font-semibold uppercase tracking-wide px-2.5 py-0.5 rounded-full border"
+                  style={{ color: 'var(--brand-secondary)', borderColor: 'var(--brand-secondary)', backgroundColor: 'rgba(237, 66, 19, 0.08)' }}
                 >
                   {tagLabels.get(tag) ?? tag}
                 </span>

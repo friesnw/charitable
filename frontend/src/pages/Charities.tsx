@@ -299,7 +299,8 @@ export function Charities() {
                         {charity.causeTags.map((tag) => (
                           <span
                             key={tag}
-                            className="text-xs px-1.5 py-0.5 bg-bg-accent text-text-secondary rounded"
+                            className="text-xs font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full border"
+                            style={{ color: 'var(--brand-secondary)', borderColor: 'var(--brand-secondary)', backgroundColor: 'rgba(237, 66, 19, 0.08)' }}
                           >
                             {tagLabels.get(tag) ?? tag}
                           </span>
