@@ -164,7 +164,7 @@ export function Home() {
             {neighborhoodPills.map(({ name, lat, lng }) => (
               <Link
                 key={name}
-                to={`/explore?lat=${lat}&lng=${lng}`}
+                to={`/charities?lat=${lat}&lng=${lng}`}
                 className="flex-shrink-0 text-sm px-3 py-1.5 rounded-full border border-white/20 bg-white/10 text-white/70 hover:border-brand-accent hover:text-brand-accent transition-colors"
               >
                 {name}
@@ -199,7 +199,7 @@ export function Home() {
               </li>
             </ol>
             <div className="mt-10">
-              <ButtonLink to="/explore" variant="primary">
+              <ButtonLink to="/charities" variant="primary">
                 Get started
               </ButtonLink>
             </div>

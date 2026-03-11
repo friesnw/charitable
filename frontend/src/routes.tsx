@@ -50,7 +50,7 @@ export const router = createBrowserRouter([
   },
   {
     path: '/charities/:slug',
-    element: <PageShell><CharityDetail /></PageShell>,
+    element: <PageShell background="var(--bg-secondary)"><CharityDetail /></PageShell>,
   },
   {
     path: '/admin',

@@ -1,20 +1,22 @@
 :root {
   /* Background */
   --bg-primary: #ffffff;
+  --bg-secondary: #F8F6F6;  /* warm off-white — charity detail page */
   --bg-accent: #f8fafc;
 
   /* Brand */
   --brand-primary: #343D47;   /* dark charcoal — nav, hero, foundation */
-  --brand-secondary: #EC5B13; /* orange — primary CTA */
+  --brand-secondary: #ED4213; /* orange — primary CTA */
   --brand-tertiary: #e2e8f0;  /* neutral light — borders, dividers */
   --brand-accent: #E9D8B2;    /* warm cream — pairs against dark primary */
 
   /* Palette accents */
   --flair-green: #607F75;
+  --flair-sage: #859E95;   /* secondary text — section headings, supporting labels */
   --flair-terracotta: #DC8D6D;
 
   /* Semantic */
-  --color-success: #22c55e;
+  --color-success: #23AB54;
   --color-error: #ef4444;
 
   /* Text */

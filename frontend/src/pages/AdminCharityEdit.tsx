@@ -3,13 +3,14 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, gql } from '@apollo/client';
 import { cloudinaryUrl, pickAndUploadImage, uploadToCloudinary } from '../lib/cloudinary';
 import { Initials } from '../components/ui/Initials';
+import { Icon, ICON_NAMES } from '../components/ui/Icon';
 
 const GET_ADMIN_CHARITY = gql`
   query GetAdminCharity($id: ID!) {
     charity(id: $id) {
       id name slug ein description logoUrl coverPhotoUrl contentPhotoUrl1 contentPhotoUrl2 websiteUrl volunteerUrl
       primaryAddress causeTags donateUrl foundedYear isActive isReviewed
-      impact locationDescription
+      impact locationDescription programHighlights usageCredit
       locations {
         id label description address latitude longitude photoUrl isReviewed
       }
@@ -31,6 +32,7 @@ const UPDATE_CHARITY = gql`
     $isActive: Boolean $logoUrl: String $coverPhotoUrl: String
     $contentPhotoUrl1: String $contentPhotoUrl2: String
     $impact: String $locationDescription: String
+    $programHighlights: String $usageCredit: String
   ) {
     updateCharity(
       id: $id name: $name description: $description websiteUrl: $websiteUrl
@@ -39,17 +41,18 @@ const UPDATE_CHARITY = gql`
       isActive: $isActive logoUrl: $logoUrl coverPhotoUrl: $coverPhotoUrl
       contentPhotoUrl1: $contentPhotoUrl1 contentPhotoUrl2: $contentPhotoUrl2
       impact: $impact locationDescription: $locationDescription
+      programHighlights: $programHighlights usageCredit: $usageCredit
     ) {
       id name slug ein description logoUrl coverPhotoUrl contentPhotoUrl1 contentPhotoUrl2 websiteUrl volunteerUrl
       primaryAddress causeTags donateUrl foundedYear isActive
-      impact locationDescription
+      impact locationDescription programHighlights usageCredit
       locations { id label description address latitude longitude photoUrl }
     }
   }
 `;
 
 const UPDATE_LOCATION = gql`
-  mutation UpdateCharityLocation(
+  mutation UpdateCharityLocationEdit(
     $id: ID! $label: String $description: String $address: String
     $latitude: Float $longitude: Float $photoUrl: String
   ) {
@@ -110,6 +113,8 @@ interface CharityData {
   foundedYear: number | null;
   impact: string | null;
   locationDescription: string | null;
+  programHighlights: string | null;
+  usageCredit: string | null;
   isActive: boolean;
   isReviewed: boolean;
   locations: LocationData[];
@@ -129,6 +134,8 @@ interface EditForm {
   donateUrl: string;
   impact: string;
   locationDescription: string;
+  programHighlights: string;
+  usageCredit: string;
   isActive: boolean;
   causeTags: string[];
 }
@@ -156,6 +163,8 @@ function initEditForm(c: CharityData): EditForm {
     donateUrl: c.donateUrl ?? '',
     impact: c.impact ?? '',
     locationDescription: c.locationDescription ?? '',
+    programHighlights: c.programHighlights ?? '',
+    usageCredit: c.usageCredit ?? '',
     isActive: c.isActive,
     causeTags: c.causeTags,
   };
@@ -195,6 +204,7 @@ export function AdminCharityEdit() {
   const [uploadingField, setUploadingField] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [showIconRef, setShowIconRef] = useState(false);
   const [saved, setSaved] = useState(false);
   const [savingLocId, setSavingLocId] = useState<string | null>(null);
   const [savedLocId, setSavedLocId] = useState<string | null>(null);
@@ -238,6 +248,8 @@ export function AdminCharityEdit() {
           contentPhotoUrl2: editForm.contentPhotoUrl2,
           impact: editForm.impact || null,
           locationDescription: editForm.locationDescription || null,
+          programHighlights: editForm.programHighlights || null,
+          usageCredit: editForm.usageCredit || null,
         },
       });
       initialEditForm.current = editForm;
@@ -439,10 +451,45 @@ export function AdminCharityEdit() {
             <textarea className={inputCls} rows={6} value={editForm.impact}
               onChange={e => setEditForm(f => f && ({ ...f, impact: e.target.value }))} />
           </div>
-          <div className="col-span-1 md:col-span-2">
+          <div>
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <label className={labelCls + ' mb-0'}>Program Highlights</label>
+              <button
+                type="button"
+                onClick={() => setShowIconRef(v => !v)}
+                className="text-text-secondary opacity-50 hover:opacity-100 transition-opacity"
+                aria-label="Show icon reference"
+              >
+                <Icon name="info" className="w-3.5 h-3.5" />
+              </button>
+            </div>
+            {showIconRef && (
+              <div className="mb-1.5 p-2 rounded border border-brand-tertiary bg-bg-accent">
+                <p className="text-xs text-text-secondary opacity-60 mb-1.5">
+                  One highlight per line. Prefix with an icon: <code>(heart)text</code>.
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  {ICON_NAMES.map((name) => (
+                    <span key={name} className="flex items-center gap-1 text-xs text-text-secondary">
+                      <Icon name={name} className="w-3.5 h-3.5" />
+                      {name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            <textarea className={inputCls} rows={4} value={editForm.programHighlights}
+              onChange={e => setEditForm(f => f && ({ ...f, programHighlights: e.target.value }))} />
+          </div>
+          <div>
             <label className={labelCls}>Location Description</label>
-            <textarea className={inputCls} rows={3} value={editForm.locationDescription}
+            <textarea className={inputCls} rows={4} value={editForm.locationDescription}
               onChange={e => setEditForm(f => f && ({ ...f, locationDescription: e.target.value }))} />
+          </div>
+          <div className="col-span-1 md:col-span-2">
+            <label className={labelCls}>Usage Credit</label>
+            <textarea className={inputCls} rows={2} value={editForm.usageCredit}
+              onChange={e => setEditForm(f => f && ({ ...f, usageCredit: e.target.value }))} />
           </div>
           <div>
             <label className={labelCls}>Website URL</label>
@@ -578,14 +625,17 @@ export function AdminCharityEdit() {
         </div>
 
         {/* Save */}
-        <div className="flex items-center gap-3">
-          <button onClick={handleSaveCharity}
-            disabled={!isDirty || saving}
-            className={`${btnCls} bg-brand-secondary text-white hover:opacity-90 disabled:bg-brand-tertiary disabled:text-text-secondary disabled:cursor-not-allowed`}>
-            {saving ? 'Saving...' : 'Save Changes'}
-          </button>
-          {saved && <span className="text-sm text-green-600">Saved</span>}
-        </div>
+        {isDirty && (
+          <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-brand-tertiary px-6 py-3 flex items-center gap-3 shadow-lg">
+            <button onClick={handleSaveCharity}
+              disabled={saving}
+              className={`${btnCls} bg-brand-secondary text-white hover:opacity-90 disabled:opacity-60`}>
+              {saving ? 'Saving...' : 'Save Changes'}
+            </button>
+            {saved && <span className="text-sm text-green-600">Saved</span>}
+            <span className="text-xs text-text-secondary">You have unsaved changes</span>
+          </div>
+        )}
 
         {/* Locations */}
         <div className="pt-4">

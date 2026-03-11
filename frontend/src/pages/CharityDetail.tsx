@@ -31,6 +31,8 @@ const GET_CHARITY = gql`
       donateUrl
       causeTags
       impact
+      programHighlights
+      usageCredit
       locations {
         id
         label
@@ -71,6 +73,8 @@ interface Charity {
   donateUrl: string | null;
   causeTags: string[];
   impact: string | null;
+  programHighlights: string | null;
+  usageCredit: string | null;
   locations: CharityLocation[];
 }
 
