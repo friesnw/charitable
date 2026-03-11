@@ -13,6 +13,9 @@ export const typeDefs = `#graphql
     slug: String!
     description: String
     logoUrl: String
+    coverPhotoUrl: String
+    contentPhotoUrl1: String
+    contentPhotoUrl2: String
     websiteUrl: String
     volunteerUrl: String
     primaryAddress: String
@@ -20,6 +23,8 @@ export const typeDefs = `#graphql
     donateUrl: String
     ein: String!
     foundedYear: Int
+    impact: String
+    locationDescription: String
     everyOrgClaimed: Boolean!
     isActive: Boolean!
     isReviewed: Boolean!
@@ -101,7 +106,12 @@ export const typeDefs = `#graphql
       foundedYear: Int
       isActive: Boolean
       logoUrl: String
+      coverPhotoUrl: String
+      contentPhotoUrl1: String
+      contentPhotoUrl2: String
       isReviewed: Boolean
+      impact: String
+      locationDescription: String
     ): Charity!
 
     createCharity(

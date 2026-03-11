@@ -5,13 +5,10 @@ interface DonateButtonProps {
   className?: string;
 }
 
-const DONATE_COLOR = '#CB6740';
-
 export function DonateButton({ donateUrl, className }: DonateButtonProps) {
   return (
     <div
-      className={`flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-medium text-white cursor-pointer${className ? ` ${className}` : ''}`}
-      style={{ backgroundColor: DONATE_COLOR }}
+      className={`flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-medium text-white cursor-pointer bg-brand-secondary${className ? ` ${className}` : ''}`}
       onClick={() => window.open(donateUrl, '_blank', 'noopener,noreferrer')}
     >
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">

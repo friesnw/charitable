@@ -9,6 +9,9 @@ function toCharity(row: Record<string, unknown>) {
     slug: row.slug,
     description: row.description,
     logoUrl: row.logo_url,
+    coverPhotoUrl: row.cover_photo_url ?? null,
+    contentPhotoUrl1: row.content_photo_url_1 ?? null,
+    contentPhotoUrl2: row.content_photo_url_2 ?? null,
     websiteUrl: row.website_url,
     volunteerUrl: row.volunteer_url,
     primaryAddress: row.primary_address,
@@ -16,6 +19,8 @@ function toCharity(row: Record<string, unknown>) {
     donateUrl: row.donate_url,
     ein: row.ein,
     foundedYear: row.founded_year,
+    impact: row.impact ?? null,
+    locationDescription: row.location_description ?? null,
     everyOrgClaimed: row.every_org_claimed ?? false,
     isActive: row.is_active ?? true,
     isReviewed: row.is_reviewed ?? false,
@@ -122,7 +127,12 @@ export const charityResolvers = {
         foundedYear: 'founded_year',
         isActive: 'is_active',
         logoUrl: 'logo_url',
+        coverPhotoUrl: 'cover_photo_url',
         isReviewed: 'is_reviewed',
+        impact: 'impact',
+        locationDescription: 'location_description',
+        contentPhotoUrl1: 'content_photo_url_1',
+        contentPhotoUrl2: 'content_photo_url_2',
       };
 
       const setClauses: string[] = [];

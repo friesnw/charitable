@@ -1,7 +1,6 @@
 import { useParams } from 'react-router-dom';
 import { useQuery, gql } from '@apollo/client';
 import { CharityDetailStory } from '../components/CharityDetailStory';
-import { useGeolocation, nearestLocation } from '../lib/geo';
 import { causesToTagLabels } from '../lib/causeColors';
 
 const GET_CAUSES = gql`
@@ -21,6 +20,9 @@ const GET_CHARITY = gql`
       slug
       description
       logoUrl
+      coverPhotoUrl
+      contentPhotoUrl1
+      contentPhotoUrl2
       websiteUrl
       volunteerUrl
       primaryAddress
@@ -28,6 +30,7 @@ const GET_CHARITY = gql`
       foundedYear
       donateUrl
       causeTags
+      impact
       locations {
         id
         label
@@ -57,6 +60,9 @@ interface Charity {
   slug: string;
   description: string | null;
   logoUrl: string | null;
+  coverPhotoUrl: string | null;
+  contentPhotoUrl1: string | null;
+  contentPhotoUrl2: string | null;
   websiteUrl: string | null;
   volunteerUrl: string | null;
   primaryAddress: string | null;
@@ -64,6 +70,7 @@ interface Charity {
   foundedYear: number | null;
   donateUrl: string | null;
   causeTags: string[];
+  impact: string | null;
   locations: CharityLocation[];
 }
 
@@ -76,8 +83,6 @@ export function CharityDetail() {
   });
 
   const { data: causesData } = useQuery(GET_CAUSES);
-  const userPos = useGeolocation();
-
   const tagLabels = causesToTagLabels(causesData?.causes ?? []);
 
   if (loading) {
@@ -94,15 +99,10 @@ export function CharityDetail() {
     return <p className="text-text-secondary">Charity not found.</p>;
   }
 
-  const userDistance = userPos
-    ? nearestLocation(userPos, charity.locations)?.distance ?? null
-    : null;
-
   return (
     <CharityDetailStory
       charity={charity}
       tagLabels={tagLabels}
-      userDistance={userDistance}
     />
   );
 }

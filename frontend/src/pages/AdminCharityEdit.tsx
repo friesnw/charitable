@@ -7,8 +7,9 @@ import { Initials } from '../components/ui/Initials';
 const GET_ADMIN_CHARITY = gql`
   query GetAdminCharity($id: ID!) {
     charity(id: $id) {
-      id name slug ein description logoUrl websiteUrl volunteerUrl
+      id name slug ein description logoUrl coverPhotoUrl contentPhotoUrl1 contentPhotoUrl2 websiteUrl volunteerUrl
       primaryAddress causeTags donateUrl foundedYear isActive isReviewed
+      impact locationDescription
       locations {
         id label description address latitude longitude photoUrl isReviewed
       }
@@ -27,16 +28,21 @@ const UPDATE_CHARITY = gql`
     $id: ID! $name: String $description: String $websiteUrl: String
     $volunteerUrl: String $primaryAddress: String $causeTags: [String!]
     $donateUrl: String $foundedYear: Int
-    $isActive: Boolean $logoUrl: String
+    $isActive: Boolean $logoUrl: String $coverPhotoUrl: String
+    $contentPhotoUrl1: String $contentPhotoUrl2: String
+    $impact: String $locationDescription: String
   ) {
     updateCharity(
       id: $id name: $name description: $description websiteUrl: $websiteUrl
       volunteerUrl: $volunteerUrl primaryAddress: $primaryAddress causeTags: $causeTags
       donateUrl: $donateUrl foundedYear: $foundedYear
-      isActive: $isActive logoUrl: $logoUrl
+      isActive: $isActive logoUrl: $logoUrl coverPhotoUrl: $coverPhotoUrl
+      contentPhotoUrl1: $contentPhotoUrl1 contentPhotoUrl2: $contentPhotoUrl2
+      impact: $impact locationDescription: $locationDescription
     ) {
-      id name slug ein description logoUrl websiteUrl volunteerUrl
+      id name slug ein description logoUrl coverPhotoUrl contentPhotoUrl1 contentPhotoUrl2 websiteUrl volunteerUrl
       primaryAddress causeTags donateUrl foundedYear isActive
+      impact locationDescription
       locations { id label description address latitude longitude photoUrl }
     }
   }
@@ -93,12 +99,17 @@ interface CharityData {
   ein: string;
   description: string | null;
   logoUrl: string | null;
+  coverPhotoUrl: string | null;
+  contentPhotoUrl1: string | null;
+  contentPhotoUrl2: string | null;
   websiteUrl: string | null;
   volunteerUrl: string | null;
   primaryAddress: string | null;
   causeTags: string[];
   donateUrl: string | null;
   foundedYear: number | null;
+  impact: string | null;
+  locationDescription: string | null;
   isActive: boolean;
   isReviewed: boolean;
   locations: LocationData[];
@@ -108,11 +119,16 @@ interface EditForm {
   name: string;
   description: string;
   logoUrl: string | null;
+  coverPhotoUrl: string | null;
+  contentPhotoUrl1: string | null;
+  contentPhotoUrl2: string | null;
   websiteUrl: string;
   volunteerUrl: string;
   primaryAddress: string;
   foundedYear: string;
   donateUrl: string;
+  impact: string;
+  locationDescription: string;
   isActive: boolean;
   causeTags: string[];
 }
@@ -130,11 +146,16 @@ function initEditForm(c: CharityData): EditForm {
     name: c.name,
     description: c.description ?? '',
     logoUrl: c.logoUrl,
+    coverPhotoUrl: c.coverPhotoUrl,
+    contentPhotoUrl1: c.contentPhotoUrl1,
+    contentPhotoUrl2: c.contentPhotoUrl2,
     websiteUrl: c.websiteUrl ?? '',
     volunteerUrl: c.volunteerUrl ?? '',
     primaryAddress: c.primaryAddress ?? '',
     foundedYear: c.foundedYear?.toString() ?? '',
     donateUrl: c.donateUrl ?? '',
+    impact: c.impact ?? '',
+    locationDescription: c.locationDescription ?? '',
     isActive: c.isActive,
     causeTags: c.causeTags,
   };
@@ -212,6 +233,11 @@ export function AdminCharityEdit() {
           donateUrl: editForm.donateUrl || null,
           foundedYear: editForm.foundedYear ? parseInt(editForm.foundedYear) : null,
           isActive: editForm.isActive,
+          coverPhotoUrl: editForm.coverPhotoUrl,
+          contentPhotoUrl1: editForm.contentPhotoUrl1,
+          contentPhotoUrl2: editForm.contentPhotoUrl2,
+          impact: editForm.impact || null,
+          locationDescription: editForm.locationDescription || null,
         },
       });
       initialEditForm.current = editForm;
@@ -231,6 +257,26 @@ export function AdminCharityEdit() {
       if (url) {
         setEditForm(f => f && ({ ...f, logoUrl: url }));
       }
+    } finally {
+      setUploadingField(null);
+    }
+  }
+
+  async function handleUploadCoverPhoto() {
+    setUploadingField('coverPhoto');
+    try {
+      const url = await pickAndUploadImage();
+      if (url) setEditForm(f => f && ({ ...f, coverPhotoUrl: url }));
+    } finally {
+      setUploadingField(null);
+    }
+  }
+
+  async function handleUploadContentPhoto(slot: 1 | 2) {
+    setUploadingField(`contentPhoto${slot}`);
+    try {
+      const url = await pickAndUploadImage();
+      if (url) setEditForm(f => f && ({ ...f, [`contentPhotoUrl${slot}`]: url }));
     } finally {
       setUploadingField(null);
     }
@@ -383,10 +429,20 @@ export function AdminCharityEdit() {
             <input className={inputCls} type="number" value={editForm.foundedYear}
               onChange={e => setEditForm(f => f && ({ ...f, foundedYear: e.target.value }))} />
           </div>
-          <div className="col-span-1 md:col-span-2">
+          <div>
             <label className={labelCls}>Description</label>
-            <textarea className={inputCls} rows={3} value={editForm.description}
+            <textarea className={inputCls} rows={6} value={editForm.description}
               onChange={e => setEditForm(f => f && ({ ...f, description: e.target.value }))} />
+          </div>
+          <div>
+            <label className={labelCls}>Impact <span className="text-text-secondary italic">(markdown — use - for bullet points)</span></label>
+            <textarea className={inputCls} rows={6} value={editForm.impact}
+              onChange={e => setEditForm(f => f && ({ ...f, impact: e.target.value }))} />
+          </div>
+          <div className="col-span-1 md:col-span-2">
+            <label className={labelCls}>Location Description</label>
+            <textarea className={inputCls} rows={3} value={editForm.locationDescription}
+              onChange={e => setEditForm(f => f && ({ ...f, locationDescription: e.target.value }))} />
           </div>
           <div>
             <label className={labelCls}>Website URL</label>
@@ -474,6 +530,50 @@ export function AdminCharityEdit() {
                 {uploadingField === 'favicon' ? 'Fetching...' : 'Use favicon'}
               </button>
             )}
+          </div>
+        </div>
+
+        {/* Photos */}
+        <div className="space-y-3">
+          <label className={labelCls}>Photos</label>
+          <div className="flex flex-wrap gap-4">
+            {([
+              { key: 'coverPhotoUrl', label: 'Featured Photo', field: 'coverPhoto', upload: handleUploadCoverPhoto },
+              { key: 'contentPhotoUrl1', label: 'Content Photo 1', field: 'contentPhoto1', upload: () => handleUploadContentPhoto(1) },
+              { key: 'contentPhotoUrl2', label: 'Content Photo 2', field: 'contentPhoto2', upload: () => handleUploadContentPhoto(2) },
+            ] as const).map(({ key, label, field, upload }) => (
+              <div key={key} className="flex flex-col gap-1.5">
+                <span className="text-xs text-text-secondary">{label}</span>
+                {editForm[key] ? (
+                  <img
+                    src={cloudinaryUrl(editForm[key]!, { w: 200, h: 80, fit: 'fill' })}
+                    alt={label}
+                    className="h-20 w-48 object-cover rounded border border-brand-tertiary"
+                  />
+                ) : (
+                  <div className="h-20 w-48 rounded border border-dashed border-brand-tertiary bg-bg-accent flex items-center justify-center text-xs text-text-secondary">
+                    No photo
+                  </div>
+                )}
+                <div className="flex gap-2">
+                  <button
+                    onClick={upload}
+                    disabled={!!uploadingField}
+                    className={`${btnCls} border border-brand-tertiary text-text-secondary hover:bg-bg-accent disabled:opacity-50 text-xs`}
+                  >
+                    {uploadingField === field ? 'Uploading...' : editForm[key] ? 'Replace' : 'Upload'}
+                  </button>
+                  {editForm[key] && (
+                    <button
+                      onClick={() => setEditForm(f => f && ({ ...f, [key]: null }))}
+                      className={`${btnCls} border border-red-300 text-red-600 hover:bg-red-50 text-xs`}
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
