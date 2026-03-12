@@ -34,6 +34,7 @@ export interface StoryCharity {
   impact: string | null;
   programHighlights: string | null;
   usageCredit: string | null;
+  locationDescription: string | null;
   locations: StoryLocation[];
 }
 
@@ -272,8 +273,11 @@ export function CharityDetailStory({ charity, tagLabels }: CharityDetailStoryPro
         {charity.locations.length > 0 && (
           <section>
             <h2 className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: 'var(--flair-sage)' }}>
-              Their locations
+              Locations
             </h2>
+            {charity.locationDescription && (
+              <p className="text-gray-700 text-base leading-relaxed mb-4 w-1/2">{charity.locationDescription}</p>
+            )}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {charity.locations.map((loc) => {
                 const locNeighborhood = loc.latitude != null && loc.longitude != null
@@ -283,13 +287,13 @@ export function CharityDetailStory({ charity, tagLabels }: CharityDetailStoryPro
                   <div key={loc.id} className="rounded-lg overflow-hidden border border-gray-200 bg-white">
                     {loc.photoUrl ? (
                       <img
-                        src={cloudinaryUrl(loc.photoUrl, { w: 800, h: 160, fit: 'fill' })}
+                        src={cloudinaryUrl(loc.photoUrl, { w: 800, h: 400, fit: 'fill' })}
                         alt={`${loc.label} — ${charity.name}`}
                         loading="lazy"
-                        className="w-full h-36 object-cover"
+                        className="w-full object-cover" style={{ height: 200 }}
                       />
                     ) : (
-                      <div className="w-full h-36" style={{ backgroundColor: color }} />
+                      <div className="w-full" style={{ height: 200, backgroundColor: color }} />
                     )}
                     <div className="p-3">
                       <div className="flex items-start justify-between gap-2">
