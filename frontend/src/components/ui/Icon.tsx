@@ -4,7 +4,7 @@ export const ICON_NAMES = [
   // UI / action icons (stroke)
   'check-circle', 'calendar', 'volunteer', 'globe',
   // UI / action icons (filled)
-  'search', 'user', 'map-pin', 'info', 'close', 'check-circle-solid', 'flag', 'fingerprint', 'download', 'sun',
+  'search', 'user', 'map-pin', 'info', 'close', 'check-circle-solid', 'flag', 'fingerprint', 'download', 'sun', 'plus-circle',
 ] as const;
 
 export type IconName = (typeof ICON_NAMES)[number];
@@ -114,6 +114,11 @@ const icons: Record<IconName, IconDef> = {
   close: {
     viewBox: '0 0 20 20',
     path: 'M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z',
+  },
+  'plus-circle': {
+    viewBox: '0 0 20 20',
+    path: 'M10 18C14.4183 18 18 14.4183 18 10C18 5.58172 14.4183 2 10 2C5.58172 2 2 5.58172 2 10C2 14.4183 5.58172 18 10 18ZM10.75 6.75C10.75 6.33579 10.4142 6 10 6C9.58579 6 9.25 6.33579 9.25 6.75V9.25H6.75C6.33579 9.25 6 9.58579 6 10C6 10.4142 6.33579 10.75 6.75 10.75H9.25V13.25C9.25 13.6642 9.58579 14 10 14C10.4142 14 10.75 13.6642 10.75 13.25V10.75H13.25C13.6642 10.75 14 10.4142 14 10C14 9.58579 13.6642 9.25 13.25 9.25H10.75V6.75Z',
+    evenodd: true,
   },
   sun: {
     viewBox: '0 0 20 20',
