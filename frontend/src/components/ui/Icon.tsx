@@ -4,14 +4,14 @@ export const ICON_NAMES = [
   // UI / action icons (stroke)
   'check-circle', 'calendar', 'volunteer', 'globe',
   // UI / action icons (filled)
-  'search', 'user', 'map-pin', 'info', 'close', 'check-circle-solid', 'flag', 'fingerprint', 'download',
+  'search', 'user', 'map-pin', 'info', 'close', 'check-circle-solid', 'flag', 'fingerprint', 'download', 'sun',
 ] as const;
 
 export type IconName = (typeof ICON_NAMES)[number];
 
 interface IconDef {
   viewBox: string;
-  path: string;
+  path: string | string[];
   stroke?: boolean;
   strokeWidth?: number;
   evenodd?: boolean;
@@ -115,6 +115,20 @@ const icons: Record<IconName, IconDef> = {
     viewBox: '0 0 20 20',
     path: 'M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z',
   },
+  sun: {
+    viewBox: '0 0 20 20',
+    path: [
+      'M10 2C10.4142 2 10.75 2.33579 10.75 2.75V4.25C10.75 4.66421 10.4142 5 10 5C9.58579 5 9.25 4.66421 9.25 4.25V2.75C9.25 2.33579 9.58579 2 10 2Z',
+      'M10 15C10.4142 15 10.75 15.3358 10.75 15.75V17.25C10.75 17.6642 10.4142 18 10 18C9.58579 18 9.25 17.6642 9.25 17.25V15.75C9.25 15.3358 9.58579 15 10 15Z',
+      'M10 7C8.34315 7 7 8.34315 7 10C7 11.6569 8.34315 13 10 13C11.6569 13 13 11.6569 13 10C13 8.34315 11.6569 7 10 7Z',
+      'M15.6568 5.40386C15.9497 5.11096 15.9497 4.63609 15.6568 4.3432C15.3639 4.0503 14.889 4.0503 14.5961 4.3432L13.5355 5.40386C13.2426 5.69675 13.2426 6.17162 13.5355 6.46452C13.8284 6.75741 14.3032 6.75741 14.5961 6.46452L15.6568 5.40386Z',
+      'M4.3432 4.3432C4.0503 4.0503 3.57543 4.0503 3.28254 4.3432C2.98964 4.63609 2.98964 5.11096 3.28254 5.40386L4.34315 6.46452C4.63605 6.75741 5.11091 6.75741 5.40381 6.46452C5.69671 6.17162 5.69671 5.69675 5.40381 5.40386L4.3432 4.3432Z',
+      'M15.6568 14.5961C15.9497 14.889 15.9497 15.3639 15.6568 15.6568C15.3639 15.9497 14.889 15.9497 14.5961 15.6568L13.5355 14.5961C13.2426 14.3032 13.2426 13.8284 13.5355 13.5355C13.8284 13.2426 14.3032 13.2426 14.5961 13.5355L15.6568 14.5961Z',
+      'M4.3432 15.6568C4.0503 15.9497 3.57543 15.9497 3.28254 15.6568C2.98964 15.3639 2.98964 14.889 3.28254 14.5961L4.34315 13.5355C4.63605 13.2426 5.11091 13.2426 5.40381 13.5355C5.69671 13.8284 5.69671 14.3032 5.40381 14.5961L4.3432 15.6568Z',
+      'M18.75 10C18.75 10.4142 18.4142 10.75 18 10.75H16.5C16.0858 10.75 15.75 10.4142 15.75 10C15.75 9.58579 16.0858 9.25 16.5 9.25H18C18.4142 9.25 18.75 9.58579 18.75 10Z',
+    ],
+    evenodd: true,
+  },
   download: {
     viewBox: '0 0 20 20',
     path: 'M10.75 2.75a.75.75 0 0 0-1.5 0v8.614L6.295 8.235a.75.75 0 1 0-1.09 1.03l4.25 4.5a.75.75 0 0 0 1.09 0l4.25-4.5a.75.75 0 0 0-1.09-1.03l-2.955 3.129V2.75ZM3.5 12.75a.75.75 0 0 0-1.5 0v2.5A2.75 2.75 0 0 0 4.75 18h10.5A2.75 2.75 0 0 0 18 15.25v-2.5a.75.75 0 0 0-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5Z',
@@ -129,6 +143,7 @@ interface IconProps {
 
 export function Icon({ name, className = 'w-4 h-4' }: IconProps) {
   const def = icons[name];
+  const paths = Array.isArray(def.path) ? def.path : [def.path];
   if (def.stroke) {
     return (
       <svg
@@ -140,17 +155,20 @@ export function Icon({ name, className = 'w-4 h-4' }: IconProps) {
         strokeLinejoin="round"
         className={className}
       >
-        <path d={def.path} />
+        {paths.map((d, i) => <path key={i} d={d} />)}
       </svg>
     );
   }
   return (
     <svg viewBox={def.viewBox} fill="currentColor" className={className}>
-      <path
-        d={def.path}
-        fillRule={def.evenodd ? 'evenodd' : undefined}
-        clipRule={def.evenodd ? 'evenodd' : undefined}
-      />
+      {paths.map((d, i) => (
+        <path
+          key={i}
+          d={d}
+          fillRule={def.evenodd ? 'evenodd' : undefined}
+          clipRule={def.evenodd ? 'evenodd' : undefined}
+        />
+      ))}
     </svg>
   );
 }
