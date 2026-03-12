@@ -568,6 +568,17 @@ export function AdminCharityEdit() {
             >
               {uploadingField === 'logo' ? 'Uploading...' : 'Upload logo'}
             </button>
+            {editForm.logoUrl && (
+              <a
+                href={editForm.logoUrl}
+                download
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`${btnCls} border border-brand-tertiary text-text-secondary hover:bg-bg-accent flex items-center gap-1`}
+              >
+                <Icon name="download" className="w-3 h-3" />
+              </a>
+            )}
             {editForm.websiteUrl && (
               <button
                 onClick={handleUseFavicon}
@@ -610,6 +621,17 @@ export function AdminCharityEdit() {
                   >
                     {uploadingField === field ? 'Uploading...' : editForm[key] ? 'Replace' : 'Upload'}
                   </button>
+                  {editForm[key] && (
+                    <a
+                      href={editForm[key]!}
+                      download
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`${btnCls} border border-brand-tertiary text-text-secondary hover:bg-bg-accent text-xs flex items-center gap-1`}
+                    >
+                      <Icon name="download" className="w-3 h-3" />
+                    </a>
+                  )}
                   {editForm[key] && (
                     <button
                       onClick={() => setEditForm(f => f && ({ ...f, [key]: null }))}
@@ -740,6 +762,18 @@ export function AdminCharityEdit() {
                                   >
                                     {uploadingField === `photo-${loc.id}` ? 'Uploading...' : loc.photoUrl ? 'Replace' : 'Upload'}
                                   </button>
+                                  {loc.photoUrl && (
+                                    <a
+                                      href={loc.photoUrl}
+                                      download
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      onClick={e => e.stopPropagation()}
+                                      className={`${btnCls} border border-brand-tertiary text-text-secondary hover:bg-bg-accent text-xs flex items-center gap-1`}
+                                    >
+                                      <Icon name="download" className="w-3 h-3" />
+                                    </a>
+                                  )}
                                   {loc.photoUrl && (
                                     <button
                                       onClick={e => { e.stopPropagation(); handleRemoveLocationPhoto(loc.id); }}
