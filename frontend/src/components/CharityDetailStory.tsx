@@ -58,7 +58,7 @@ function parseHighlights(raw: string): { icon: string | null; title: string | nu
     .map((line) => {
       let rest = line;
       let icon: string | null = null;
-      const prefixed = rest.match(/^\((\w+)\)(.+)$/);
+      const prefixed = rest.match(/^\(([\w-]+)\)(.+)$/);
       if (prefixed) { icon = prefixed[1]; rest = prefixed[2].trim(); }
       else rest = rest.replace(/^-\s*/, '').trim();
       const bolded = rest.match(/^\*\*(.+?)\*\*\s*(.*)$/);
