@@ -466,7 +466,7 @@ export function AdminCharityEdit() {
             {showIconRef && (
               <div className="mb-1.5 p-2 rounded border border-brand-tertiary bg-bg-accent">
                 <p className="text-xs text-text-secondary opacity-60 mb-1.5">
-                  One highlight per line. Prefix with an icon: <code>(heart)text</code>.
+                  One highlight per line. Prefix with an icon: <code>(heart)text</code>. Bold a title: <code>**Title** body text</code>. Combine: <code>(heart)**Title** body text</code>.
                 </p>
                 <div className="flex flex-wrap gap-3">
                   {ICON_NAMES.map((name) => (
@@ -478,8 +478,45 @@ export function AdminCharityEdit() {
                 </div>
               </div>
             )}
-            <textarea className={inputCls} rows={4} value={editForm.programHighlights}
-              onChange={e => setEditForm(f => f && ({ ...f, programHighlights: e.target.value }))} />
+            <textarea
+              className={inputCls}
+              rows={4}
+              value={editForm.programHighlights}
+              onChange={e => setEditForm(f => f && ({ ...f, programHighlights: e.target.value }))}
+              onKeyDown={e => {
+                if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
+                  e.preventDefault();
+                  const el = e.currentTarget;
+                  const start = el.selectionStart;
+                  const end = el.selectionEnd;
+                  const val = el.value;
+                  const selected = val.slice(start, end);
+                  const newVal = val.slice(0, start) + `**${selected}**` + val.slice(end);
+                  setEditForm(f => f && ({ ...f, programHighlights: newVal }));
+                  requestAnimationFrame(() => {
+                    el.selectionStart = start + 2;
+                    el.selectionEnd = end + 2;
+                  });
+                }
+              }}
+            />
+            {/* Preview */}
+            {editForm.programHighlights && (
+              <div className="mt-2 p-2 rounded border border-brand-tertiary bg-bg-accent space-y-1.5">
+                {editForm.programHighlights.split('\n').filter(Boolean).map((line, i) => {
+                  const iconMatch = line.match(/^\((\w+)\)(.+)$/);
+                  const text = iconMatch ? iconMatch[2].trim() : line.replace(/^-\s*/, '').trim();
+                  const boldMatch = text.match(/^\*\*(.+?)\*\*\s*(.*)$/);
+                  return (
+                    <div key={i} className="text-xs text-text-primary">
+                      {boldMatch
+                        ? <><strong>{boldMatch[1]}</strong>{boldMatch[2] ? ' ' + boldMatch[2] : ''}</>
+                        : text}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
           <div>
             <label className={labelCls}>Location Description</label>

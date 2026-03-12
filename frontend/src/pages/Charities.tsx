@@ -228,7 +228,7 @@ export function Charities() {
           {selectedCharityId !== null && (
             <button
               onClick={() => { setSelectedCharityId(null); setSelectedLocationId(null); }}
-              className="w-full text-left px-4 py-3 border-b border-brand-tertiary text-sm text-brand-secondary hover:bg-bg-accent flex items-center gap-1 flex-shrink-0"
+              className="w-full text-left px-4 py-3 border-b border-brand-tertiary text-sm text-text-secondary hover:bg-bg-accent flex items-center gap-1 flex-shrink-0"
             >
               ← Back to all charities
             </button>

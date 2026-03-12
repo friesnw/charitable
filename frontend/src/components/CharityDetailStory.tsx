@@ -52,15 +52,20 @@ function bareDomain(url: string): string {
   }
 }
 
-function parseHighlights(raw: string): { icon: string | null; text: string }[] {
+function parseHighlights(raw: string): { icon: string | null; title: string | null; text: string }[] {
   return raw
     .split('\n')
     .map((line) => {
-      const prefixed = line.match(/^\((\w+)\)(.+)$/);
-      if (prefixed) return { icon: prefixed[1], text: prefixed[2].trim() };
-      return { icon: null, text: line.replace(/^-\s*/, '').trim() };
+      let rest = line;
+      let icon: string | null = null;
+      const prefixed = rest.match(/^\((\w+)\)(.+)$/);
+      if (prefixed) { icon = prefixed[1]; rest = prefixed[2].trim(); }
+      else rest = rest.replace(/^-\s*/, '').trim();
+      const bolded = rest.match(/^\*\*(.+?)\*\*\s*(.*)$/);
+      if (bolded) return { icon, title: bolded[1], text: bolded[2].trim() };
+      return { icon, title: null, text: rest };
     })
-    .filter((h) => h.text.length > 0);
+    .filter((h) => h.title || h.text.length > 0);
 }
 
 export function CharityDetailStory({ charity, tagLabels }: CharityDetailStoryProps) {
@@ -111,7 +116,7 @@ export function CharityDetailStory({ charity, tagLabels }: CharityDetailStoryPro
         {featuredPhoto ? (
           <div className="rounded-xl overflow-hidden" style={{ height: 260 }}>
             <img
-              src={cloudinaryUrl(featuredPhoto, { w: 1200, h: 520, fit: 'fill' })}
+              src={cloudinaryUrl(featuredPhoto, { w: 1800, h: 780, fit: 'fill' })}
               alt=""
               fetchPriority="high"
               className="w-full h-full object-cover"
@@ -202,7 +207,10 @@ export function CharityDetailStory({ charity, tagLabels }: CharityDetailStoryPro
                           >
                             <Icon name={iconName} className="w-6 h-6" />
                           </div>
-                          <p className="text-base text-gray-800 leading-relaxed pt-1.5">{h.text}</p>
+                          <div className="pt-1.5">
+                            {h.title && <p className="text-base font-semibold text-gray-900 leading-snug">{h.title}</p>}
+                            {h.text && <p className="text-base text-gray-700 leading-relaxed">{h.text}</p>}
+                          </div>
                         </div>
                       );
                     })}

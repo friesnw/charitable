@@ -83,7 +83,7 @@ export function CharityPreviewDrawer({
         <div className="relative w-full h-44 flex-shrink-0 overflow-hidden">
           {photoUrl ? (
             <img
-              src={cloudinaryUrl(photoUrl, { w: 800, h: 176, fit: 'fill' })}
+              src={cloudinaryUrl(photoUrl, { w: 800, h: 400, fit: 'fill' })}
               alt={selectedLocation?.label ?? charity.name}
               className="w-full h-full object-cover"
             />
