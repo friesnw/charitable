@@ -18,7 +18,7 @@ const MOCK_CHARITY = {
   ein: '84-0772722',
   foundedYear: 1978,
   donateUrl: 'https://www.foodbankrockies.org/donate',
-  causeTags: ['food-security', 'hunger'],
+  causeTags: ['hunger', 'families'],
   impact: '500K+ meals distributed annually\n12,000 families served each month',
   programHighlights: '(heart)Serving families since 1978\n(people)12,000 families per month\n(star)Award-winning distribution network',
   usageCredit: null,
@@ -46,8 +46,8 @@ const MOCK_CHARITY = {
 };
 
 const TAG_LABELS = new Map([
-  ['food-security', 'Food Security'],
   ['hunger', 'Hunger'],
+  ['families', 'Families'],
   ['housing', 'Housing'],
 ]);
 

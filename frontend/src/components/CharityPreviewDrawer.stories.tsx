@@ -7,7 +7,7 @@ const MOCK_CHARITY = {
   name: 'Denver Food Bank',
   slug: 'denver-food-bank',
   description: 'Feeding families across the Denver metro since 1978. We distribute millions of pounds of food annually through a network of partner agencies.',
-  causeTags: ['food-security', 'hunger'],
+  causeTags: ['hunger', 'families'],
   donateUrl: 'https://www.foodbankrockies.org/donate',
   locations: [
     {
@@ -22,8 +22,8 @@ const MOCK_CHARITY = {
 };
 
 const MOCK_TAG_LABELS = new Map([
-  ['food-security', 'Food Security'],
   ['hunger', 'Hunger'],
+  ['families', 'Families'],
 ]);
 
 const meta = {

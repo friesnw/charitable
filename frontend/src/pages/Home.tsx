@@ -29,19 +29,19 @@ const HERO_NEIGHBORHOODS = [
 ];
 
 const SURVEY_TAGS = [
-  { slug: 'homelessness', label: 'Homelessness' },
-  { slug: 'food-security', label: 'Food Security' },
+  { slug: 'housing', label: 'Housing' },
+  { slug: 'hunger', label: 'Hunger' },
   { slug: 'animals', label: 'Animals' },
   { slug: 'mental-health', label: 'Mental Health' },
   { slug: 'youth', label: 'Youth' },
-  { slug: 'housing', label: 'Housing' },
   { slug: 'education', label: 'Education' },
-  { slug: 'community', label: 'Community' },
+  { slug: 'environment', label: 'Environment' },
+  { slug: 'families', label: 'Families' },
 ];
 
 const VALUE_PROP_CAUSES = [
-  'homelessness',
-  'food-security',
+  'housing',
+  'hunger',
   'animals',
   'mental-health',
   'youth',
