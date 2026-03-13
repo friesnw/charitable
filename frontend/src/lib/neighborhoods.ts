@@ -36,6 +36,7 @@ export const NEIGHBORHOODS: Neighborhood[] = [
   // Suburbs
   { name: 'Commerce City',    lat: 39.8086, lng: -104.9341 },
   { name: 'Thornton',         lat: 39.8677, lng: -104.9719 },
+  { name: 'Wellington',       lat: 40.7028, lng: -104.9625 },
   { name: 'Arvada',           lat: 39.8028, lng: -105.0875 },
   { name: 'Wheat Ridge',      lat: 39.7661, lng: -105.0897 },
   { name: 'Lakewood',         lat: 39.7047, lng: -105.0813 },

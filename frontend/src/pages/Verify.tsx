@@ -40,7 +40,7 @@ export function Verify() {
         if (data?.verifyMagicLink) {
           login(data.verifyMagicLink.token, data.verifyMagicLink.user);
           const destination = data.verifyMagicLink.onboardingCompleted
-            ? '/dashboard'
+            ? '/charities'
             : '/preferences';
           navigate(destination, { replace: true });
         }

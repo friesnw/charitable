@@ -7,7 +7,6 @@ import { AdminRoute } from './components/layout/AdminRoute';
 import { Home } from './pages/Home';
 import { Login } from './pages/Login';
 import { Verify } from './pages/Verify';
-import { Dashboard } from './pages/Dashboard';
 import { Preferences } from './pages/Preferences';
 import { Charities } from './pages/Charities';
 import { CharityDetail } from './pages/CharityDetail';
@@ -32,14 +31,6 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <PageShell><Preferences /></PageShell>
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/dashboard',
-    element: (
-      <ProtectedRoute>
-        <PageShell><Dashboard /></PageShell>
       </ProtectedRoute>
     ),
   },

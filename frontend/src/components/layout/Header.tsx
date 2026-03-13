@@ -144,11 +144,11 @@ export function Header() {
           </div>
 
           {/* Desktop nav */}
+          <Link to="/charities" className="hidden lg:block text-white/70 hover:text-white text-sm">
+            Find Charities
+          </Link>
           {isAuthenticated ? (
             <>
-              <Link to="/dashboard" className="hidden lg:block text-white/70 hover:text-white text-sm">
-                Dashboard
-              </Link>
               <div className="hidden lg:block relative" ref={menuRef}>
                 <button
                   onClick={() => setProfileOpen(!profileOpen)}
@@ -194,7 +194,6 @@ export function Header() {
                     <span className="block px-4 py-2 text-xs text-text-secondary truncate">{user?.email}</span>
                     <hr className="border-brand-tertiary my-1" />
                     <Link to="/charities" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-3 text-sm text-text-primary hover:bg-bg-accent">Find Charities</Link>
-                    <Link to="/dashboard" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-3 text-sm text-text-primary hover:bg-bg-accent">Dashboard</Link>
                     <Link to="/preferences" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-3 text-sm text-text-primary hover:bg-bg-accent">Preferences</Link>
                     {user?.isAdmin && (
                       <Link to="/admin" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-3 text-sm text-text-primary hover:bg-bg-accent">Admin</Link>
