@@ -50,8 +50,16 @@ interface CharityRow {
   volunteer_url: string | null;
   every_org_claimed: boolean;
   is_active: boolean;
+  is_reviewed: boolean;
   primary_address: string | null;
   donate_url: string | null;
+  impact: string | null;
+  location_description: string | null;
+  cover_photo_url: string | null;
+  content_photo_url_1: string | null;
+  content_photo_url_2: string | null;
+  program_highlights: string | null;
+  usage_credit: string | null;
 }
 
 interface LocationRow {
@@ -63,6 +71,7 @@ interface LocationRow {
   latitude: string | null;
   longitude: string | null;
   photo_url: string | null;
+  is_reviewed: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -82,12 +91,15 @@ async function main() {
     const { rows: charities } = await source.query<CharityRow>(`
       SELECT id, name, slug, description, website_url, logo_url, cause_tags,
              every_org_slug, ein, founded_year, volunteer_url, every_org_claimed,
-             is_active, primary_address, donate_url
+             is_active, is_reviewed, primary_address, donate_url,
+             impact, location_description, cover_photo_url,
+             content_photo_url_1, content_photo_url_2,
+             program_highlights, usage_credit
       FROM charities
       ORDER BY id
     `);
     const { rows: locations } = await source.query<LocationRow>(`
-      SELECT id, charity_id, label, description, address, latitude, longitude, photo_url
+      SELECT id, charity_id, label, description, address, latitude, longitude, photo_url, is_reviewed
       FROM charity_locations
       ORDER BY id
     `);
@@ -118,7 +130,10 @@ async function main() {
         charity.name, charity.slug, charity.description, charity.website_url,
         charity.logo_url, charity.cause_tags, charity.every_org_slug, charity.ein,
         charity.founded_year, charity.volunteer_url, charity.every_org_claimed,
-        charity.is_active, charity.primary_address, charity.donate_url,
+        charity.is_active, charity.is_reviewed, charity.primary_address, charity.donate_url,
+        charity.impact, charity.location_description, charity.cover_photo_url,
+        charity.content_photo_url_1, charity.content_photo_url_2,
+        charity.program_highlights, charity.usage_credit,
       ];
 
       // Try upsert by EIN first. If every_org_slug conflicts with a different row,
@@ -129,23 +144,34 @@ async function main() {
           INSERT INTO charities
             (name, slug, description, website_url, logo_url, cause_tags,
              every_org_slug, ein, founded_year, volunteer_url, every_org_claimed,
-             is_active, primary_address, donate_url)
-          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+             is_active, is_reviewed, primary_address, donate_url,
+             impact, location_description, cover_photo_url,
+             content_photo_url_1, content_photo_url_2,
+             program_highlights, usage_credit)
+          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22)
           ON CONFLICT (ein) DO UPDATE SET
-            name              = EXCLUDED.name,
-            slug              = EXCLUDED.slug,
-            description       = EXCLUDED.description,
-            website_url       = EXCLUDED.website_url,
-            logo_url          = EXCLUDED.logo_url,
-            cause_tags        = EXCLUDED.cause_tags,
-            every_org_slug    = EXCLUDED.every_org_slug,
-            founded_year      = EXCLUDED.founded_year,
-            volunteer_url     = EXCLUDED.volunteer_url,
-            every_org_claimed = EXCLUDED.every_org_claimed,
-            is_active         = EXCLUDED.is_active,
-            primary_address   = EXCLUDED.primary_address,
-            donate_url        = EXCLUDED.donate_url,
-            updated_at        = NOW()
+            name                = EXCLUDED.name,
+            slug                = EXCLUDED.slug,
+            description         = EXCLUDED.description,
+            website_url         = EXCLUDED.website_url,
+            logo_url            = EXCLUDED.logo_url,
+            cause_tags          = EXCLUDED.cause_tags,
+            every_org_slug      = EXCLUDED.every_org_slug,
+            founded_year        = EXCLUDED.founded_year,
+            volunteer_url       = EXCLUDED.volunteer_url,
+            every_org_claimed   = EXCLUDED.every_org_claimed,
+            is_active           = EXCLUDED.is_active,
+            is_reviewed         = EXCLUDED.is_reviewed,
+            primary_address     = EXCLUDED.primary_address,
+            donate_url          = EXCLUDED.donate_url,
+            impact              = EXCLUDED.impact,
+            location_description = EXCLUDED.location_description,
+            cover_photo_url     = EXCLUDED.cover_photo_url,
+            content_photo_url_1 = EXCLUDED.content_photo_url_1,
+            content_photo_url_2 = EXCLUDED.content_photo_url_2,
+            program_highlights  = EXCLUDED.program_highlights,
+            usage_credit        = EXCLUDED.usage_credit,
+            updated_at          = NOW()
           RETURNING id
         `, params));
       } catch (err: any) {
@@ -153,40 +179,56 @@ async function main() {
         if (err.code === '23505' && err.constraint === 'charities_every_org_slug_key') {
           ({ rows } = await target.query<{ id: number }>(`
             UPDATE charities SET
-              name              = $1,
-              slug              = $2,
-              description       = $3,
-              website_url       = $4,
-              logo_url          = $5,
-              cause_tags        = $6,
-              ein               = $8,
-              founded_year      = $9,
-              volunteer_url     = $10,
-              every_org_claimed = $11,
-              is_active         = $12,
-              primary_address   = $13,
-              donate_url        = $14,
-              updated_at        = NOW()
+              name                = $1,
+              slug                = $2,
+              description         = $3,
+              website_url         = $4,
+              logo_url            = $5,
+              cause_tags          = $6,
+              ein                 = $8,
+              founded_year        = $9,
+              volunteer_url       = $10,
+              every_org_claimed   = $11,
+              is_active           = $12,
+              is_reviewed         = $13,
+              primary_address     = $14,
+              donate_url          = $15,
+              impact              = $16,
+              location_description = $17,
+              cover_photo_url     = $18,
+              content_photo_url_1 = $19,
+              content_photo_url_2 = $20,
+              program_highlights  = $21,
+              usage_credit        = $22,
+              updated_at          = NOW()
             WHERE every_org_slug = $7
             RETURNING id
           `, params));
         } else if (err.code === '23505' && err.constraint === 'charities_slug_key') {
           ({ rows } = await target.query<{ id: number }>(`
             UPDATE charities SET
-              name              = $1,
-              description       = $3,
-              website_url       = $4,
-              logo_url          = $5,
-              cause_tags        = $6,
-              every_org_slug    = $7,
-              ein               = $8,
-              founded_year      = $9,
-              volunteer_url     = $10,
-              every_org_claimed = $11,
-              is_active         = $12,
-              primary_address   = $13,
-              donate_url        = $14,
-              updated_at        = NOW()
+              name                = $1,
+              description         = $3,
+              website_url         = $4,
+              logo_url            = $5,
+              cause_tags          = $6,
+              every_org_slug      = $7,
+              ein                 = $8,
+              founded_year        = $9,
+              volunteer_url       = $10,
+              every_org_claimed   = $11,
+              is_active           = $12,
+              is_reviewed         = $13,
+              primary_address     = $14,
+              donate_url          = $15,
+              impact              = $16,
+              location_description = $17,
+              cover_photo_url     = $18,
+              content_photo_url_1 = $19,
+              content_photo_url_2 = $20,
+              program_highlights  = $21,
+              usage_credit        = $22,
+              updated_at          = NOW()
             WHERE slug = $2
             RETURNING id
           `, params));
@@ -227,10 +269,10 @@ async function main() {
         for (const loc of locs) {
           await client.query(`
             INSERT INTO charity_locations
-              (charity_id, label, description, address, latitude, longitude, photo_url)
-            VALUES ($1,$2,$3,$4,$5,$6,$7)
+              (charity_id, label, description, address, latitude, longitude, photo_url, is_reviewed)
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
           `, [targetCharityId, loc.label, loc.description, loc.address,
-              loc.latitude, loc.longitude, loc.photo_url]);
+              loc.latitude, loc.longitude, loc.photo_url, loc.is_reviewed]);
         }
 
         await client.query('COMMIT');
