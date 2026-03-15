@@ -373,7 +373,7 @@ export function AdminCharityEdit() {
       },
     });
     setShowAddLocation(false);
-    setNewLocForm({ label: '', description: '', address: '', latitude: '', longitude: '' });
+    setNewLocForm({ label: '', description: '', address: '', latitude: '', longitude: '', isSublocation: false });
   }
 
   const isDirty = editForm !== null && JSON.stringify(editForm) !== JSON.stringify(initialEditForm.current);
