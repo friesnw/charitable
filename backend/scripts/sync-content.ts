@@ -72,6 +72,7 @@ interface LocationRow {
   longitude: string | null;
   photo_url: string | null;
   is_reviewed: boolean;
+  is_sublocation: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -99,7 +100,7 @@ async function main() {
       ORDER BY id
     `);
     const { rows: locations } = await source.query<LocationRow>(`
-      SELECT id, charity_id, label, description, address, latitude, longitude, photo_url, is_reviewed
+      SELECT id, charity_id, label, description, address, latitude, longitude, photo_url, is_reviewed, is_sublocation
       FROM charity_locations
       ORDER BY id
     `);
@@ -269,10 +270,10 @@ async function main() {
         for (const loc of locs) {
           await client.query(`
             INSERT INTO charity_locations
-              (charity_id, label, description, address, latitude, longitude, photo_url, is_reviewed)
-            VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+              (charity_id, label, description, address, latitude, longitude, photo_url, is_reviewed, is_sublocation)
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
           `, [targetCharityId, loc.label, loc.description, loc.address,
-              loc.latitude, loc.longitude, loc.photo_url, loc.is_reviewed]);
+              loc.latitude, loc.longitude, loc.photo_url, loc.is_reviewed, loc.is_sublocation]);
         }
 
         await client.query('COMMIT');

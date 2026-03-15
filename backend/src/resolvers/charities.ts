@@ -41,6 +41,7 @@ function toLocation(row: Record<string, unknown>) {
     longitude: row.longitude != null ? parseFloat(row.longitude as string) : null,
     photoUrl: row.photo_url ?? null,
     isReviewed: row.is_reviewed ?? false,
+    isSublocation: row.is_sublocation ?? false,
   };
 }
 
@@ -195,6 +196,7 @@ export const charityResolvers = {
         longitude: 'longitude',
         photoUrl: 'photo_url',
         isReviewed: 'is_reviewed',
+        isSublocation: 'is_sublocation',
       };
 
       const setClauses: string[] = [];

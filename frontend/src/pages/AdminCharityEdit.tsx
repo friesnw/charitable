@@ -12,7 +12,7 @@ const GET_ADMIN_CHARITY = gql`
       primaryAddress causeTags donateUrl foundedYear isActive isReviewed
       impact locationDescription programHighlights usageCredit
       locations {
-        id label description address latitude longitude photoUrl isReviewed
+        id label description address latitude longitude photoUrl isReviewed isSublocation
       }
     }
   }
@@ -54,13 +54,13 @@ const UPDATE_CHARITY = gql`
 const UPDATE_LOCATION = gql`
   mutation UpdateCharityLocationEdit(
     $id: ID! $label: String $description: String $address: String
-    $latitude: Float $longitude: Float $photoUrl: String
+    $latitude: Float $longitude: Float $photoUrl: String $isSublocation: Boolean
   ) {
     updateCharityLocation(
       id: $id label: $label description: $description address: $address
-      latitude: $latitude longitude: $longitude photoUrl: $photoUrl
+      latitude: $latitude longitude: $longitude photoUrl: $photoUrl isSublocation: $isSublocation
     ) {
-      id label description address latitude longitude photoUrl
+      id label description address latitude longitude photoUrl isReviewed isSublocation
     }
   }
 `;
@@ -93,6 +93,7 @@ interface LocationData {
   latitude: number | null;
   longitude: number | null;
   photoUrl: string | null;
+  isSublocation: boolean;
 }
 
 interface CharityData {
@@ -146,6 +147,7 @@ interface LocationForm {
   address: string;
   latitude: string;
   longitude: string;
+  isSublocation: boolean;
 }
 
 function initEditForm(c: CharityData): EditForm {
@@ -177,6 +179,7 @@ function initLocationForm(loc: LocationData): LocationForm {
     address: loc.address ?? '',
     latitude: loc.latitude?.toString() ?? '',
     longitude: loc.longitude?.toString() ?? '',
+    isSublocation: loc.isSublocation,
   };
 }
 
@@ -200,7 +203,7 @@ export function AdminCharityEdit() {
   const initialLocationForms = useRef<Record<string, LocationForm>>({});
   const [expandedLocId, setExpandedLocId] = useState<string | null>(null);
   const [showAddLocation, setShowAddLocation] = useState(false);
-  const [newLocForm, setNewLocForm] = useState<LocationForm>({ label: '', description: '', address: '', latitude: '', longitude: '' });
+  const [newLocForm, setNewLocForm] = useState<LocationForm>({ label: '', description: '', address: '', latitude: '', longitude: '', isSublocation: false });
   const [uploadingField, setUploadingField] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -325,6 +328,7 @@ export function AdminCharityEdit() {
           address: form.address || null,
           latitude: form.latitude ? parseFloat(form.latitude) : null,
           longitude: form.longitude ? parseFloat(form.longitude) : null,
+          isSublocation: form.isSublocation,
         },
       });
       initialLocationForms.current = { ...initialLocationForms.current, [locId]: form };
@@ -781,6 +785,16 @@ export function AdminCharityEdit() {
                                 <label className={labelCls}>Description</label>
                                 <textarea className={inputCls} rows={3} value={form.description}
                                   onChange={e => setLocationForms(f => ({ ...f, [loc.id]: { ...f[loc.id], description: e.target.value } }))} />
+                              </div>
+                              <div className="col-span-2 md:col-span-4">
+                                <label className="flex items-center gap-2 text-sm text-text-primary cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={form.isSublocation}
+                                    onChange={e => setLocationForms(f => ({ ...f, [loc.id]: { ...f[loc.id], isSublocation: e.target.checked } }))}
+                                  />
+                                  Sublocation <span className="text-xs text-text-secondary">(this org operates within another org's space at this address)</span>
+                                </label>
                               </div>
                               <div>
                                 <label className={labelCls}>Photo</label>

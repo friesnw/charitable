@@ -1,3 +1,18 @@
+/**
+ * POC 1 — Shared Location / Stacked Pins
+ *
+ * Problem: Two orgs operate at the same physical address. The current design
+ * renders two overlapping pins with no indication they're co-located, and
+ * the drawer only shows one charity at a time.
+ *
+ * This POC explores:
+ * - A "stacked" pin visual when 2+ orgs share a location
+ * - Clicking a stacked pin opens a multi-charity panel in both the sidebar
+ *   and a new multi-drawer showing all orgs at that address
+ *
+ * Visit at: /charities/poc-1
+ */
+
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery, useLazyQuery, gql } from '@apollo/client';
@@ -10,20 +25,20 @@ import Map, { MapRef, Marker } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 const MY_PREFERENCES_ZIP = gql`
-  query MyPreferencesZip {
+  query MyPreferencesZipPOC {
     myPreferences { zipCode }
   }
 `;
 
 const RESOLVE_ZIP = gql`
-  query ResolveZipForMap($zip: String!) {
+  query ResolveZipPOC($zip: String!) {
     resolveZip(zip: $zip) { latitude longitude zoom state }
   }
 `;
 
 const GET_CAUSES = gql`query GetCauses { causes { tag label } }`;
 const GET_CHARITIES = gql`
-  query GetCharities($tags: [String]) {
+  query GetCharitiesPOC1($tags: [String]) {
     charities(tags: $tags) {
       id slug name description logoUrl causeTags donateUrl
       locations { id label description address photoUrl latitude longitude isSublocation }
@@ -90,7 +105,7 @@ function CauseDot({ color, icon, size = 32 }: { color: string; icon: string; siz
   );
 }
 
-function LocationDrawer({ group, tagLabels, onClose }: { group: LocationGroup; tagLabels: Map<string, string>; onClose: () => void }) {
+function MultiCharityDrawer({ group, tagLabels, onClose }: { group: LocationGroup; tagLabels: Map<string, string>; onClose: () => void }) {
   const [visible, setVisible] = useState(false);
   const touchStartY = useRef<number>(0);
   const hood = nearestNeighborhood(group.lat, group.lng);
@@ -196,13 +211,13 @@ function LocationDrawer({ group, tagLabels, onClose }: { group: LocationGroup; t
   );
 }
 
-function StackedPin({ group, isSelected, isHovered, isDimmed }: { group: LocationGroup; isSelected: boolean; isHovered: boolean; isDimmed: boolean }) {
+function StackedPin({ group, isSelected, isHovered }: { group: LocationGroup; isSelected: boolean; isHovered: boolean }) {
   const scale = isSelected ? 1.45 : isHovered ? 1.2 : 1;
   const { entries } = group;
 
   if (entries.length === 1) {
     return (
-      <div style={{ transform: `scale(${scale})`, transition: 'transform 0.15s, opacity 0.15s', opacity: isDimmed ? 0.35 : 1 }}>
+      <div style={{ transform: `scale(${scale})`, transition: 'transform 0.15s' }}>
         <CauseDot color={causeColor(entries[0].charity.causeTags)} icon={causeIcon(entries[0].charity.causeTags)} />
       </div>
     );
@@ -212,7 +227,7 @@ function StackedPin({ group, isSelected, isHovered, isDimmed }: { group: Locatio
   const overlap = 10;
   const totalWidth = 32 + (entries.length - 1) * (32 - overlap);
   return (
-    <div style={{ transform: `scale(${scale})`, transition: 'transform 0.15s, opacity 0.15s', opacity: isDimmed ? 0.35 : 1, position: 'relative', width: totalWidth, height: 32 }}>
+    <div style={{ transform: `scale(${scale})`, transition: 'transform 0.15s', position: 'relative', width: totalWidth, height: 32 }}>
       {entries.map((entry, i) => (
         <div key={entry.location.id} style={{ position: 'absolute', left: i * (32 - overlap), top: 0, zIndex: entries.length - i }}>
           <CauseDot color={causeColor(entry.charity.causeTags)} icon={causeIcon(entry.charity.causeTags)} />
@@ -224,7 +239,7 @@ function StackedPin({ group, isSelected, isHovered, isDimmed }: { group: Locatio
 
 const ZIP_ZOOM_OFFSET = -1;
 
-export function Charities() {
+export function CharitiesSharedPinPOC() {
   const { isAuthenticated } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -375,6 +390,11 @@ export function Charities() {
 
   return (
     <div className="flex" style={{ height: 'calc(100vh - 65px)' }}>
+      {/* POC label */}
+      <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 bg-amber-400 text-amber-900 text-xs font-bold px-3 py-1 rounded-full shadow">
+        POC 1 — Stacked Pins
+      </div>
+
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
         <div className={['flex-shrink-0 flex-col border-r border-brand-tertiary bg-bg-primary', 'lg:flex lg:w-96', viewMode === 'list' ? 'flex w-full' : 'hidden'].join(' ')}>
@@ -416,6 +436,7 @@ export function Charities() {
               .filter((c) => selectedCharityId === null || c.id === selectedCharityId)
               .map((charity) => {
                 const isSelected = charity.id === selectedCharityId;
+                const isHovered = charity.id === hoveredCharityId;
                 const validLocs = charity.locations.filter((l) => l.latitude != null && l.longitude != null);
                 return (
                   <div key={charity.id}>
@@ -618,11 +639,10 @@ export function Charities() {
             mapStyle="mapbox://styles/mapbox/light-v11"
             onLoad={handleMapLoad}
           >
-            {groups.map((group) => {
+            {(selectedCharityId ? groups.filter((g) => g.entries.some((e) => e.charity.id === selectedCharityId)) : groups).map((group) => {
               const key = groupKey(group);
               const isSelected = key === selectedGroupKey;
               const isHovered = group.entries.some((e) => e.charity.id === hoveredCharityId);
-              const isDimmed = selectedCharityId != null && !group.entries.some((e) => e.charity.id === selectedCharityId) && !isHovered;
               const primaryEntry = [...group.entries].sort(
                 (a, b) => Number(a.location.isSublocation) - Number(b.location.isSublocation)
               )[0];
@@ -645,7 +665,7 @@ export function Charities() {
                     }
                   }}
                 >
-                  <StackedPin group={group} isSelected={isSelected} isHovered={isHovered} isDimmed={isDimmed} />
+                  <StackedPin group={group} isSelected={isSelected} isHovered={isHovered} />
                 </Marker>
               );
             })}
@@ -654,7 +674,7 @@ export function Charities() {
       </div>
 
       {selectedGroup && (
-        <LocationDrawer
+        <MultiCharityDrawer
           group={selectedGroup}
           tagLabels={tagLabels}
           onClose={() => { setSelectedGroupKey(null); setSelectedCharityId(null); setSelectedLocationId(null); }}

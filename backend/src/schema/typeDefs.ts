@@ -44,6 +44,7 @@ export const typeDefs = `#graphql
     longitude: Float
     photoUrl: String
     isReviewed: Boolean!
+    isSublocation: Boolean!
   }
 
   type AuthPayload {
@@ -140,6 +141,7 @@ export const typeDefs = `#graphql
       longitude: Float
       photoUrl: String
       isReviewed: Boolean
+      isSublocation: Boolean
     ): CharityLocation!
 
     createCharityLocation(

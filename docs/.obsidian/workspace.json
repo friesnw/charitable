@@ -55,16 +55,30 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Tasks/Todo/05-New-Charities.md",
+                "file": "Tasks/Todo/05-Confirm tag icons.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "05-New-Charities"
+              "title": "05-Confirm tag icons"
+            }
+          },
+          {
+            "id": "d80a8596db7ad11a",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Tasks/Todo/Create strong list view.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Create strong list view"
             }
           }
         ],
-        "currentTab": 3
+        "currentTab": 4
       }
     ],
     "direction": "vertical"
@@ -226,20 +240,23 @@
       "bases:Create new base": false
     }
   },
-  "active": "48642f9b0979e9d1",
+  "active": "d80a8596db7ad11a",
   "lastOpenFiles": [
-    "Tasks/Todo/04-Locations.md",
-    "Tasks/Todo/05-New-Charities.md",
+    "Tasks/Todo/05-Confirm tag icons.md",
+    "Tasks/Todo/Create strong list view.md",
+    "Tasks/Done/Airbnb enahncements.md",
+    "Tasks/Todo/06-charity-page-optimization.md",
+    "Tasks/Todo/04-Add FBR.md",
+    "Tasks/Todo/03-New-Charities.md",
+    "Tasks/Todo/01-Shared-Locations.md",
+    "Tasks/Done/05-good-local-emails.md",
+    "Tasks/Todo/10-Confirm location neighborhoods.md",
     "LocationListInfo (1).pdf",
     "Tasks/Backlog/Yearly Data Refresh.md",
-    "Tasks/Todo/Untitled.md",
-    "Tasks/Todo/05-good-local-emails.md",
     "Tasks/Todo/07-charity-detail-layout-overhaul.md",
     "Product/Product-position.md",
-    "Tasks/Todo/06-charity-page-optimization.md",
     "Tasks/Todo/07-Remove-Every-Org.md",
     "Tasks/Done/07-Remove-Every-Org.md",
-    "Tasks/Todo/Airbnb enahncements.md",
     "Tasks/Todo/01-Integrate-Donations.md",
     "Tasks/Todo/about-page-copy-drafts.md",
     "Tasks/Backlog/17-Database-Backup-Process.md",
@@ -252,9 +269,6 @@
     "Tasks/Backlog/Pre-Launch-Branding.md",
     "Research/Donation-Processing-Options.md",
     "Tasks/Backlog/Implement search.md",
-    "Tasks/Done/Implement search.md",
-    "Product/Architecture-Decisions.md",
-    "Tasks/Backlog/MVP Measurement Plan.md",
     "Screenshot 2026-02-12 at 9.14.23 PM.png",
     "Research/Archive",
     "Product/Policies",
