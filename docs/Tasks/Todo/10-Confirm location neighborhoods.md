@@ -1,0 +1,1 @@
+many locations are not likely in the appropriate neighborhood, need to check these and see if new neighborhoods with lat longs should be added. for example, alameda warren village isn't actually 

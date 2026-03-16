@@ -34,6 +34,8 @@ export interface StoryCharity {
   impact: string | null;
   programHighlights: string | null;
   usageCredit: string | null;
+  ctaLabel: string | null;
+  ctaUrl: string | null;
   locationDescription: string | null;
   locations: StoryLocation[];
 }
@@ -354,15 +356,15 @@ export function CharityDetailStory({ charity, tagLabels }: CharityDetailStoryPro
               Volunteer
             </a>
           )}
-          {charity.websiteUrl && (
+          {(charity.ctaUrl || charity.websiteUrl) && (
             <a
-              href={charity.websiteUrl}
+              href={charity.ctaUrl ?? charity.websiteUrl!}
               target="_blank"
               rel="noopener noreferrer"
               className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
             >
               <Icon name="globe" className="w-4 h-4 shrink-0" />
-              {bareDomain(charity.websiteUrl)}
+              {charity.ctaLabel ?? bareDomain(charity.websiteUrl!)}
             </a>
           )}
         </div>

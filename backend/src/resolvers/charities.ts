@@ -23,6 +23,8 @@ function toCharity(row: Record<string, unknown>) {
     locationDescription: row.location_description ?? null,
     programHighlights: row.program_highlights ?? null,
     usageCredit: row.usage_credit ?? null,
+    ctaLabel: row.cta_label ?? null,
+    ctaUrl: row.cta_url ?? null,
     everyOrgClaimed: row.every_org_claimed ?? false,
     isActive: row.is_active ?? true,
     isReviewed: row.is_reviewed ?? false,
@@ -138,6 +140,8 @@ export const charityResolvers = {
         contentPhotoUrl2: 'content_photo_url_2',
         programHighlights: 'program_highlights',
         usageCredit: 'usage_credit',
+        ctaLabel: 'cta_label',
+        ctaUrl: 'cta_url',
       };
 
       const setClauses: string[] = [];

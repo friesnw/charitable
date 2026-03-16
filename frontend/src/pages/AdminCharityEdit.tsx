@@ -10,7 +10,7 @@ const GET_ADMIN_CHARITY = gql`
     charity(id: $id) {
       id name slug ein description logoUrl coverPhotoUrl contentPhotoUrl1 contentPhotoUrl2 websiteUrl volunteerUrl
       primaryAddress causeTags donateUrl foundedYear isActive isReviewed
-      impact locationDescription programHighlights usageCredit
+      impact locationDescription programHighlights usageCredit ctaLabel ctaUrl
       locations {
         id label description address latitude longitude photoUrl isReviewed isSublocation
       }
@@ -33,6 +33,7 @@ const UPDATE_CHARITY = gql`
     $contentPhotoUrl1: String $contentPhotoUrl2: String
     $impact: String $locationDescription: String
     $programHighlights: String $usageCredit: String
+    $ctaLabel: String $ctaUrl: String
   ) {
     updateCharity(
       id: $id name: $name description: $description websiteUrl: $websiteUrl
@@ -42,10 +43,11 @@ const UPDATE_CHARITY = gql`
       contentPhotoUrl1: $contentPhotoUrl1 contentPhotoUrl2: $contentPhotoUrl2
       impact: $impact locationDescription: $locationDescription
       programHighlights: $programHighlights usageCredit: $usageCredit
+      ctaLabel: $ctaLabel ctaUrl: $ctaUrl
     ) {
       id name slug ein description logoUrl coverPhotoUrl contentPhotoUrl1 contentPhotoUrl2 websiteUrl volunteerUrl
       primaryAddress causeTags donateUrl foundedYear isActive
-      impact locationDescription programHighlights usageCredit
+      impact locationDescription programHighlights usageCredit ctaLabel ctaUrl
       locations { id label description address latitude longitude photoUrl }
     }
   }
@@ -116,6 +118,8 @@ interface CharityData {
   locationDescription: string | null;
   programHighlights: string | null;
   usageCredit: string | null;
+  ctaLabel: string | null;
+  ctaUrl: string | null;
   isActive: boolean;
   isReviewed: boolean;
   locations: LocationData[];
@@ -137,6 +141,8 @@ interface EditForm {
   locationDescription: string;
   programHighlights: string;
   usageCredit: string;
+  ctaLabel: string;
+  ctaUrl: string;
   isActive: boolean;
   causeTags: string[];
 }
@@ -167,6 +173,8 @@ function initEditForm(c: CharityData): EditForm {
     locationDescription: c.locationDescription ?? '',
     programHighlights: c.programHighlights ?? '',
     usageCredit: c.usageCredit ?? '',
+    ctaLabel: c.ctaLabel ?? '',
+    ctaUrl: c.ctaUrl ?? '',
     isActive: c.isActive,
     causeTags: c.causeTags,
   };
@@ -253,6 +261,8 @@ export function AdminCharityEdit() {
           locationDescription: editForm.locationDescription || null,
           programHighlights: editForm.programHighlights || null,
           usageCredit: editForm.usageCredit || null,
+          ctaLabel: editForm.ctaLabel || null,
+          ctaUrl: editForm.ctaUrl || null,
         },
       });
       initialEditForm.current = editForm;
@@ -533,6 +543,18 @@ export function AdminCharityEdit() {
               onChange={e => setEditForm(f => f && ({ ...f, usageCredit: e.target.value }))} />
           </div>
           <div>
+            <label className={labelCls}>CTA Label <span className="font-normal text-gray-400">(overrides website button label)</span></label>
+            <input className={inputCls} value={editForm.ctaLabel}
+              placeholder="e.g. Join a Garden"
+              onChange={e => setEditForm(f => f && ({ ...f, ctaLabel: e.target.value }))} />
+          </div>
+          <div>
+            <label className={labelCls}>CTA URL <span className="font-normal text-gray-400">(overrides website button URL)</span></label>
+            <input className={inputCls} value={editForm.ctaUrl}
+              placeholder="e.g. https://dug.org/gardens/join"
+              onChange={e => setEditForm(f => f && ({ ...f, ctaUrl: e.target.value }))} />
+          </div>
+          <div>
             <label className={labelCls}>Website URL</label>
             <input className={inputCls} value={editForm.websiteUrl}
               onChange={e => setEditForm(f => f && ({ ...f, websiteUrl: e.target.value }))} />
@@ -801,9 +823,9 @@ export function AdminCharityEdit() {
                                 <div className="flex items-center gap-2 mt-1">
                                   {loc.photoUrl && (
                                     <img
-                                      src={cloudinaryUrl(loc.photoUrl, { w: 64, h: 40, fit: 'scale' })}
+                                      src={cloudinaryUrl(loc.photoUrl, { w: 480, h: 320, fit: 'scale' })}
                                       alt=""
-                                      className="h-10 rounded border border-brand-tertiary"
+                                      className="h-36 rounded border border-brand-tertiary"
                                     />
                                   )}
                                   <button

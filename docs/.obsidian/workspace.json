@@ -69,12 +69,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Tasks/Todo/03-New-Charities.md",
+                "file": "Tasks/Todo/06-charity-page-optimization.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "03-New-Charities"
+              "title": "06-charity-page-optimization"
             }
           }
         ],
@@ -110,7 +110,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "tag:#859E95",
+                "query": "add dug locations",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -242,15 +242,22 @@
   },
   "active": "d80a8596db7ad11a",
   "lastOpenFiles": [
+    "Operations/Charity-Data-Refresh.md",
+    "Tasks/Todo/03-New-Charities.md",
+    "Operations/DevOps.md",
+    "Operations/Yearly Data Refresh.md",
+    "Operations/charity-data-population.md",
+    "Operations/Dev Ops.md",
+    "Tasks/Todo/06-charity-page-optimization.md",
+    "Tasks/Todo/10-Confirm location neighborhoods.md",
+    "Tasks/Todo/Create strong list view.md",
+    "Operations/Operations.md",
+    "Operations",
     "Tasks/Done/01-Shared-Locations.md",
     "Tasks/Todo/04-Add FBR.md",
-    "Tasks/Todo/03-New-Charities.md",
-    "Tasks/Todo/Create strong list view.md",
     "Tasks/Todo/05-Confirm tag icons.md",
     "Tasks/Done/Airbnb enahncements.md",
-    "Tasks/Todo/06-charity-page-optimization.md",
     "Tasks/Done/05-good-local-emails.md",
-    "Tasks/Todo/10-Confirm location neighborhoods.md",
     "LocationListInfo (1).pdf",
     "Tasks/Backlog/Yearly Data Refresh.md",
     "Tasks/Todo/07-charity-detail-layout-overhaul.md",
@@ -263,12 +270,6 @@
     "Tasks/Backlog/04-Mobile-Optimization.md",
     "2026-03-05.md",
     "Research/Archive/Homepage-Design-Benchmarks.md",
-    "Research/Revenue-and-Market-Opportunities.md",
-    "Research/User-Journey-and-Activation.md",
-    "Product/Operations.md",
-    "Tasks/Backlog/Pre-Launch-Branding.md",
-    "Research/Donation-Processing-Options.md",
-    "Tasks/Backlog/Implement search.md",
     "Screenshot 2026-02-12 at 9.14.23 PM.png",
     "Research/Archive",
     "Product/Policies",
@@ -277,7 +278,6 @@
     "Tasks/Todo/name-search",
     "Untitled",
     "Learn",
-    "Tasks/Todo/1-Backend-Foundation,md",
-    "Product/Product Position"
+    "Tasks/Todo/1-Backend-Foundation,md"
   ]
 }
