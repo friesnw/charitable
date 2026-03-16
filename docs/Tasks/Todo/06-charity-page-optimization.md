@@ -9,7 +9,12 @@ Goal: Optimize the charity detail page for better conversion (more donations cli
 	- [ ] Specifically, research other offerings like coloradogives, charitynavigator and more to find where goodlocal can add easy value, and even stand out
 - [ ] Audit CTA placement, copy, and visual hierarchy
 
-## Improvements to Explore
+
+## Now - Improvements to Make
+- [ ] Ability to view map at bottom of locations
+	- [ ] Should look good for DUG and for IFCS - many locations and one location
+
+## Later - Improvements to Explore
 
 - [ ] I want to improve the process of navigating from /charities to a specific charity page. right now it feels like you lose your old spot on the map. is there a better way where we can make it feel more integrated, without losing their place, but without sacrificing that the charity page needs to be able to stand on its own (e.g. unique url that can be shared etc.)
 # Charity Location Optimization
@@ -43,3 +48,5 @@ make map view. use boys and girls club example
 
 
  add share ability to share a charity
+
+make cover photo full width

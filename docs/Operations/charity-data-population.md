@@ -9,10 +9,10 @@ This guide describes the end-to-end process for adding a fully populated charity
 - **Denver Rescue Mission** (`/charities/denver-rescue-mission`) — EIN 84-6038762
 
 **Workflow summary (7 stages):**
-1. Research — gather facts, stats, and photos from primary sources
-2. Verify — confirm impact stats and photos against official publications
+1. Research — gather facts and stats from primary sources
+2. Verify — confirm impact stats against official publications
 3. Draft Content Fields — write description, impact, program_highlights, location_description, usage_credit
-4. Photos — find, download, and upload to Cloudinary
+4. Photos — skip until photo usage rights are confirmed with the charity
 5. Locations — collect address, lat/lng, and per-location descriptions
 6. Admin UI Entry — enter all fields at `/admin/charities`
 7. Post-Entry Scripts — run street view and logo scripts
@@ -42,8 +42,7 @@ Consult sources in order of trust:
 | Mission statement | About page (verbatim quote) |
 | Impact statistics | Annual report or Impact page — must be sourced |
 | Program names and descriptions | Programs / Services page |
-| Photo assets | Website, press kit, or media page |
-| Photo attribution / credits | Caption text or press kit metadata |
+| Photo assets | Skip for now — photos require explicit usage approval from the charity before upload |
 
 ---
 
@@ -58,7 +57,7 @@ Consult sources in order of trust:
 
 - **Impact statistics** — must appear in an official published source (annual report, impact page, or 990 filing). Never estimate, interpolate, or paraphrase a number. A missing stat is better than a wrong one.
 - **Program descriptions** — read the primary source page directly; do not summarize from secondary sources alone.
-- **Photo licensing** — only use images explicitly from the charity's own website, press kit, or with clear usage rights stated. Do not pull random images from a web search.
+- **Photo licensing** — do not upload charity photos until explicit usage approval has been obtained from the charity. Leave all photo fields (`cover_photo_url`, `content_photo_url_1`, `content_photo_url_2`) empty until approved.
 
 **Multi-agent verification approach:**
 
@@ -188,48 +187,34 @@ Warren Village serves families at 3 locations throughout Denver. These locations
 
 ### `usage_credit` (TEXT)
 
-- Format: `Info and photography courtesy of [Org Name].`
+- Leave empty until photo usage has been approved by the charity.
+- Once photos are approved and uploaded, set to: `Info and photography courtesy of [Org Name].`
 - Add photographer credits if known: append `, [Photographer Name].` before the closing period.
 - Rendered as small uppercase caption at the bottom of the detail page.
-
-**Example — Warren Village (prod):**
-```
-Info and photography courtesy of Warren Village, Kyla Chambers, and SAR+ Architects.
-```
-
-**Example — Denver Rescue Mission (prod):**
-```
-Info and photography courtesy of Denver Rescue Mission.
-```
 
 ---
 
 ## 5. Stage 4 — Photos
 
+**Skip this stage until photo usage rights have been confirmed with the charity.** Leave `cover_photo_url`, `content_photo_url_1`, `content_photo_url_2`, and `usage_credit` empty.
+
+Once approval is obtained:
+
 ### Cover photo (`cover_photo_url`)
 
-Hero image shown at the top of the detail page, rendered at 1800×780px (fill crop). Find the highest-quality photo available on the charity's website or press kit. Prefer photos of people or active programs over logos or building exteriors.
+Hero image shown at the top of the detail page, rendered at 1800×780px (fill crop). Prefer photos of people or active programs over logos or building exteriors.
 
 ### Content photos (`content_photo_url_1`, `content_photo_url_2`)
 
-Two supplementary images shown in the right column alongside the impact stats. Program or facility photos work well. Both can be `null` if good images aren't available — Denver Rescue Mission currently has only a cover photo and no content photos.
-
-**Warren Village (prod) photo URLs:**
-- Cover: `https://res.cloudinary.com/dr3gnrygp/image/upload/v1773277132/utgrvaidvm0j3umxdih2.jpg`
-- Content 1: `https://res.cloudinary.com/dr3gnrygp/image/upload/v1773277136/bvm5rgm0lvwg6d5oinax.jpg`
-- Content 2: `https://res.cloudinary.com/dr3gnrygp/image/upload/v1773277140/nrxv2eqrgexxzx8oinu2.jpg`
-
-**Denver Rescue Mission (prod) photo URLs:**
-- Cover: `https://res.cloudinary.com/dr3gnrygp/image/upload/v1773344254/xvb0o9omijjfmxmcbkue.jpg`
-- Content 1: (none)
-- Content 2: (none)
+Two supplementary images shown in the right column alongside the impact stats. Both can be `null` if only one good image is available.
 
 ### Upload process
 
-1. Download the image file from the charity's website or press kit.
+1. Download the image file from the charity's approved materials.
 2. Upload to Cloudinary dashboard (account: `dr3gnrygp`).
 3. Copy the resulting `https://res.cloudinary.com/dr3gnrygp/image/upload/...` URL.
 4. Paste into the Admin UI field.
+5. Set `usage_credit` to `Info and photography courtesy of [Org Name].` (add photographer names if known).
 
 ### Logo (`logo_url`)
 
@@ -246,7 +231,7 @@ Each charity should have at least one location. For each physical site, collect:
 | `label` | Short descriptive name, e.g. "Lawrence Street Shelter" or "Warren Village at Gilpin" |
 | `address` | Full street address, city, state, zip |
 | `latitude` / `longitude` | Geocode via Google Maps or Nominatim; verify the pin lands at the correct building |
-| `description` | 2–4 sentences describing what programs run at this specific location, not the org broadly |
+| `description` | 2–4 sentences describing what programs run at this specific location, not the org broadly. Do not include hours, schedules, or contact details — these go stale quickly and belong on the charity's own website. |
 | `is_sublocation` | Set `true` if the location is hosted inside another organization's building |
 | `photo_url` | Leave blank — auto-populated by `populate-street-view.ts` (see Stage 7) |
 
@@ -310,8 +295,8 @@ Before marking a charity as reviewed (`is_reviewed = true`), confirm:
 
 - [ ] Impact stats are cited from an official source (annual report, impact page, or 990)
 - [ ] Program highlights use valid icon names from the list in Stage 3
-- [ ] All photos are from the charity's own materials (website, press kit) — not random web images
-- [ ] `usage_credit` names the organization and any known photographers
+- [ ] Photo fields are empty OR photo usage has been explicitly approved by the charity
+- [ ] If photos are uploaded, `usage_credit` names the organization and any known photographers
 - [ ] At least one location has correct lat/lng — verify the pin appears at the correct building on the map
 - [ ] Detail page at `/charities/[slug]` renders without broken images or missing sections
 - [ ] `is_reviewed` is set to `true`

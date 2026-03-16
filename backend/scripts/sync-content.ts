@@ -60,6 +60,8 @@ interface CharityRow {
   content_photo_url_2: string | null;
   program_highlights: string | null;
   usage_credit: string | null;
+  cta_label: string | null;
+  cta_url: string | null;
 }
 
 interface LocationRow {
@@ -95,7 +97,8 @@ async function main() {
              is_active, is_reviewed, primary_address, donate_url,
              impact, location_description, cover_photo_url,
              content_photo_url_1, content_photo_url_2,
-             program_highlights, usage_credit
+             program_highlights, usage_credit,
+             cta_label, cta_url
       FROM charities
       ORDER BY id
     `);
@@ -135,6 +138,7 @@ async function main() {
         charity.impact, charity.location_description, charity.cover_photo_url,
         charity.content_photo_url_1, charity.content_photo_url_2,
         charity.program_highlights, charity.usage_credit,
+        charity.cta_label, charity.cta_url,
       ];
 
       // Try upsert by EIN first. If every_org_slug conflicts with a different row,
@@ -148,8 +152,9 @@ async function main() {
              is_active, is_reviewed, primary_address, donate_url,
              impact, location_description, cover_photo_url,
              content_photo_url_1, content_photo_url_2,
-             program_highlights, usage_credit)
-          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22)
+             program_highlights, usage_credit,
+             cta_label, cta_url)
+          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24)
           ON CONFLICT (ein) DO UPDATE SET
             name                = EXCLUDED.name,
             slug                = EXCLUDED.slug,
@@ -172,6 +177,8 @@ async function main() {
             content_photo_url_2 = EXCLUDED.content_photo_url_2,
             program_highlights  = EXCLUDED.program_highlights,
             usage_credit        = EXCLUDED.usage_credit,
+            cta_label           = EXCLUDED.cta_label,
+            cta_url             = EXCLUDED.cta_url,
             updated_at          = NOW()
           RETURNING id
         `, params));
@@ -201,6 +208,8 @@ async function main() {
               content_photo_url_2 = $20,
               program_highlights  = $21,
               usage_credit        = $22,
+              cta_label           = $23,
+              cta_url             = $24,
               updated_at          = NOW()
             WHERE every_org_slug = $7
             RETURNING id
@@ -229,6 +238,8 @@ async function main() {
               content_photo_url_2 = $20,
               program_highlights  = $21,
               usage_credit        = $22,
+              cta_label           = $23,
+              cta_url             = $24,
               updated_at          = NOW()
             WHERE slug = $2
             RETURNING id
@@ -245,6 +256,9 @@ async function main() {
     // -----------------------------------------------------------------------
     // Sync locations — grouped by charity, delete + reinsert in a transaction
     // -----------------------------------------------------------------------
+
+    // Advance the sequence to avoid PK conflicts during delete+reinsert
+    await target.query(`SELECT setval('charity_locations_id_seq', (SELECT COALESCE(MAX(id), 0) FROM charity_locations))`);
 
     const locationsByCharity = new Map<number, LocationRow[]>();
     for (const loc of locations) {

@@ -25,7 +25,7 @@ const GET_CAUSES = gql`query GetCauses { causes { tag label } }`;
 const GET_CHARITIES = gql`
   query GetCharities($tags: [String]) {
     charities(tags: $tags) {
-      id slug name description logoUrl causeTags donateUrl
+      id slug name description logoUrl causeTags donateUrl coverPhotoUrl
       locations { id label description address photoUrl latitude longitude isSublocation }
     }
   }
@@ -33,7 +33,7 @@ const GET_CHARITIES = gql`
 
 interface Charity {
   id: string; slug: string; name: string; description: string | null;
-  logoUrl: string | null; causeTags: string[]; donateUrl: string | null;
+  logoUrl: string | null; causeTags: string[]; donateUrl: string | null; coverPhotoUrl: string | null;
   locations: { id: string; label: string; description: string | null; address: string | null; photoUrl: string | null; latitude: number | null; longitude: number | null; isSublocation: boolean }[];
 }
 
@@ -433,8 +433,18 @@ export function Charities() {
                       }}
                       onMouseEnter={() => setHoveredCharityId(charity.id)}
                       onMouseLeave={() => setHoveredCharityId(null)}
-                      className="w-full text-left px-4 py-4 border-b border-brand-tertiary transition-colors hover:bg-bg-accent cursor-pointer"
+                      className="w-full text-left border-b border-brand-tertiary transition-colors hover:bg-bg-accent cursor-pointer"
                     >
+                      {isSelected && charity.coverPhotoUrl && (
+                        <div className="w-full h-32 overflow-hidden">
+                          <img
+                            src={cloudinaryUrl(charity.coverPhotoUrl, { w: 800, h: 256, fit: 'fill' })}
+                            alt={charity.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                      <div className="px-4 py-3">
                       <div className="flex items-center gap-2 mb-1">
                         {charity.logoUrl ? (
                           <img src={cloudinaryUrl(charity.logoUrl, { w: 32, h: 32, fit: 'fit' })} alt={charity.name} className="w-8 h-8 rounded-full object-contain flex-shrink-0" />
@@ -467,6 +477,7 @@ export function Charities() {
                           </Link>
                         </div>
                       )}
+                      </div>
                     </button>
 
                     {/* Inline location expansion */}
