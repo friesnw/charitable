@@ -75,10 +75,16 @@ export function Header() {
   return (
     <header className="bg-brand-primary border-b border-white/10">
       <nav className="container mx-auto px-4 py-3 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 font-heading font-bold text-white" style={{ fontSize: '1.5rem' }}>
-          <span>Good<span style={{ color: 'var(--brand-accent)', marginLeft: '0.05em' }}>Local</span></span>
-          <img src="/logo-icon.svg" alt="" aria-hidden="true" className="h-6 w-auto" />
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link to="/" className="flex items-center gap-2 font-heading font-bold text-white" style={{ fontSize: '1.5rem' }}>
+            <span>Good<span style={{ color: 'var(--brand-accent)', marginLeft: '0.05em' }}>Local</span></span>
+            <img src="/logo-icon.svg" alt="" aria-hidden="true" className="h-6 w-auto" />
+          </Link>
+          <div className="hidden lg:flex items-center gap-6 ml-4 mt-1">
+            <Link to="/charities" className="text-white/70 hover:text-white text-sm">Explore Map</Link>
+            <Link to="/organizations" className="text-white/70 hover:text-white text-sm">Browse Nonprofits</Link>
+          </div>
+        </div>
 
         <div className="flex items-center gap-2">
           {/* Search */}
@@ -143,10 +149,6 @@ export function Header() {
             )}
           </div>
 
-          {/* Desktop nav */}
-          <Link to="/charities" className="hidden lg:block text-white/70 hover:text-white text-sm">
-            Find Charities
-          </Link>
           {isAuthenticated ? (
             <>
               <div className="hidden lg:block relative" ref={menuRef}>
@@ -193,7 +195,8 @@ export function Header() {
                   <>
                     <span className="block px-4 py-2 text-xs text-text-secondary truncate">{user?.email}</span>
                     <hr className="border-brand-tertiary my-1" />
-                    <Link to="/charities" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-3 text-sm text-text-primary hover:bg-bg-accent">Find Charities</Link>
+                    <Link to="/charities" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-3 text-sm text-text-primary hover:bg-bg-accent">Explore Map</Link>
+                    <Link to="/organizations" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-3 text-sm text-text-primary hover:bg-bg-accent">Browse Nonprofits</Link>
                     <Link to="/preferences" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-3 text-sm text-text-primary hover:bg-bg-accent">Preferences</Link>
                     {user?.isAdmin && (
                       <Link to="/admin" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-3 text-sm text-text-primary hover:bg-bg-accent">Admin</Link>
@@ -203,7 +206,8 @@ export function Header() {
                   </>
                 ) : (
                   <>
-                    <Link to="/charities" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-3 text-sm text-text-primary hover:bg-bg-accent">Find Charities</Link>
+                    <Link to="/charities" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-3 text-sm text-text-primary hover:bg-bg-accent">Explore Map</Link>
+                    <Link to="/organizations" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-3 text-sm text-text-primary hover:bg-bg-accent">Browse Nonprofits</Link>
                     <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-3 text-sm text-text-primary hover:bg-bg-accent">Log in</Link>
                   </>
                 )}

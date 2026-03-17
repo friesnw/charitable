@@ -1,23 +1,30 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { useQuery, useLazyQuery, gql } from '@apollo/client';
+import { useQuery, useLazyQuery, useMutation, gql } from '@apollo/client';
 import { cloudinaryUrl } from '../lib/cloudinary';
 import { causeColor, causeIcon, FEATURED_TAGS, causesToTagLabels } from '../lib/causeColors';
-import { nearestNeighborhood } from '../lib/neighborhoods';
+import { nearestNeighborhood, NEIGHBORHOODS } from '../lib/neighborhoods';
 import { Icon } from '../components/ui/Icon';
+import { Toast } from '../components/ui/Toast';
 import { useAuth } from '../hooks/useAuth';
 import Map, { MapRef, Marker } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 const MY_PREFERENCES_ZIP = gql`
   query MyPreferencesZip {
-    myPreferences { zipCode }
+    myPreferences { zipCode neighborhood }
   }
 `;
 
 const RESOLVE_ZIP = gql`
   query ResolveZipForMap($zip: String!) {
     resolveZip(zip: $zip) { latitude longitude zoom state }
+  }
+`;
+
+const SAVE_PREFERENCES = gql`
+  mutation SavePreferencesFromMap($zipCode: String, $neighborhood: String) {
+    savePreferences(zipCode: $zipCode, neighborhood: $neighborhood) { zipCode neighborhood onboardingCompleted }
   }
 `;
 
@@ -39,6 +46,7 @@ interface Charity {
 
 interface LocationEntry { charity: Charity; location: Charity['locations'][0]; }
 interface LocationGroup { lat: number; lng: number; address: string | null; entries: LocationEntry[]; }
+
 
 /** Group all charity locations by exact address match. Locations without an address fall back to their own group. */
 function buildLocationGroups(charities: Charity[]): LocationGroup[] {
@@ -77,6 +85,12 @@ function SkeletonCard() {
   );
 }
 
+function pinSize(zoom: number): number {
+  if (zoom >= 13) return 32;
+  if (zoom <= 9) return 10;
+  return 10 + ((zoom - 9) / 4) * 22;
+}
+
 function CauseDot({ color, icon, size = 32 }: { color: string; icon: string; size?: number }) {
   return (
     <div style={{
@@ -89,6 +103,7 @@ function CauseDot({ color, icon, size = 32 }: { color: string; icon: string; siz
     </div>
   );
 }
+
 
 function LocationDrawer({ group, tagLabels, onClose }: { group: LocationGroup; tagLabels: Map<string, string>; onClose: () => void }) {
   const [visible, setVisible] = useState(false);
@@ -196,26 +211,138 @@ function LocationDrawer({ group, tagLabels, onClose }: { group: LocationGroup; t
   );
 }
 
-function StackedPin({ group, isSelected, isHovered, isDimmed }: { group: LocationGroup; isSelected: boolean; isHovered: boolean; isDimmed: boolean }) {
+const CURATED_NAMES = ['Cap Hill','RiNo','Highland','LoDo','Five Points','City Park','Baker','Wash Park','Cherry Creek','Edgewater'];
+const curatedNeighborhoods = NEIGHBORHOODS.filter((n) => CURATED_NAMES.includes(n.name));
+
+function LocationIntro({
+  onNeighborhoodSelect,
+  onZipSubmit,
+  onSkip,
+}: {
+  onNeighborhoodSelect: (name: string, lat: number, lng: number) => void;
+  onZipSubmit: (zip: string) => void;
+  onSkip: () => void;
+}) {
+  const [zipValue, setZipValue] = useState('');
+  const [search, setSearch] = useState('');
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  const matches = search.trim().length > 0
+    ? NEIGHBORHOODS.filter((n) => n.name.toLowerCase().includes(search.toLowerCase()))
+    : [];
+
+  function handleZip() {
+    const digits = zipValue.replace(/\D/g, '');
+    if (digits.length === 5) onZipSubmit(digits);
+  }
+
+  return (
+    <div className="absolute inset-0 z-20 bg-bg-primary overflow-y-auto flex flex-col items-center justify-start py-14 px-4">
+      <div className="w-full max-w-2xl text-center">
+        <h1 className="text-3xl font-bold text-text-primary mb-8">Where in Denver are you located?</h1>
+
+
+        {/* ZIP input */}
+        <div className="flex gap-2 justify-center mb-10">
+          <input
+            type="text"
+            inputMode="numeric"
+            placeholder="Enter ZIP code"
+            value={zipValue}
+            onChange={(e) => setZipValue(e.target.value.replace(/\D/g, '').slice(0, 5))}
+            onKeyDown={(e) => e.key === 'Enter' && handleZip()}
+            maxLength={5}
+            className="w-44 px-4 py-3 rounded-xl border border-brand-tertiary bg-bg-primary text-text-primary placeholder-text-secondary text-base focus:outline-none focus:border-brand-secondary"
+          />
+          <button
+            onClick={handleZip}
+            disabled={zipValue.length !== 5}
+            className="px-6 py-3 rounded-xl bg-brand-secondary text-white font-semibold disabled:opacity-40 hover:opacity-90 transition-opacity"
+          >
+            Go
+          </button>
+        </div>
+
+        <div className="flex items-center gap-4 mb-10">
+          <div className="flex-1 h-px bg-brand-tertiary" />
+          <span className="text-sm text-text-secondary">or pick your neighborhood</span>
+          <div className="flex-1 h-px bg-brand-tertiary" />
+        </div>
+
+        {/* Neighborhood chips + inline search */}
+        <div className="flex flex-wrap gap-2 justify-center mb-10">
+          {curatedNeighborhoods.map((n) => (
+            <button
+              key={n.name}
+              onClick={() => onNeighborhoodSelect(n.name, n.lat, n.lng)}
+              className="flex-shrink-0 text-xs px-3 py-1.5 rounded-full shadow font-medium transition-all hover:ring-1 hover:ring-brand-secondary"
+              style={{ backgroundColor: 'rgba(255,255,255,0.9)', color: '#374151', border: '1px solid #e5e7eb' }}
+            >
+              {n.name}
+            </button>
+          ))}
+          <div className="relative flex-shrink-0">
+            <input
+              type="text"
+              placeholder="More neighborhoods..."
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setDropdownOpen(true); }}
+              onFocus={() => setDropdownOpen(true)}
+              onBlur={() => setTimeout(() => setDropdownOpen(false), 150)}
+              className="text-xs px-3 py-1.5 rounded-full shadow font-medium focus:outline-none"
+              style={{ backgroundColor: 'rgba(255,255,255,0.9)', color: '#6b7280', border: '1px solid #e5e7eb', width: '160px' }}
+            />
+            {dropdownOpen && matches.length > 0 && (
+              <ul className="absolute left-0 top-full mt-1 min-w-full bg-bg-primary border border-brand-tertiary rounded-xl shadow-lg overflow-hidden z-10 text-left">
+                {matches.map((n) => (
+                  <li key={n.name}>
+                    <button
+                      onMouseDown={() => { onNeighborhoodSelect(n.name, n.lat, n.lng); }}
+                      className="w-full text-left px-4 py-2.5 text-sm text-text-primary hover:bg-bg-accent transition-colors"
+                    >
+                      {n.name}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+
+        <button
+          onClick={onSkip}
+          className="text-sm text-text-secondary hover:text-text-primary underline underline-offset-2 transition-colors"
+        >
+          Explore all of Denver →
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function StackedPin({ group, isSelected, isHovered, isDimmed, zoom }: { group: LocationGroup; isSelected: boolean; isHovered: boolean; isDimmed: boolean; zoom: number }) {
   const scale = isSelected ? 1.45 : isHovered ? 1.2 : 1;
   const { entries } = group;
+  const size = pinSize(zoom);
+  const isSmall = size < 22;
+  const icon = isSmall ? '' : causeIcon(entries[0].charity.causeTags);
 
-  if (entries.length === 1) {
+  if (entries.length === 1 || isSmall) {
     return (
       <div style={{ transform: `scale(${scale})`, transition: 'transform 0.15s, opacity 0.15s', opacity: isDimmed ? 0.35 : 1 }}>
-        <CauseDot color={causeColor(entries[0].charity.causeTags)} icon={causeIcon(entries[0].charity.causeTags)} />
+        <CauseDot color={causeColor(entries[0].charity.causeTags)} icon={icon} size={size} />
       </div>
     );
   }
 
   // Stacked overlapping dots
-  const overlap = 10;
-  const totalWidth = 32 + (entries.length - 1) * (32 - overlap);
+  const overlap = Math.round(size * 0.31);
+  const totalWidth = size + (entries.length - 1) * (size - overlap);
   return (
-    <div style={{ transform: `scale(${scale})`, transition: 'transform 0.15s, opacity 0.15s', opacity: isDimmed ? 0.35 : 1, position: 'relative', width: totalWidth, height: 32 }}>
+    <div style={{ transform: `scale(${scale})`, transition: 'transform 0.15s, opacity 0.15s', opacity: isDimmed ? 0.35 : 1, position: 'relative', width: totalWidth, height: size }}>
       {entries.map((entry, i) => (
-        <div key={entry.location.id} style={{ position: 'absolute', left: i * (32 - overlap), top: 0, zIndex: entries.length - i }}>
-          <CauseDot color={causeColor(entry.charity.causeTags)} icon={causeIcon(entry.charity.causeTags)} />
+        <div key={entry.location.id} style={{ position: 'absolute', left: i * (size - overlap), top: 0, zIndex: entries.length - i }}>
+          <CauseDot color={causeColor(entry.charity.causeTags)} icon={isSmall ? '' : causeIcon(entry.charity.causeTags)} size={size} />
         </div>
       ))}
     </div>
@@ -231,6 +358,7 @@ export function Charities() {
   const selectedTag = searchParams.get('tag') ?? null;
   const viewMode = searchParams.get('view') === 'list' ? 'list' : 'map';
 
+  const [zoom, setZoom] = useState(11.5);
   const [selectedGroupKey, setSelectedGroupKey] = useState<string | null>(null);
   const [selectedCharityId, setSelectedCharityId] = useState<string | null>(null);
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
@@ -239,15 +367,28 @@ export function Charities() {
 
   const [initialCenter, setInitialCenter] = useState<{ longitude: number; latitude: number; zoom: number } | undefined>();
   const [activeZip, setActiveZip] = useState<string | null>(null);
-  const [zipEditing, setZipEditing] = useState(false);
-  const [zipInputValue, setZipInputValue] = useState('');
+  const [locationEditing, setLocationEditing] = useState(false);
+  const [locationQuery, setLocationQuery] = useState('');
 
   const mapRef = useRef<MapRef>(null);
   const savedView = useRef<{ center: [number, number]; zoom: number } | null>(null);
   const pendingCenterRef = useRef<{ longitude: number; latitude: number; zoom: number } | null>(null);
 
+  const [introSkipped, setIntroSkipped] = useState(false);
+  const [activeNeighborhood, setActiveNeighborhood] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string } | null>(null);
+
   const [resolveZip] = useLazyQuery(RESOLVE_ZIP);
-  const { data: prefsData } = useQuery(MY_PREFERENCES_ZIP, { skip: !isAuthenticated });
+  const [savePreferences] = useMutation(SAVE_PREFERENCES, {
+    update(cache, { data }) {
+      if (!data?.savePreferences) return;
+      cache.writeQuery({
+        query: MY_PREFERENCES_ZIP,
+        data: { myPreferences: { zipCode: data.savePreferences.zipCode, neighborhood: data.savePreferences.neighborhood } },
+      });
+    },
+  });
+  const { data: prefsData, loading: prefsLoading } = useQuery(MY_PREFERENCES_ZIP, { skip: !isAuthenticated });
   const { loading, error, data } = useQuery(GET_CHARITIES, { variables: { tags: selectedTag ? [selectedTag] : undefined } });
   const { data: causesData } = useQuery(GET_CAUSES);
 
@@ -285,19 +426,26 @@ export function Charities() {
     }
   }
 
-  // Zip from auth preferences
+  // Location from auth preferences
   useEffect(() => {
-    if (isAuthenticated && prefsData?.myPreferences?.zipCode) {
-      const zip = prefsData.myPreferences.zipCode;
-      setActiveZip(zip);
-      resolveZip({ variables: { zip } }).then(({ data }) => {
+    if (!isAuthenticated || !prefsData?.myPreferences) return;
+    const { zipCode, neighborhood } = prefsData.myPreferences;
+    if (zipCode) {
+      setActiveZip(zipCode);
+      resolveZip({ variables: { zip: zipCode } }).then(({ data }) => {
         const info = data?.resolveZip;
         if (info?.state === 'CO') setInitialCenter({ longitude: info.longitude, latitude: info.latitude, zoom: info.zoom });
       });
+    } else if (neighborhood) {
+      const hood = NEIGHBORHOODS.find((n) => n.name === neighborhood);
+      if (hood) {
+        setActiveNeighborhood(hood.name);
+        setInitialCenter({ longitude: hood.lng, latitude: hood.lat, zoom: 14 });
+      }
     }
   }, [isAuthenticated, prefsData]);
 
-  // Zip from localStorage for unauthenticated users
+  // Zip/neighborhood from localStorage for unauthenticated users
   useEffect(() => {
     if (!isAuthenticated) {
       const localZip = localStorage.getItem('userZip');
@@ -307,21 +455,60 @@ export function Charities() {
           const info = data?.resolveZip;
           if (info?.state === 'CO') setInitialCenter({ longitude: info.longitude, latitude: info.latitude, zoom: info.zoom });
         });
+        return;
+      }
+      const localHood = localStorage.getItem('userNeighborhood');
+      if (localHood) {
+        const parsed = JSON.parse(localHood) as { name: string; lat: number; lng: number };
+        setActiveNeighborhood(parsed.name);
+        setInitialCenter({ longitude: parsed.lng, latitude: parsed.lat, zoom: 14 });
       }
     }
   }, [isAuthenticated]);
 
-  function handleZipSubmit() {
-    const digits = zipInputValue.replace(/\D/g, '');
-    if (digits.length !== 5) return;
-    resolveZip({ variables: { zip: digits } }).then(({ data }) => {
-      const info = data?.resolveZip;
-      if (!info) return;
-      if (!isAuthenticated) localStorage.setItem('userZip', digits);
-      setActiveZip(digits);
-      setInitialCenter({ longitude: info.longitude, latitude: info.latitude, zoom: info.zoom });
-      setZipEditing(false);
-    });
+  // Show intro when no location is set and user hasn't skipped.
+  // Wait for preferences to finish loading before deciding (avoids flash for authed users with a zip).
+  const showIntro =
+    !introSkipped &&
+    activeZip === null &&
+    activeNeighborhood === null &&
+    (!isAuthenticated || !prefsLoading);
+
+  const isZipMode = /^\d/.test(locationQuery);
+  const locationSuggestions = !isZipMode && locationQuery.trim().length > 0
+    ? NEIGHBORHOODS.filter((n) => n.name.toLowerCase().includes(locationQuery.toLowerCase())).slice(0, 6)
+    : [];
+
+  function cancelEditing() { setLocationEditing(false); setLocationQuery(''); }
+
+  function handleNeighborhoodSelect(name: string, lat: number, lng: number) {
+    setActiveNeighborhood(name);
+    setInitialCenter({ longitude: lng, latitude: lat, zoom: 14});
+    setIntroSkipped(true);
+    setToast({ message: `Near ${name}` });
+    if (isAuthenticated) {
+      savePreferences({ variables: { neighborhood: name, zipCode: null } });
+    } else {
+      localStorage.setItem('userNeighborhood', JSON.stringify({ name, lat, lng }));
+    }
+  }
+
+  // Sidebar-only: fly map, no toast, no preference save
+  function handleSidebarNeighborhoodSelect(name: string, lat: number, lng: number) {
+    setActiveNeighborhood(name);
+    setActiveZip(null);
+    setInitialCenter({ longitude: lng, latitude: lat, zoom: 14});
+    if (!isAuthenticated) localStorage.setItem('userNeighborhood', JSON.stringify({ name, lat, lng }));
+    cancelEditing();
+  }
+
+  function handleChangeLocation() {
+    setActiveZip(null);
+    setActiveNeighborhood(null);
+    setIntroSkipped(false);
+    setToast(null);
+    localStorage.removeItem('userZip');
+    localStorage.removeItem('userNeighborhood');
   }
 
   // Fly to zip-based center when initialCenter changes
@@ -374,10 +561,94 @@ export function Charities() {
   }, [selectedCharityId, selectedGroupKey]);
 
   return (
-    <div className="flex" style={{ height: 'calc(100vh - 65px)' }}>
+    <div className="flex relative" style={{ height: 'calc(100vh - 65px)' }}>
+      {showIntro && (
+        <LocationIntro
+          onNeighborhoodSelect={handleNeighborhoodSelect}
+          onZipSubmit={(zip) => {
+            resolveZip({ variables: { zip } }).then(({ data }) => {
+              const info = data?.resolveZip;
+              if (!info) return;
+              if (isAuthenticated) {
+                savePreferences({ variables: { zipCode: zip, neighborhood: null } });
+              } else {
+                localStorage.setItem('userZip', zip);
+                localStorage.removeItem('userNeighborhood');
+              }
+              setActiveZip(zip);
+              setInitialCenter({ longitude: info.longitude, latitude: info.latitude, zoom: info.zoom });
+              setIntroSkipped(true);
+              setToast({ message: `Near ${zip}` });
+            });
+          }}
+          onSkip={() => setIntroSkipped(true)}
+        />
+      )}
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
         <div className={['flex-shrink-0 flex-col border-r border-brand-tertiary bg-bg-primary', 'lg:flex lg:w-96', viewMode === 'list' ? 'flex w-full' : 'hidden'].join(' ')}>
+          {/* Location combobox row — fixed height, dropdown overflows absolutely */}
+          <div className={`relative flex-shrink-0 border-b px-4 py-2.5 flex items-center gap-2 ${locationEditing ? 'border-brand-secondary' : 'border-brand-tertiary'}`}>
+            <Icon name="map-pin" className="w-4 h-4 text-text-secondary flex-shrink-0" />
+            {locationEditing ? (
+              <>
+                <input
+                  type="text"
+                  placeholder="ZIP or neighborhood..."
+                  value={locationQuery}
+                  autoFocus
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setLocationQuery(val);
+                    const digits = val.replace(/\D/g, '');
+                    if (/^\d/.test(val) && digits.length === 5) {
+                      resolveZip({ variables: { zip: digits } }).then(({ data }) => {
+                        const info = data?.resolveZip;
+                        if (!info) return;
+                        setActiveZip(digits);
+                        setActiveNeighborhood(null);
+                        setInitialCenter({ longitude: info.longitude, latitude: info.latitude, zoom: info.zoom });
+                        if (!isAuthenticated) { localStorage.setItem('userZip', digits); localStorage.removeItem('userNeighborhood'); }
+                        cancelEditing();
+                      });
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Escape') { cancelEditing(); return; }
+                    if (e.key === 'Enter' && locationSuggestions.length > 0) {
+                      const n = locationSuggestions[0];
+                      handleSidebarNeighborhoodSelect(n.name, n.lat, n.lng);
+                    }
+                  }}
+                  onBlur={() => setTimeout(cancelEditing, 150)}
+                  className="flex-1 min-w-0 outline-none text-sm text-text-primary bg-transparent"
+                />
+                <button onClick={cancelEditing} className="text-text-secondary hover:text-text-primary text-sm flex-shrink-0">✕</button>
+                {locationSuggestions.length > 0 && (
+                  <ul className="absolute left-0 right-0 top-full mt-0 bg-bg-primary border border-brand-tertiary rounded-xl shadow-lg overflow-hidden z-20">
+                    {locationSuggestions.map((n) => (
+                      <li key={n.name}>
+                        <button
+                          onMouseDown={() => handleSidebarNeighborhoodSelect(n.name, n.lat, n.lng)}
+                          className="w-full text-left px-4 py-2.5 text-sm text-text-primary hover:bg-bg-accent transition-colors"
+                        >
+                          {n.name}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </>
+            ) : (
+              <button
+                onClick={() => setLocationEditing(true)}
+                className="flex-1 min-w-0 text-left text-sm text-text-primary hover:text-brand-secondary transition-colors truncate"
+              >
+                {activeZip ? `Near ${activeZip}` : activeNeighborhood ? `Near ${activeNeighborhood}` : 'Set location'}
+              </button>
+            )}
+          </div>
+
           {/* Mobile-only: switch to map view */}
           <div className="lg:hidden flex-shrink-0 border-b border-brand-tertiary">
             <button
@@ -536,6 +807,14 @@ export function Charities() {
 
         {/* Map */}
         <div className={['relative', 'lg:block lg:flex-1', viewMode === 'list' ? 'hidden' : 'flex-1'].join(' ')}>
+          {toast && (
+            <Toast
+              key={toast.message}
+              message={toast.message}
+              action={{ label: 'Change', onClick: handleChangeLocation }}
+              onDismiss={() => setToast(null)}
+            />
+          )}
           {/* Tag filters */}
           <div className="absolute top-0 left-0 right-0 z-10 p-3 pointer-events-none">
             <div className="pointer-events-auto flex gap-2 overflow-x-auto pb-1">
@@ -587,40 +866,6 @@ export function Charities() {
             </div>
           </div>
 
-          {/* Zip indicator — bottom right */}
-          <div className="absolute bottom-3 right-3 z-10">
-            {zipEditing ? (
-              <div className="bg-white border border-brand-tertiary rounded-md shadow px-3 py-2 flex items-center gap-2 text-sm">
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="Zip code"
-                  value={zipInputValue}
-                  onChange={(e) => setZipInputValue(e.target.value.replace(/\D/g, '').slice(0, 5))}
-                  onKeyDown={(e) => e.key === 'Enter' && handleZipSubmit()}
-                  maxLength={5}
-                  autoFocus
-                  className="border border-brand-tertiary rounded px-2 py-1 w-24 outline-none focus:border-brand-primary"
-                />
-                <button
-                  onClick={handleZipSubmit}
-                  disabled={zipInputValue.length !== 5}
-                  className="bg-brand-secondary text-white px-3 py-1 rounded disabled:opacity-50"
-                >
-                  Go
-                </button>
-                <button onClick={() => setZipEditing(false)} className="text-text-secondary hover:text-text-primary">✕</button>
-              </div>
-            ) : (
-              <button
-                onClick={() => { setZipInputValue(activeZip ?? ''); setZipEditing(true); }}
-                className="bg-white/90 backdrop-blur-sm border border-gray-200 rounded-full shadow px-3 py-1.5 text-sm text-gray-600 hover:bg-white"
-              >
-                {activeZip ? `Near ${activeZip}` : 'Set location'}
-              </button>
-            )}
-          </div>
-
           <Map
             ref={mapRef}
             mapboxAccessToken={import.meta.env.VITE_MAPBOX_TOKEN}
@@ -628,6 +873,7 @@ export function Charities() {
             style={{ width: '100%', height: '100%' }}
             mapStyle="mapbox://styles/mapbox/light-v11"
             onLoad={handleMapLoad}
+            onMove={(e) => setZoom(e.viewState.zoom)}
           >
             {groups.map((group) => {
               const key = groupKey(group);
@@ -656,7 +902,7 @@ export function Charities() {
                     }
                   }}
                 >
-                  <StackedPin group={group} isSelected={isSelected} isHovered={isHovered} isDimmed={isDimmed} />
+                  <StackedPin group={group} isSelected={isSelected} isHovered={isHovered} isDimmed={isDimmed} zoom={zoom} />
                 </Marker>
               );
             })}
@@ -671,6 +917,7 @@ export function Charities() {
           onClose={() => { setSelectedGroupKey(null); setSelectedCharityId(null); setSelectedLocationId(null); }}
         />
       )}
+
     </div>
   );
 }
