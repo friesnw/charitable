@@ -285,7 +285,7 @@ DATABASE_URL=<render-url> npx tsx scripts/upload-logos.ts
 
 ### One-off entry scripts
 
-If a charity is added via a one-off seed script (e.g. `add-ifcs.ts`) instead of the Admin UI, **delete the script after it has been successfully run in all target environments.** One-off scripts have no ongoing purpose and create confusion alongside the permanent scripts in `backend/scripts/`.
+If a charity is added via a one-off seed script instead of the Admin UI, **delete the script immediately after confirming the data is live in all target environments.** The database — not the script — is the source of truth. Render provides automated backups of prod, and `sync-content.ts` can repopulate any environment from another at any time. There is no value in keeping the script around.
 
 ---
 

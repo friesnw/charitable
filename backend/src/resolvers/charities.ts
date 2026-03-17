@@ -28,6 +28,7 @@ function toCharity(row: Record<string, unknown>) {
     everyOrgClaimed: row.every_org_claimed ?? false,
     isActive: row.is_active ?? true,
     isReviewed: row.is_reviewed ?? false,
+    featured: row.featured ?? false,
     createdAt: (row.created_at as Date)?.toISOString(),
     updatedAt: (row.updated_at as Date)?.toISOString(),
   };
@@ -131,6 +132,7 @@ export const charityResolvers = {
         donateUrl: 'donate_url',
         foundedYear: 'founded_year',
         isActive: 'is_active',
+        featured: 'featured',
         logoUrl: 'logo_url',
         coverPhotoUrl: 'cover_photo_url',
         isReviewed: 'is_reviewed',

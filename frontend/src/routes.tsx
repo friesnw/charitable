@@ -13,6 +13,8 @@ import { CharityDetail } from './pages/CharityDetail';
 import { Admin } from './pages/Admin';
 import { AdminCharityEdit } from './pages/AdminCharityEdit';
 import { CharitiesLocationFirstPOC } from './pages/CharitiesLocationFirstPOC';
+import { Organizations } from './pages/Organizations';
+import { OrganizationsDirectory } from './pages/OrganizationsDirectory';
 
 export const router = createBrowserRouter([
   {
@@ -39,6 +41,14 @@ export const router = createBrowserRouter([
   {
     path: '/charities',
     element: <PageShell fullWidth><Charities /></PageShell>,
+  },
+  {
+    path: '/organizations',
+    element: <PageShell background="var(--bg-secondary)"><Organizations /></PageShell>,
+  },
+  {
+    path: '/organizations/explore',
+    element: <PageShell background="var(--bg-secondary)"><OrganizationsDirectory /></PageShell>,
   },
 {
     path: '/charities/poc-2',

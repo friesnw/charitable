@@ -23,7 +23,7 @@ The map at `/charities` is great for neighborhood discovery ("what's near me?"),
 | Label | Route | Purpose |
 |-------|-------|---------|
 | **Explore Map** | `/charities` | Neighborhood/location discovery |
-| **Browse Nonprofits** | `/organizations` | Full directory list |
+| **Browse Nonprofits** | `/organizations` (cause-first) + `/organizations/explore` (standard) | Full directory |
 
 **Desktop header**: Both links visible as peers
 **Mobile menu**: Both links visible, stacked
@@ -32,11 +32,11 @@ The map at `/charities` is great for neighborhood discovery ("what's near me?"),
 
 ### 2. New Browse Page (`/organizations`)
 
-Two layout options are described below. Pick one or we can discuss.
+Both options will be built as separate routes so they can be compared side-by-side before deciding which to ship (or whether to combine elements of each).
 
 ---
 
-#### Option A: Standard Directory (Search-first)
+#### Option A: Standard Directory — `/organizations/explore` (Search-first)
 
 - Page header: "Denver Nonprofits" + result count ("42 organizations")
 - Inline search bar (reuses existing `charities(search:)` GraphQL query)
@@ -46,7 +46,7 @@ Two layout options are described below. Pick one or we can discuss.
 
 ---
 
-#### Option B: Cause-First Entry (Recommended for exploration)
+#### Option B: Cause-First Entry — `/organizations` (primary)
 
 Inspired by Every.org's cause landing pattern. The page opens with a spacious, unhurried question before showing the list — good for users who don't already have an org in mind.
 
@@ -150,8 +150,8 @@ The map page (`/charities`) stays as-is. The sidebar list there is useful as a m
 
 ### 4. Implementation Notes
 
-- New page: `frontend/src/pages/Organizations.tsx`
-- New route: `/organizations` in `routes.tsx`
+- New pages: `frontend/src/pages/Organizations.tsx` (Option A) and `frontend/src/pages/OrganizationsExplore.tsx` (Option B)
+- New routes: `/organizations` and `/organizations/explore` in `routes.tsx`
 - New shared component: `frontend/src/components/ui/CauseFilterBar.tsx` (extract from map page, reuse here)
 - GraphQL: reuse existing `GET_CHARITIES` query; sorting and neighborhood filtering are client-side
 - New migration: add `featured boolean NOT NULL DEFAULT false` to `charities` table
@@ -178,7 +178,8 @@ The map page (`/charities`) stays as-is. The sidebar list there is useful as a m
 - [ ] Add `featured` migration to `charities` table
 - [ ] Update Admin charity edit to expose `featured` toggle
 - [ ] Extract `CauseFilterBar` component from `Charities.tsx` (map page reuses it)
-- [ ] Create `Organizations.tsx` page (Option A or B)
-- [ ] Add `/organizations` route to `routes.tsx`
+- [ ] Create `Organizations.tsx` (Option A — `/organizations`)
+- [ ] Create `OrganizationsExplore.tsx` (Option B — `/organizations/explore`)
+- [ ] Add both routes to `routes.tsx`
 - [ ] Update nav labels in `Header.tsx` (desktop + mobile)
 - [ ] Update `docs/Product/flows.md` with browse flow

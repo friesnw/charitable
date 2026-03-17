@@ -9,7 +9,7 @@ const GET_ADMIN_CHARITY = gql`
   query GetAdminCharity($id: ID!) {
     charity(id: $id) {
       id name slug ein description logoUrl coverPhotoUrl contentPhotoUrl1 contentPhotoUrl2 websiteUrl volunteerUrl
-      primaryAddress causeTags donateUrl foundedYear isActive isReviewed
+      primaryAddress causeTags donateUrl foundedYear isActive isReviewed featured
       impact locationDescription programHighlights usageCredit ctaLabel ctaUrl
       locations {
         id label description address latitude longitude photoUrl isReviewed isSublocation
@@ -29,7 +29,7 @@ const UPDATE_CHARITY = gql`
     $id: ID! $name: String $description: String $websiteUrl: String
     $volunteerUrl: String $primaryAddress: String $causeTags: [String!]
     $donateUrl: String $foundedYear: Int
-    $isActive: Boolean $logoUrl: String $coverPhotoUrl: String
+    $isActive: Boolean $featured: Boolean $logoUrl: String $coverPhotoUrl: String
     $contentPhotoUrl1: String $contentPhotoUrl2: String
     $impact: String $locationDescription: String
     $programHighlights: String $usageCredit: String
@@ -39,7 +39,7 @@ const UPDATE_CHARITY = gql`
       id: $id name: $name description: $description websiteUrl: $websiteUrl
       volunteerUrl: $volunteerUrl primaryAddress: $primaryAddress causeTags: $causeTags
       donateUrl: $donateUrl foundedYear: $foundedYear
-      isActive: $isActive logoUrl: $logoUrl coverPhotoUrl: $coverPhotoUrl
+      isActive: $isActive featured: $featured logoUrl: $logoUrl coverPhotoUrl: $coverPhotoUrl
       contentPhotoUrl1: $contentPhotoUrl1 contentPhotoUrl2: $contentPhotoUrl2
       impact: $impact locationDescription: $locationDescription
       programHighlights: $programHighlights usageCredit: $usageCredit
@@ -122,6 +122,7 @@ interface CharityData {
   ctaUrl: string | null;
   isActive: boolean;
   isReviewed: boolean;
+  featured: boolean;
   locations: LocationData[];
 }
 
@@ -144,6 +145,7 @@ interface EditForm {
   ctaLabel: string;
   ctaUrl: string;
   isActive: boolean;
+  featured: boolean;
   causeTags: string[];
 }
 
@@ -176,6 +178,7 @@ function initEditForm(c: CharityData): EditForm {
     ctaLabel: c.ctaLabel ?? '',
     ctaUrl: c.ctaUrl ?? '',
     isActive: c.isActive,
+    featured: c.featured,
     causeTags: c.causeTags,
   };
 }
@@ -254,6 +257,7 @@ export function AdminCharityEdit() {
           donateUrl: editForm.donateUrl || null,
           foundedYear: editForm.foundedYear ? parseInt(editForm.foundedYear) : null,
           isActive: editForm.isActive,
+          featured: editForm.featured,
           coverPhotoUrl: editForm.coverPhotoUrl,
           contentPhotoUrl1: editForm.contentPhotoUrl1,
           contentPhotoUrl2: editForm.contentPhotoUrl2,
@@ -582,6 +586,11 @@ export function AdminCharityEdit() {
             <input type="checkbox" checked={editForm.isActive}
               onChange={e => setEditForm(f => f && ({ ...f, isActive: e.target.checked }))} />
             Active
+          </label>
+          <label className="flex items-center gap-2 text-sm text-text-primary cursor-pointer">
+            <input type="checkbox" checked={editForm.featured}
+              onChange={e => setEditForm(f => f && ({ ...f, featured: e.target.checked }))} />
+            Featured
           </label>
         </div>
 
