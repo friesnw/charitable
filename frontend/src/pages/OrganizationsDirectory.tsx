@@ -134,7 +134,7 @@ export function OrganizationsDirectory() {
   const allCharities: Charity[] = data?.charities ?? [];
 
   const tagLabels = useMemo(
-    () => new Map(causes.map((c: { tag: string; label: string }) => [c.tag, c.label])),
+    () => new Map<string, string>(causes.map((c: { tag: string; label: string }) => [c.tag, c.label] as [string, string])),
     [causes]
   );
 
