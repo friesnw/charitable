@@ -16,16 +16,16 @@ const GET_CHARITY_COUNT = gql`
 `;
 
 const HERO_NEIGHBORHOODS = [
+  'Cap Hill',
   'RiNo',
   'Highland',
-  'Capitol Hill',
   'LoDo',
   'Five Points',
   'City Park',
-  'Cherry Creek',
-  'Wash Park',
   'Baker',
-  'Sunnyside',
+  'Wash Park',
+  'Cherry Creek',
+  'Edgewater',
 ];
 
 const SURVEY_TAGS = [
