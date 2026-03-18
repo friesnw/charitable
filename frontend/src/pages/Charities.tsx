@@ -86,9 +86,9 @@ function SkeletonCard() {
 }
 
 function pinSize(zoom: number): number {
-  if (zoom >= 13) return 32;
+  if (zoom >= 15) return 44;
   if (zoom <= 9) return 10;
-  return 10 + ((zoom - 9) / 4) * 22;
+  return 10 + ((zoom - 9) / 6) * 34; // interpolate 10→44 over zoom 9–15
 }
 
 function CauseDot({ color, icon, size = 32 }: { color: string; icon: string; size?: number }) {
@@ -370,9 +370,12 @@ export function Charities() {
   const [locationEditing, setLocationEditing] = useState(false);
   const [locationQuery, setLocationQuery] = useState('');
 
+  const [mapReady, setMapReady] = useState(false);
+
   const mapRef = useRef<MapRef>(null);
   const savedView = useRef<{ center: [number, number]; zoom: number } | null>(null);
   const pendingCenterRef = useRef<{ longitude: number; latitude: number; zoom: number } | null>(null);
+  const hasPositioned = useRef(false);
 
   const [introSkipped, setIntroSkipped] = useState(false);
   const [activeNeighborhood, setActiveNeighborhood] = useState<string | null>(null);
@@ -514,18 +517,28 @@ export function Charities() {
   // Fly to zip-based center when initialCenter changes
   useEffect(() => {
     if (!initialCenter) return;
+    const isFirst = !hasPositioned.current;
+    hasPositioned.current = true;
     if (mapRef.current?.isStyleLoaded()) {
-      mapRef.current.flyTo({ center: [initialCenter.longitude, initialCenter.latitude], zoom: initialCenter.zoom + ZIP_ZOOM_OFFSET, duration: 800 });
+      mapRef.current.flyTo({ center: [initialCenter.longitude, initialCenter.latitude], zoom: initialCenter.zoom + ZIP_ZOOM_OFFSET, duration: isFirst ? 0 : 800 });
+      if (isFirst) setMapReady(true);
     } else {
       pendingCenterRef.current = initialCenter;
     }
   }, [initialCenter]);
 
+  // If showIntro becomes true (no saved location), mark map as ready — intro covers it anyway
+  useEffect(() => {
+    if (showIntro && !hasPositioned.current) setMapReady(true);
+  }, [showIntro]);
+
   function handleMapLoad() {
     const center = pendingCenterRef.current;
     if (center && mapRef.current) {
+      hasPositioned.current = true;
       mapRef.current.flyTo({ center: [center.longitude, center.latitude], zoom: center.zoom + ZIP_ZOOM_OFFSET, duration: 0 });
       pendingCenterRef.current = null;
+      setMapReady(true);
     }
   }
 
@@ -865,6 +878,12 @@ export function Charities() {
               </button>
             </div>
           </div>
+
+          {/* Loading overlay — fades out once initial position is set */}
+          <div
+            className="absolute inset-0 bg-bg-primary pointer-events-none"
+            style={{ opacity: mapReady ? 0 : 1, transition: 'opacity 0.4s ease', zIndex: 8 }}
+          />
 
           <Map
             ref={mapRef}
