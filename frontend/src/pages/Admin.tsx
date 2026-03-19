@@ -359,7 +359,7 @@ function LocationsTab() {
                   >
                     <td className="px-3 py-2">
                       <Link
-                        to={`/admin/charities/${loc.charityId}`}
+                        to={`/admin/charities/${loc.charitySlug}`}
                         onClick={e => e.stopPropagation()}
                         className="text-brand-primary hover:underline text-xs"
                       >
@@ -720,8 +720,8 @@ export function Admin() {
       });
       setCreateForm(EMPTY_CREATE_FORM);
       setShowCreateForm(false);
-      const id = result.data?.createCharity?.id;
-      if (id) navigate(`/admin/charities/${id}`);
+      const slug = result.data?.createCharity?.slug;
+      if (slug) navigate(`/admin/charities/${slug}`);
     } catch (e: unknown) {
       setCreateError(e instanceof Error ? e.message : 'Create failed');
     }
@@ -848,7 +848,7 @@ export function Admin() {
                 {filtered.map((charity, i) => (
                   <tr
                     key={charity.id}
-                    onClick={() => navigate(`/admin/charities/${charity.id}`)}
+                    onClick={() => navigate(`/admin/charities/${charity.slug}`)}
                     className={`border-b border-brand-tertiary last:border-0 cursor-pointer transition-colors hover:bg-bg-accent ${
                       i % 2 === 0 ? 'bg-bg-primary' : 'bg-bg-accent/30'
                     }`}

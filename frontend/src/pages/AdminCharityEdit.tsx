@@ -6,8 +6,8 @@ import { Initials } from '../components/ui/Initials';
 import { Icon, ICON_NAMES } from '../components/ui/Icon';
 
 const GET_ADMIN_CHARITY = gql`
-  query GetAdminCharity($id: ID!) {
-    charity(id: $id) {
+  query GetAdminCharity($slug: String!) {
+    charity(slug: $slug) {
       id name slug ein description logoUrl coverPhotoUrl contentPhotoUrl1 contentPhotoUrl2 websiteUrl volunteerUrl
       primaryAddress causeTags donateUrl foundedYear isActive isReviewed featured
       impact locationDescription programHighlights usageCredit ctaLabel ctaUrl
@@ -195,11 +195,11 @@ function initLocationForm(loc: LocationData): LocationForm {
 }
 
 export function AdminCharityEdit() {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
 
   const { data, loading, error } = useQuery(GET_ADMIN_CHARITY, {
-    variables: { id },
-    skip: !id,
+    variables: { slug },
+    skip: !slug,
   });
   const { data: causesData } = useQuery(GET_CAUSES);
 

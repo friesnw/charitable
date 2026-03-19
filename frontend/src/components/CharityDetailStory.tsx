@@ -126,7 +126,7 @@ export function CharityDetailStory({ charity, tagLabels }: CharityDetailStoryPro
             style={{
               position: 'absolute',
               top: '-60px', bottom: '-60px', left: 0, right: 0,
-              backgroundImage: `url(${cloudinaryUrl(featuredPhoto, { w: 1800, h: 780, fit: 'fill' })})`,
+              backgroundImage: `url(${cloudinaryUrl(featuredPhoto, { w: 1800, fit: 'limit' })})`,
               backgroundSize: 'cover',
               backgroundPosition: 'center center',
             }}

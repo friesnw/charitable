@@ -883,6 +883,43 @@ export function Charities() {
             </div>
           </div>
 
+          {/* Map controls */}
+          <div className="absolute right-3 bottom-16 lg:bottom-6 z-10 flex flex-col rounded-lg shadow-md overflow-hidden border border-gray-200">
+            <button
+              onClick={() => mapRef.current?.zoomIn()}
+              className="w-9 h-9 bg-white hover:bg-gray-50 flex items-center justify-center text-gray-700 border-b border-gray-200"
+              aria-label="Zoom in"
+            >
+              <svg viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5"><path d="M8 2a.75.75 0 0 1 .75.75v4.5h4.5a.75.75 0 0 1 0 1.5h-4.5v4.5a.75.75 0 0 1-1.5 0v-4.5h-4.5a.75.75 0 0 1 0-1.5h4.5v-4.5A.75.75 0 0 1 8 2Z"/></svg>
+            </button>
+            <button
+              onClick={() => mapRef.current?.zoomOut()}
+              className="w-9 h-9 bg-white hover:bg-gray-50 flex items-center justify-center text-gray-700 border-b border-gray-200"
+              aria-label="Zoom out"
+            >
+              <svg viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5"><path d="M3.25 7.25a.75.75 0 0 0 0 1.5h9.5a.75.75 0 0 0 0-1.5h-9.5Z"/></svg>
+            </button>
+            <button
+              onClick={() => {
+                if (initialCenter) {
+                  mapRef.current?.flyTo({ center: [initialCenter.longitude, initialCenter.latitude], zoom: initialCenter.zoom + ZIP_ZOOM_OFFSET, duration: 600 });
+                } else {
+                  mapRef.current?.flyTo({ center: [-104.98832, 39.73669], zoom: 11.5, duration: 600 });
+                }
+              }}
+              className="w-9 h-9 bg-white hover:bg-gray-50 flex items-center justify-center text-gray-700"
+              aria-label="Recenter map"
+            >
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="w-3.5 h-3.5">
+                <circle cx="8" cy="8" r="2.5"/>
+                <line x1="8" y1="1" x2="8" y2="4.5"/>
+                <line x1="8" y1="11.5" x2="8" y2="15"/>
+                <line x1="1" y1="8" x2="4.5" y2="8"/>
+                <line x1="11.5" y1="8" x2="15" y2="8"/>
+              </svg>
+            </button>
+          </div>
+
           <div style={{ visibility: mapVisible ? 'visible' : 'hidden', position: 'absolute', inset: 0 }}>
             <Map
               ref={mapRef}

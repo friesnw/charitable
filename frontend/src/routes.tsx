@@ -67,7 +67,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/admin/charities/:id',
+    path: '/admin/charities/:slug',
     element: (
       <AdminRoute>
         <PageShell><AdminCharityEdit /></PageShell>
