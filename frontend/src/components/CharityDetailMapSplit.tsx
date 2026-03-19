@@ -58,6 +58,7 @@ export function CharityDetailMapSplit({
   onSelectLocation,
 }: Props) {
   const mapRef = useRef<MapRef>(null);
+  const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const [hoveredLocationId, setHoveredLocationId] = useState<string | null>(null);
   const icon = causeIcon(causeTags);
   const pinColor = causeColor(causeTags);
@@ -94,16 +95,18 @@ export function CharityDetailMapSplit({
     }
   }, [fitAll]);
 
-  // Fly to selected location whenever it changes
+  // Fly to selected location and scroll card into view whenever selection changes
   useEffect(() => {
-    if (!selectedLocationId || !mapRef.current) return;
+    if (!selectedLocationId) return;
     const loc = validLocs.find((l) => l.id === selectedLocationId);
-    if (!loc) return;
-    mapRef.current.flyTo({
-      center: [loc.longitude!, loc.latitude!],
-      zoom: 14,
-      duration: 600,
-    });
+    if (loc && mapRef.current) {
+      mapRef.current.flyTo({
+        center: [loc.longitude!, loc.latitude!],
+        zoom: 14,
+        duration: 600,
+      });
+    }
+    cardRefs.current.get(selectedLocationId)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }, [selectedLocationId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleCardSelect(loc: StoryLocation) {
@@ -121,6 +124,7 @@ export function CharityDetailMapSplit({
         return (
           <div
             key={loc.id}
+            ref={(el) => { if (el) cardRefs.current.set(loc.id, el); else cardRefs.current.delete(loc.id); }}
             className="rounded-lg overflow-hidden border bg-white transition-all cursor-pointer"
             style={{
               borderColor: isSelected ? color : '#e5e7eb',
