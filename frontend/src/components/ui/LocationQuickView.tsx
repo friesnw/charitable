@@ -31,9 +31,11 @@ interface LocationQuickViewProps {
   tagLabels: Map<string, string>;
   onExpand: () => void;
   onClose: () => void;
+  /** When true, renders without the card container (for use inside a bottom sheet) */
+  flat?: boolean;
 }
 
-export function LocationQuickView({ group, tagLabels, onExpand, onClose }: LocationQuickViewProps) {
+export function LocationQuickView({ group, tagLabels, onExpand, onClose, flat = false }: LocationQuickViewProps) {
   const primaryEntry = [...group.entries].sort(
     (a, b) => Number(a.location.isSublocation) - Number(b.location.isSublocation)
   )[0];
@@ -41,13 +43,12 @@ export function LocationQuickView({ group, tagLabels, onExpand, onClose }: Locat
   const hood = nearestNeighborhood(group.lat, group.lng);
   const extraCount = group.entries.length - 1;
 
-  return (
-    <div className="relative bg-white rounded-2xl shadow-xl overflow-hidden">
-      <button
-        onClick={onExpand}
-        className="w-full flex items-center gap-3 p-3 text-left"
-        aria-label={`View ${location.label}`}
-      >
+  const content = (
+    <button
+      onClick={onExpand}
+      className={`w-full flex items-center gap-3 text-left ${flat ? 'px-4 py-3' : 'p-3'}`}
+      aria-label={`View ${location.label}`}
+    >
         {/* Thumbnail */}
         <div className="flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden">
           {location.photoUrl ? (
@@ -88,11 +89,30 @@ export function LocationQuickView({ group, tagLabels, onExpand, onClose }: Locat
         </div>
 
         {/* Chevron */}
-        <svg viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 text-gray-400 flex-shrink-0 absolute right-10 top-1/2 -translate-y-1/2">
+        <svg viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5 text-gray-400 flex-shrink-0">
           <path fillRule="evenodd" clipRule="evenodd" d="M7.21 14.77a.75.75 0 0 1 .02-1.06L11.168 10 7.23 6.29a.75.75 0 1 1 1.04-1.08l4.5 4.25a.75.75 0 0 1 0 1.08l-4.5 4.25a.75.75 0 0 1-1.06-.02Z" />
         </svg>
-      </button>
+    </button>
+  );
 
+  if (flat) {
+    return (
+      <div className="relative">
+        {content}
+        <button
+          onClick={(e) => { e.stopPropagation(); onClose(); }}
+          className="absolute top-1/2 -translate-y-1/2 right-4 w-7 h-7 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 text-xs transition-colors"
+          aria-label="Close"
+        >
+          ✕
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative bg-white rounded-2xl shadow-xl overflow-hidden">
+      {content}
       {/* Close button */}
       <button
         onClick={(e) => { e.stopPropagation(); onClose(); }}

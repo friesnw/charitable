@@ -940,14 +940,14 @@ export function Charities() {
                       {tagLabels.get(selectedTag) ?? selectedTag}
                     </span>
                   )}
-                  {/* Filter icon */}
+                  {/* Filter icon — horizontal sliders (Airbnb-style) */}
                   <button
                     onClick={() => setFilterOpen((o) => !o)}
                     className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-colors ${filterOpen ? 'bg-gray-900 text-white' : 'text-gray-500 hover:bg-gray-100'}`}
                     aria-label="Toggle filters"
                   >
-                    <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                      <path d="M17 3H3a1 1 0 0 0-.707 1.707l5.586 5.586A1 1 0 0 1 9 11v6l2-1.333V11a1 1 0 0 1 .121-.48l5.586-5.813A1 1 0 0 0 17 3Z" />
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                      <path d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
                     </svg>
                   </button>
                 </div>
@@ -1025,23 +1025,6 @@ export function Charities() {
             </button>
           </div>
 
-          {/* LocationQuickView — mobile only, shown before expanding to full drawer */}
-          {selectedGroup && !quickViewExpanded && (
-            <div className="lg:hidden absolute left-3 right-3 z-20" style={{ bottom: `${PEEK_HEIGHT + 12}px` }}>
-              <LocationQuickView
-                group={selectedGroup}
-                tagLabels={tagLabels}
-                onExpand={() => setQuickViewExpanded(true)}
-                onClose={() => {
-                  setSelectedGroupKey(null);
-                  setSelectedCharityId(null);
-                  setSelectedLocationId(null);
-                  setQuickViewExpanded(false);
-                }}
-              />
-            </div>
-          )}
-
           {/* Bottom sheet — mobile only */}
           <div
             ref={sheetRef}
@@ -1059,56 +1042,77 @@ export function Charities() {
             <div className="flex justify-center pt-3 pb-2 flex-shrink-0">
               <div className="w-10 h-1 rounded-full bg-gray-300" />
             </div>
-            {/* Count */}
-            <div className="px-4 pb-2 flex-shrink-0">
-              <p className="text-sm font-semibold text-gray-700">
-                {loading ? 'Loading...' : `${charities.length} charities`}
-              </p>
-            </div>
-            {/* List */}
-            <div className="overflow-y-auto flex-1">
-              {loading && (
-                <>
-                  <SkeletonCard />
-                  <SkeletonCard />
-                  <SkeletonCard />
-                </>
-              )}
-              {error && <p className="text-red-500 p-4 text-sm">Error: {error.message}</p>}
-              {charities.map((charity) => (
-                <Link
-                  key={charity.id}
-                  to={`/charities/${charity.slug}`}
-                  className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors"
-                >
-                  {charity.logoUrl ? (
-                    <img src={cloudinaryUrl(charity.logoUrl, { w: 48, h: 48, fit: 'fit' })} alt={charity.name} className="w-10 h-10 rounded-full object-contain flex-shrink-0 border border-gray-100" />
-                  ) : (
-                    <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-500 flex-shrink-0">
-                      {charity.name.slice(0, 2).toUpperCase()}
-                    </div>
+
+            {/* Quick view — replaces list when a pin is selected */}
+            {selectedGroup && !quickViewExpanded ? (
+              <div className="flex-1 overflow-hidden border-t border-gray-100">
+                <LocationQuickView
+                  flat
+                  group={selectedGroup}
+                  tagLabels={tagLabels}
+                  onExpand={() => setQuickViewExpanded(true)}
+                  onClose={() => {
+                    setSelectedGroupKey(null);
+                    setSelectedCharityId(null);
+                    setSelectedLocationId(null);
+                    setQuickViewExpanded(false);
+                  }}
+                />
+              </div>
+            ) : (
+              <>
+                {/* Count header */}
+                <div className="px-4 pb-2 flex-shrink-0">
+                  <p className="text-sm font-semibold text-gray-700">
+                    {loading ? 'Loading...' : `${charities.length} charities`}
+                  </p>
+                </div>
+                {/* List */}
+                <div className="overflow-y-auto flex-1">
+                  {loading && (
+                    <>
+                      <SkeletonCard />
+                      <SkeletonCard />
+                      <SkeletonCard />
+                    </>
                   )}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-gray-900 text-sm truncate">{charity.name}</p>
-                    {charity.description && (
-                      <p className="text-xs text-gray-500 line-clamp-2 mt-0.5">{charity.description}</p>
-                    )}
-                    {charity.causeTags.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {charity.causeTags.slice(0, 3).map((tag) => (
-                          <span key={tag} className="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded">
-                            {tagLabels.get(tag) ?? tag}
-                          </span>
-                        ))}
+                  {error && <p className="text-red-500 p-4 text-sm">Error: {error.message}</p>}
+                  {charities.map((charity) => (
+                    <Link
+                      key={charity.id}
+                      to={`/charities/${charity.slug}`}
+                      className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                    >
+                      {charity.logoUrl ? (
+                        <img src={cloudinaryUrl(charity.logoUrl, { w: 48, h: 48, fit: 'fit' })} alt={charity.name} className="w-10 h-10 rounded-full object-contain flex-shrink-0 border border-gray-100" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-500 flex-shrink-0">
+                          {charity.name.slice(0, 2).toUpperCase()}
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-gray-900 text-sm truncate">{charity.name}</p>
+                        {charity.description && (
+                          <p className="text-xs text-gray-500 line-clamp-2 mt-0.5">{charity.description}</p>
+                        )}
+                        {charity.causeTags.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {charity.causeTags.slice(0, 3).map((tag) => (
+                              <span key={tag} className="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded">
+                                {tagLabels.get(tag) ?? tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                  <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-gray-300 flex-shrink-0">
-                    <path fillRule="evenodd" clipRule="evenodd" d="M7.21 14.77a.75.75 0 0 1 .02-1.06L11.168 10 7.23 6.29a.75.75 0 1 1 1.04-1.08l4.5 4.25a.75.75 0 0 1 0 1.08l-4.5 4.25a.75.75 0 0 1-1.06-.02Z" />
-                  </svg>
-                </Link>
-              ))}
-            </div>
+                      <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-gray-300 flex-shrink-0">
+                        <path fillRule="evenodd" clipRule="evenodd" d="M7.21 14.77a.75.75 0 0 1 .02-1.06L11.168 10 7.23 6.29a.75.75 0 1 1 1.04-1.08l4.5 4.25a.75.75 0 0 1 0 1.08l-4.5 4.25a.75.75 0 0 1-1.06-.02Z" />
+                      </svg>
+                    </Link>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
 
           <div style={{ visibility: mapVisible ? 'visible' : 'hidden', position: 'absolute', inset: 0 }}>
@@ -1153,6 +1157,7 @@ export function Charities() {
                         setSelectedCharityId(primaryEntry.charity.id);
                         setSelectedLocationId(primaryEntry.location.id);
                         setQuickViewExpanded(false);
+                        setSheetState('peek'); // snap sheet down so map is visible
                       }
                     }}
                   >
