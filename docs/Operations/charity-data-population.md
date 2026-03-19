@@ -24,9 +24,8 @@ This guide describes the end-to-end process for adding a fully populated charity
 Consult sources in order of trust:
 
 1. **Official website** — About, Programs/Services, Impact pages. Many charity sites are JS-rendered; if `WebFetch` returns empty content, fall back to `WebSearch` to find the text.
-2. **Charity Navigator** — `https://www.charitynavigator.org/ein/[EIN]` — star rating, financial efficiency score.
-3. **ProPublica Nonprofit Explorer** — `https://projects.propublica.org/nonprofits/organizations/[EIN]` — 990 filings with exact headcount and financial stats.
-4. **Annual Report / Impact Report** — usually linked from the website; the most authoritative source for program impact numbers.
+2. **ProPublica Nonprofit Explorer** — `https://projects.propublica.org/nonprofits/organizations/[EIN]` — 990 filings with exact headcount and financial stats.
+3. **Annual Report / Impact Report** — usually linked from the website; the most authoritative source for program impact numbers.
 
 **Collect during this stage:**
 
@@ -175,7 +174,8 @@ If an icon name in the field is not on this list, the UI silently falls back to 
 
 ### `location_description` (TEXT)
 
-- 1–2 sentences describing geographic scope: how many locations, what neighborhoods or service areas.
+- 1–2 sentences describing geographic scope: neighborhoods or service areas, and a general sense of scale if relevant.
+- **Avoid citing an exact location count** — the number of locations on our site may not match the charity's full footprint. Use approximate language instead (e.g. "dozens of locations", "across several Denver neighborhoods") rather than a specific number.
 - Appears as the intro paragraph above the location cards on the detail page.
 - **Verify neighborhood names against a map** — do not rely on research output alone. Look up the address in Google Maps or a Denver neighborhood map to confirm the correct neighborhood before writing it.
 
