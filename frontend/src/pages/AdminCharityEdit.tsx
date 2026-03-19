@@ -8,7 +8,7 @@ import { Icon, ICON_NAMES } from '../components/ui/Icon';
 const GET_ADMIN_CHARITY = gql`
   query GetAdminCharity($slug: String!) {
     charity(slug: $slug) {
-      id name slug ein description logoUrl coverPhotoUrl contentPhotoUrl1 contentPhotoUrl2 websiteUrl volunteerUrl
+      id name slug ein description logoUrl coverPhotoUrl coverPhotoFocalPoint contentPhotoUrl1 contentPhotoUrl2 websiteUrl volunteerUrl
       primaryAddress causeTags donateUrl foundedYear isActive isReviewed featured
       impact locationDescription programHighlights usageCredit ctaLabel ctaUrl
       locations {
@@ -29,7 +29,7 @@ const UPDATE_CHARITY = gql`
     $id: ID! $name: String $description: String $websiteUrl: String
     $volunteerUrl: String $primaryAddress: String $causeTags: [String!]
     $donateUrl: String $foundedYear: Int
-    $isActive: Boolean $featured: Boolean $logoUrl: String $coverPhotoUrl: String
+    $isActive: Boolean $featured: Boolean $logoUrl: String $coverPhotoUrl: String $coverPhotoFocalPoint: String
     $contentPhotoUrl1: String $contentPhotoUrl2: String
     $impact: String $locationDescription: String
     $programHighlights: String $usageCredit: String
@@ -39,13 +39,13 @@ const UPDATE_CHARITY = gql`
       id: $id name: $name description: $description websiteUrl: $websiteUrl
       volunteerUrl: $volunteerUrl primaryAddress: $primaryAddress causeTags: $causeTags
       donateUrl: $donateUrl foundedYear: $foundedYear
-      isActive: $isActive featured: $featured logoUrl: $logoUrl coverPhotoUrl: $coverPhotoUrl
+      isActive: $isActive featured: $featured logoUrl: $logoUrl coverPhotoUrl: $coverPhotoUrl coverPhotoFocalPoint: $coverPhotoFocalPoint
       contentPhotoUrl1: $contentPhotoUrl1 contentPhotoUrl2: $contentPhotoUrl2
       impact: $impact locationDescription: $locationDescription
       programHighlights: $programHighlights usageCredit: $usageCredit
       ctaLabel: $ctaLabel ctaUrl: $ctaUrl
     ) {
-      id name slug ein description logoUrl coverPhotoUrl contentPhotoUrl1 contentPhotoUrl2 websiteUrl volunteerUrl
+      id name slug ein description logoUrl coverPhotoUrl coverPhotoFocalPoint contentPhotoUrl1 contentPhotoUrl2 websiteUrl volunteerUrl
       primaryAddress causeTags donateUrl foundedYear isActive
       impact locationDescription programHighlights usageCredit ctaLabel ctaUrl
       locations { id label description address latitude longitude photoUrl }
@@ -106,6 +106,7 @@ interface CharityData {
   description: string | null;
   logoUrl: string | null;
   coverPhotoUrl: string | null;
+  coverPhotoFocalPoint: string | null;
   contentPhotoUrl1: string | null;
   contentPhotoUrl2: string | null;
   websiteUrl: string | null;
@@ -131,6 +132,7 @@ interface EditForm {
   description: string;
   logoUrl: string | null;
   coverPhotoUrl: string | null;
+  coverPhotoFocalPoint: string | null;
   contentPhotoUrl1: string | null;
   contentPhotoUrl2: string | null;
   websiteUrl: string;
@@ -164,6 +166,7 @@ function initEditForm(c: CharityData): EditForm {
     description: c.description ?? '',
     logoUrl: c.logoUrl,
     coverPhotoUrl: c.coverPhotoUrl,
+    coverPhotoFocalPoint: c.coverPhotoFocalPoint,
     contentPhotoUrl1: c.contentPhotoUrl1,
     contentPhotoUrl2: c.contentPhotoUrl2,
     websiteUrl: c.websiteUrl ?? '',
@@ -259,6 +262,7 @@ export function AdminCharityEdit() {
           isActive: editForm.isActive,
           featured: editForm.featured,
           coverPhotoUrl: editForm.coverPhotoUrl,
+          coverPhotoFocalPoint: editForm.coverPhotoFocalPoint,
           contentPhotoUrl1: editForm.contentPhotoUrl1,
           contentPhotoUrl2: editForm.contentPhotoUrl2,
           impact: editForm.impact || null,
@@ -713,6 +717,22 @@ export function AdminCharityEdit() {
                     </button>
                   )}
                 </div>
+                {key === 'coverPhotoUrl' && (
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-xs text-text-secondary">Focal point</span>
+                    <select
+                      value={editForm.coverPhotoFocalPoint ?? ''}
+                      onChange={e => setEditForm(f => f && ({ ...f, coverPhotoFocalPoint: e.target.value || null }))}
+                      className="text-xs border border-brand-tertiary rounded px-1.5 py-1 bg-bg-primary text-text-primary outline-none focus:border-brand-primary"
+                    >
+                      <option value="">Center (default)</option>
+                      <option value="left">Left</option>
+                      <option value="right">Right</option>
+                      <option value="top">Top</option>
+                      <option value="bottom">Bottom</option>
+                    </select>
+                  </div>
+                )}
               </div>
             ))}
           </div>

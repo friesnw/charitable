@@ -21,6 +21,7 @@ const GET_CHARITY = gql`
       description
       logoUrl
       coverPhotoUrl
+      coverPhotoFocalPoint
       contentPhotoUrl1
       contentPhotoUrl2
       websiteUrl
@@ -66,6 +67,7 @@ interface Charity {
   description: string | null;
   logoUrl: string | null;
   coverPhotoUrl: string | null;
+  coverPhotoFocalPoint: string | null;
   contentPhotoUrl1: string | null;
   contentPhotoUrl2: string | null;
   websiteUrl: string | null;

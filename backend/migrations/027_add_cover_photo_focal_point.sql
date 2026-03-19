@@ -1,0 +1,2 @@
+ALTER TABLE charities
+  ADD COLUMN IF NOT EXISTS cover_photo_focal_point VARCHAR(10) DEFAULT NULL;

@@ -22,6 +22,7 @@ export interface StoryCharity {
   description: string | null;
   logoUrl: string | null;
   coverPhotoUrl: string | null;
+  coverPhotoFocalPoint: string | null;
   contentPhotoUrl1: string | null;
   contentPhotoUrl2: string | null;
   websiteUrl: string | null;
@@ -120,7 +121,7 @@ export function CharityDetail({ charity, tagLabels }: CharityDetailProps) {
 
       {/* Photo header — full-width cover photo with parallax */}
       {featuredPhoto ? (
-        <div style={{ width: '100vw', marginLeft: 'calc(-50vw + 50%)', height: 300, overflow: 'hidden', position: 'relative' }}>
+        <div className="h-[220px] md:h-[300px]" style={{ width: '100vw', marginLeft: 'calc(-50vw + 50%)', overflow: 'hidden', position: 'relative' }}>
           <div
             ref={parallaxRef}
             style={{
@@ -128,7 +129,7 @@ export function CharityDetail({ charity, tagLabels }: CharityDetailProps) {
               top: '-60px', bottom: '-60px', left: 0, right: 0,
               backgroundImage: `url(${cloudinaryUrl(featuredPhoto, { w: 1800, fit: 'scale' })})`,
               backgroundSize: 'cover',
-              backgroundPosition: 'center center',
+              backgroundPosition: `${{ left: '25%', right: '75%', center: '50%', top: '50%', bottom: '50%' }[charity.coverPhotoFocalPoint ?? 'center'] ?? '50%'} ${{ top: '25%', bottom: '75%' }[charity.coverPhotoFocalPoint ?? ''] ?? '50%'}`,
             }}
           />
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.04), rgba(0,0,0,0.22))' }} />
@@ -152,7 +153,7 @@ export function CharityDetail({ charity, tagLabels }: CharityDetailProps) {
       <div className="px-4">
         <div className="mt-4 mb-2">
           <h1 className="text-2xl font-bold text-gray-900 leading-tight">{charity.name}</h1>
-          <div className="flex items-center gap-4 mt-1 text-sm" style={{ color: 'var(--flair-sage)' }}>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-sm" style={{ color: 'var(--flair-sage)' }}>
             <span className="flex items-center gap-1.5 font-medium" style={{ color: 'var(--color-success)' }}>
               <Icon name="check-circle-solid" className="w-4 h-4 shrink-0" />
               Verified Non-Profit

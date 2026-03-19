@@ -14,6 +14,7 @@ export const typeDefs = `#graphql
     description: String
     logoUrl: String
     coverPhotoUrl: String
+    coverPhotoFocalPoint: String
     contentPhotoUrl1: String
     contentPhotoUrl2: String
     websiteUrl: String
@@ -114,6 +115,7 @@ export const typeDefs = `#graphql
       featured: Boolean
       logoUrl: String
       coverPhotoUrl: String
+      coverPhotoFocalPoint: String
       contentPhotoUrl1: String
       contentPhotoUrl2: String
       isReviewed: Boolean
