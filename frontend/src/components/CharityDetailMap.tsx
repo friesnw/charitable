@@ -49,7 +49,7 @@ function CauseDot({ color, icon, selected, hovered }: { color: string; icon: str
   );
 }
 
-export function CharityDetailMapSplit({
+export function CharityDetailMap({
   locations,
   causeTags,
   color,

@@ -3,7 +3,7 @@ import { cloudinaryUrl } from '../lib/cloudinary';
 import { causeColor } from '../lib/causeColors';
 import { DonateButton } from './ui/DonateButton';
 import { Icon, ICON_NAMES } from './ui/Icon';
-import { CharityDetailMapSplit } from './CharityDetailMapSplit';
+import { CharityDetailMap } from './CharityDetailMap';
 
 interface StoryLocation {
   id: string;
@@ -40,7 +40,7 @@ export interface StoryCharity {
   locations: StoryLocation[];
 }
 
-interface CharityDetailStoryProps {
+interface CharityDetailProps {
   charity: StoryCharity;
   tagLabels: Map<string, string>;
 }
@@ -70,7 +70,7 @@ function parseHighlights(raw: string): { icon: string | null; title: string | nu
     .filter((h) => h.title || h.text.length > 0);
 }
 
-export function CharityDetailStory({ charity, tagLabels }: CharityDetailStoryProps) {
+export function CharityDetail({ charity, tagLabels }: CharityDetailProps) {
   const heroLocation = charity.locations.find((l) => l.photoUrl) ?? charity.locations[0] ?? null;
   const featuredPhoto = charity.coverPhotoUrl ?? heroLocation?.photoUrl ?? null;
   const parallaxRef = useRef<HTMLDivElement>(null);
@@ -126,7 +126,7 @@ export function CharityDetailStory({ charity, tagLabels }: CharityDetailStoryPro
             style={{
               position: 'absolute',
               top: '-60px', bottom: '-60px', left: 0, right: 0,
-              backgroundImage: `url(${cloudinaryUrl(featuredPhoto, { w: 1800, fit: 'limit' })})`,
+              backgroundImage: `url(${cloudinaryUrl(featuredPhoto, { w: 1800, fit: 'scale' })})`,
               backgroundSize: 'cover',
               backgroundPosition: 'center center',
             }}
@@ -293,7 +293,7 @@ export function CharityDetailStory({ charity, tagLabels }: CharityDetailStoryPro
 
         {/* Location section */}
         {charity.locations.length > 0 && (
-          <CharityDetailMapSplit
+          <CharityDetailMap
             locations={charity.locations}
             causeTags={charity.causeTags}
             color={color}

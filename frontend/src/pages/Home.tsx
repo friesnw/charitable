@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Map, { MapRef } from 'react-map-gl/mapbox';
-import { ButtonLink } from '../components/ui/Button';
+import { ButtonLink, Button } from '../components/ui/Button';
 import { useQuery, gql } from '@apollo/client';
 import { useAuth } from '../hooks/useAuth';
 import { NEIGHBORHOODS } from '../lib/neighborhoods';
@@ -64,6 +64,8 @@ const PAN_STOPS = [
 
 export function Home() {
   const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+  const [selectedNeighborhood, setSelectedNeighborhood] = useState<{ name: string; lat: number; lng: number } | null>(null);
   const [selectedSurveyTag, setSelectedSurveyTag] = useState<string | null>(null);
   const [mapReady, setMapReady] = useState(false);
   const mapRef = useRef<MapRef>(null);
@@ -147,11 +149,6 @@ export function Home() {
             <ButtonLink to="/charities" variant="primary">
               Get started
             </ButtonLink>
-            {!isAuthenticated && (
-              <ButtonLink to="/login" variant="secondary-dark">
-                I already have an account
-              </ButtonLink>
-            )}
           </div>
         </div>
 
@@ -161,15 +158,35 @@ export function Home() {
             Explore by neighborhood
           </p>
           <div className="flex gap-2 overflow-x-auto pb-1 justify-start md:justify-center">
-            {neighborhoodPills.map(({ name, lat, lng }) => (
-              <Link
-                key={name}
-                to={`/charities?lat=${lat}&lng=${lng}`}
-                className="flex-shrink-0 text-sm px-3 py-1.5 rounded-full border border-white/20 bg-white/10 text-white/70 hover:border-brand-accent hover:text-brand-accent transition-colors"
-              >
-                {name}
-              </Link>
-            ))}
+            {neighborhoodPills.map(({ name, lat, lng }) => {
+              const isSelected = selectedNeighborhood?.name === name;
+              return (
+                <button
+                  key={name}
+                  onClick={() => setSelectedNeighborhood(isSelected ? null : { name, lat, lng })}
+                  className={`flex-shrink-0 text-sm px-3 py-1.5 rounded-full border transition-colors ${
+                    isSelected
+                      ? 'border-brand-accent bg-brand-accent/20 text-brand-accent'
+                      : 'border-white/20 bg-white/10 text-white/70 hover:border-brand-accent hover:text-brand-accent'
+                  }`}
+                >
+                  {name}
+                </button>
+              );
+            })}
+          </div>
+          <div className="flex justify-center mt-3">
+            <Button
+              variant="primary"
+              disabled={!selectedNeighborhood}
+              onClick={() => {
+                if (selectedNeighborhood) {
+                  navigate(`/charities?lat=${selectedNeighborhood.lat}&lng=${selectedNeighborhood.lng}`);
+                }
+              }}
+            >
+              {selectedNeighborhood ? `Explore ${selectedNeighborhood.name}` : 'Select a neighborhood'}
+            </Button>
           </div>
         </div>
       </section>

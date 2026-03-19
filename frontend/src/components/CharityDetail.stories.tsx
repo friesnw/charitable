@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { MemoryRouter } from 'react-router-dom';
-import { CharityDetailStory } from './CharityDetailStory';
+import { CharityDetail } from './CharityDetail';
 
 const MOCK_CHARITY = {
   id: '1',
@@ -54,8 +54,8 @@ const TAG_LABELS = new Map([
 ]);
 
 const meta = {
-  title: 'Components/CharityDetailStory',
-  component: CharityDetailStory,
+  title: 'Components/CharityDetail',
+  component: CharityDetail,
   decorators: [
     (Story) => (
       <MemoryRouter>
@@ -66,7 +66,7 @@ const meta = {
     ),
   ],
   tags: ['autodocs'],
-} satisfies Meta<typeof CharityDetailStory>;
+} satisfies Meta<typeof CharityDetail>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

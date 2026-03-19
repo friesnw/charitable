@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom';
 import { useQuery, gql } from '@apollo/client';
-import { CharityDetailStory } from '../components/CharityDetailStory';
+import { CharityDetail as CharityDetailView } from '../components/CharityDetail';
 import { causesToTagLabels } from '../lib/causeColors';
 
 const GET_CAUSES = gql`
@@ -110,7 +110,7 @@ export function CharityDetail() {
   }
 
   return (
-    <CharityDetailStory
+    <CharityDetailView
       charity={charity}
       tagLabels={tagLabels}
     />

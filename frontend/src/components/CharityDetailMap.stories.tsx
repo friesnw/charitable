@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { CharityDetailMapSplit } from './CharityDetailMapSplit';
+import { CharityDetailMap } from './CharityDetailMap';
 
 const ONE_LOCATION = [
   {
@@ -30,11 +30,11 @@ const MANY_LOCATIONS = [
 ];
 
 const meta = {
-  title: 'Components/CharityDetailMapSplit',
-  component: CharityDetailMapSplit,
+  title: 'Components/CharityDetailMap',
+  component: CharityDetailMap,
   parameters: { layout: 'padded' },
   tags: ['autodocs'],
-} satisfies Meta<typeof CharityDetailMapSplit>;
+} satisfies Meta<typeof CharityDetailMap>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -53,7 +53,7 @@ export const OneLocation: Story = {
   render: () => {
     const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
     return (
-      <CharityDetailMapSplit
+      <CharityDetailMap
         locations={ONE_LOCATION}
         causeTags={['housing', 'youth']}
         color="#A855F7"
@@ -70,7 +70,7 @@ export const ManyLocations: Story = {
   render: () => {
     const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
     return (
-      <CharityDetailMapSplit
+      <CharityDetailMap
         locations={MANY_LOCATIONS}
         causeTags={['environment', 'hunger']}
         color="#22C55E"
