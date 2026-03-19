@@ -1,9 +1,9 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { cloudinaryUrl } from '../lib/cloudinary';
 import { causeColor } from '../lib/causeColors';
-import { nearestNeighborhood } from '../lib/neighborhoods';
 import { DonateButton } from './ui/DonateButton';
 import { Icon, ICON_NAMES } from './ui/Icon';
+import { CharityDetailMapSplit } from './CharityDetailMapSplit';
 
 interface StoryLocation {
   id: string;
@@ -88,6 +88,7 @@ export function CharityDetailStory({ charity, tagLabels }: CharityDetailStoryPro
   const contentPhoto2 = charity.contentPhotoUrl2 ?? null;
   const color = causeColor(charity.causeTags);
   const highlights = charity.programHighlights ? parseHighlights(charity.programHighlights) : [];
+  const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -290,49 +291,16 @@ export function CharityDetailStory({ charity, tagLabels }: CharityDetailStoryPro
           </div>
         )}
 
-        {/* Location cards */}
+        {/* Location section */}
         {charity.locations.length > 0 && (
-          <section>
-            <h2 className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: 'var(--flair-sage)' }}>
-              Locations
-            </h2>
-            {charity.locationDescription && (
-              <p className="text-gray-700 text-base leading-relaxed mb-4 w-1/2">{charity.locationDescription}</p>
-            )}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {charity.locations.map((loc) => {
-                const locNeighborhood = loc.latitude != null && loc.longitude != null
-                  ? nearestNeighborhood(loc.latitude, loc.longitude)
-                  : null;
-                return (
-                  <div key={loc.id} className="rounded-lg overflow-hidden border border-gray-200 bg-white">
-                    {loc.photoUrl ? (
-                      <img
-                        src={cloudinaryUrl(loc.photoUrl, { w: 800, h: 400, fit: 'fill' })}
-                        alt={`${loc.label} — ${charity.name}`}
-                        loading="lazy"
-                        className="w-full object-cover" style={{ height: 200 }}
-                      />
-                    ) : (
-                      <div className="w-full" style={{ height: 200, backgroundColor: color }} />
-                    )}
-                    <div className="p-3">
-                      <div className="flex items-start justify-between gap-2">
-                        <p className="font-medium text-gray-900 text-sm">{loc.label}</p>
-                        {locNeighborhood && (
-                          <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full shrink-0">
-                            {locNeighborhood}
-                          </span>
-                        )}
-                      </div>
-                      {loc.address && <p className="text-xs text-gray-500 mt-0.5">{loc.address}</p>}
-                      {loc.description && <p className="text-xs text-gray-600 mt-1">{loc.description}</p>}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
+          <CharityDetailMapSplit
+            locations={charity.locations}
+            causeTags={charity.causeTags}
+            color={color}
+            locationDescription={charity.locationDescription}
+            selectedLocationId={selectedLocationId}
+            onSelectLocation={setSelectedLocationId}
+          />
         )}
 
         {/* Usage credit */}
