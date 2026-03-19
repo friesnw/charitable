@@ -39,7 +39,17 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+const STUB_ARGS = {
+  locations: ONE_LOCATION,
+  causeTags: ['housing', 'youth'],
+  color: '#A855F7',
+  locationDescription: null,
+  selectedLocationId: null,
+  onSelectLocation: () => {},
+};
+
 export const OneLocation: Story = {
+  args: STUB_ARGS,
   render: () => {
     const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
     return (
@@ -56,6 +66,7 @@ export const OneLocation: Story = {
 };
 
 export const ManyLocations: Story = {
+  args: { ...STUB_ARGS, locations: MANY_LOCATIONS, causeTags: ['environment', 'hunger'], color: '#22C55E' },
   render: () => {
     const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
     return (
