@@ -10,6 +10,7 @@ const MOCK_CHARITY = {
     'The Food Bank of the Rockies is a nonprofit food bank dedicated to ending hunger in Colorado and Wyoming. Since 1978, we have been distributing food and connecting people in need with resources in their community.',
   logoUrl: null,
   coverPhotoUrl: null,
+  coverPhotoFocalPoint: null,
   contentPhotoUrl1: null,
   contentPhotoUrl2: null,
   websiteUrl: 'https://www.foodbankrockies.org',
