@@ -177,6 +177,7 @@ If an icon name in the field is not on this list, the UI silently falls back to 
 
 - 1–2 sentences describing geographic scope: how many locations, what neighborhoods or service areas.
 - Appears as the intro paragraph above the location cards on the detail page.
+- **Verify neighborhood names against a map** — do not rely on research output alone. Look up the address in Google Maps or a Denver neighborhood map to confirm the correct neighborhood before writing it.
 
 **Example — Warren Village (prod):**
 ```
@@ -230,7 +231,7 @@ Each charity should have at least one location. For each physical site, collect:
 |---|---|
 | `label` | Short descriptive name, e.g. "Lawrence Street Shelter" or "Warren Village at Gilpin" |
 | `address` | Full street address, city, state, zip |
-| `latitude` / `longitude` | Geocode via Google Maps or Nominatim; verify the pin lands at the correct building |
+| `latitude` / `longitude` | Geocode via Google Maps or Nominatim; verify the pin lands at the correct building. If coordinates cannot be confirmed, leave blank — a missing pin is better than a wrong one. |
 | `description` | 2–4 sentences describing what programs run at this specific location, not the org broadly. Do not include hours, schedules, or contact details — these go stale quickly and belong on the charity's own website. |
 | `is_sublocation` | Set `true` if the location is hosted inside another organization's building |
 | `photo_url` | Leave blank — auto-populated by `populate-street-view.ts` (see Stage 7) |
@@ -283,9 +284,9 @@ DATABASE_URL=<render-url> npx tsx scripts/populate-street-view.ts
 DATABASE_URL=<render-url> npx tsx scripts/upload-logos.ts
 ```
 
-### One-off entry scripts
+### Syncing to prod
 
-If a charity is added via a one-off seed script instead of the Admin UI, **delete the script immediately after confirming the data is live in all target environments.** The database — not the script — is the source of truth. Render provides automated backups of prod, and `sync-content.ts` can repopulate any environment from another at any time. There is no value in keeping the script around.
+Do not rush to sync. Make all edits locally first, spot-check at `/charities/[slug]`, then sync to prod via `sync-content.ts` when ready. The database is the source of truth — Render provides automated backups of prod, and `sync-content.ts` can repopulate any environment from another at any time.
 
 ---
 

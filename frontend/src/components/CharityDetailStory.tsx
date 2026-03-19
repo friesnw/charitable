@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { useEffect, useRef } from 'react';
 import { cloudinaryUrl } from '../lib/cloudinary';
 import { causeColor } from '../lib/causeColors';
 import { nearestNeighborhood } from '../lib/neighborhoods';
@@ -73,6 +73,17 @@ function parseHighlights(raw: string): { icon: string | null; title: string | nu
 export function CharityDetailStory({ charity, tagLabels }: CharityDetailStoryProps) {
   const heroLocation = charity.locations.find((l) => l.photoUrl) ?? charity.locations[0] ?? null;
   const featuredPhoto = charity.coverPhotoUrl ?? heroLocation?.photoUrl ?? null;
+  const parallaxRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!featuredPhoto) return;
+    const onScroll = () => {
+      if (parallaxRef.current) {
+        parallaxRef.current.style.transform = `translateY(${window.scrollY * 0.15}px)`;
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [featuredPhoto]);
   const contentPhoto1 = charity.contentPhotoUrl1 ?? null;
   const contentPhoto2 = charity.contentPhotoUrl2 ?? null;
   const color = causeColor(charity.causeTags);
@@ -103,28 +114,26 @@ export function CharityDetailStory({ charity, tagLabels }: CharityDetailStoryPro
   };
 
   return (
-    <div className="-mx-4 -mt-4 -mb-8">
+    <div className="-mx-4 -mt-8 -mb-8">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-      {/* Back link */}
-      <div className="px-4 pt-4 pb-2">
-        <Link to="/charities" className="text-sm text-gray-500 hover:text-gray-700">
-          &larr; Back to charities
-        </Link>
-      </div>
-
-      {/* Photo header — single full-width cover photo */}
-      <div className="px-4 pt-2">
-        {featuredPhoto ? (
-          <div className="rounded-xl overflow-hidden" style={{ height: 260 }}>
-            <img
-              src={cloudinaryUrl(featuredPhoto, { w: 1800, h: 780, fit: 'fill' })}
-              alt=""
-              fetchPriority="high"
-              className="w-full h-full object-cover"
-            />
-          </div>
-        ) : charity.logoUrl ? (
+      {/* Photo header — full-width cover photo with parallax */}
+      {featuredPhoto ? (
+        <div style={{ width: '100vw', marginLeft: 'calc(-50vw + 50%)', height: 300, overflow: 'hidden', position: 'relative' }}>
+          <div
+            ref={parallaxRef}
+            style={{
+              position: 'absolute',
+              top: '-60px', bottom: '-60px', left: 0, right: 0,
+              backgroundImage: `url(${cloudinaryUrl(featuredPhoto, { w: 1800, h: 780, fit: 'fill' })})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center center',
+            }}
+          />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.04), rgba(0,0,0,0.22))' }} />
+        </div>
+      ) : charity.logoUrl ? (
+        <div className="px-4 pt-2">
           <div
             className="rounded-xl flex items-center justify-center"
             style={{ height: 180, backgroundColor: `${color}22` }}
@@ -135,9 +144,11 @@ export function CharityDetailStory({ charity, tagLabels }: CharityDetailStoryPro
               className="w-32 h-32 object-contain rounded-full shadow"
             />
           </div>
-        ) : null}
+        </div>
+      ) : null}
 
-        {/* Title block */}
+      {/* Title block */}
+      <div className="px-4">
         <div className="mt-4 mb-2">
           <h1 className="text-2xl font-bold text-gray-900 leading-tight">{charity.name}</h1>
           <div className="flex items-center gap-4 mt-1 text-sm" style={{ color: 'var(--flair-sage)' }}>
@@ -229,7 +240,7 @@ export function CharityDetailStory({ charity, tagLabels }: CharityDetailStoryPro
                 return (
                   <section>
                     <h2 className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: 'var(--flair-sage)' }}>
-                      2025 Impact
+                      Last Year's Impact
                     </h2>
                     <div className="grid grid-cols-1 gap-3">
                       {lines.map((line, i) => {

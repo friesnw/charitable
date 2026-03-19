@@ -134,7 +134,6 @@ export function Preferences() {
             setNeighborhoodInput(info.neighborhood ?? '');
             setLocationQuery('');
             setLocationDropdownOpen(false);
-            setLocationEditing(false);
           } else {
             setZipNotFound(true);
           }
@@ -155,7 +154,6 @@ export function Preferences() {
     setZipNotFound(false);
     setLocationQuery('');
     setLocationDropdownOpen(false);
-    setLocationEditing(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -174,6 +172,7 @@ export function Preferences() {
     // Clear anonymous localStorage zip — it's now saved to their account
     if (hasValidZip) localStorage.removeItem('userZip');
 
+    setLocationEditing(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
   };

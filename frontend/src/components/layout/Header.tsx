@@ -16,7 +16,7 @@ const SEARCH_CHARITIES = gql`
 `;
 
 export function Header() {
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, user, logout } = useAuth();
   const navigate = useNavigate();
   const [profileOpen, setProfileOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -149,7 +149,7 @@ export function Header() {
             )}
           </div>
 
-          {isAuthenticated ? (
+          {!authLoading && (isAuthenticated ? (
             <>
               <div className="hidden lg:block relative" ref={menuRef}>
                 <button
@@ -176,7 +176,7 @@ export function Header() {
             <ButtonLink to="/login" variant="primary" className="hidden lg:inline-flex">
               Log in
             </ButtonLink>
-          )}
+          ))}
 
           {/* Hamburger — mobile only */}
           <div className="lg:hidden relative" ref={mobileMenuRef}>
@@ -191,7 +191,7 @@ export function Header() {
             </button>
             {mobileMenuOpen && (
               <div className="absolute right-0 top-full mt-2 w-72 bg-bg-primary border border-brand-tertiary rounded-xl shadow-xl py-3 z-50">
-                {isAuthenticated ? (
+                {authLoading ? null : isAuthenticated ? (
                   <>
                     <span className="block px-4 py-2 text-xs text-text-secondary truncate">{user?.email}</span>
                     <hr className="border-brand-tertiary my-1" />

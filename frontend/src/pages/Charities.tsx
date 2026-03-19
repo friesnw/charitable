@@ -352,7 +352,7 @@ function StackedPin({ group, isSelected, isHovered, isDimmed, zoom }: { group: L
 const ZIP_ZOOM_OFFSET = -1;
 
 export function Charities() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const selectedTag = searchParams.get('tag') ?? null;
@@ -366,19 +366,23 @@ export function Charities() {
   const [showAllTags, setShowAllTags] = useState(false);
 
   const [initialCenter, setInitialCenter] = useState<{ longitude: number; latitude: number; zoom: number } | undefined>();
-  const [activeZip, setActiveZip] = useState<string | null>(null);
+  const [activeZip, setActiveZip] = useState<string | null>(() => localStorage.getItem('userZip'));
   const [locationEditing, setLocationEditing] = useState(false);
   const [locationQuery, setLocationQuery] = useState('');
 
-  const [mapReady, setMapReady] = useState(false);
+  const [mapVisible, setMapVisible] = useState(false);
 
   const mapRef = useRef<MapRef>(null);
   const savedView = useRef<{ center: [number, number]; zoom: number } | null>(null);
   const pendingCenterRef = useRef<{ longitude: number; latitude: number; zoom: number } | null>(null);
-  const hasPositioned = useRef(false);
+  const awaitingInitialMove = useRef(false);
+  const isInitiallyPositioned = useRef(false);
 
   const [introSkipped, setIntroSkipped] = useState(false);
-  const [activeNeighborhood, setActiveNeighborhood] = useState<string | null>(null);
+  const [activeNeighborhood, setActiveNeighborhood] = useState<string | null>(() => {
+    const h = localStorage.getItem('userNeighborhood');
+    return h ? (JSON.parse(h) as { name: string }).name : null;
+  });
   const [toast, setToast] = useState<{ message: string } | null>(null);
 
   const [resolveZip] = useLazyQuery(RESOLVE_ZIP);
@@ -448,12 +452,12 @@ export function Charities() {
     }
   }, [isAuthenticated, prefsData]);
 
-  // Zip/neighborhood from localStorage for unauthenticated users
+  // Resolve initial map position from localStorage for unauthenticated users.
+  // activeZip / activeNeighborhood are already pre-populated via lazy useState — this only triggers the map move.
   useEffect(() => {
     if (!isAuthenticated) {
       const localZip = localStorage.getItem('userZip');
       if (localZip) {
-        setActiveZip(localZip);
         resolveZip({ variables: { zip: localZip } }).then(({ data }) => {
           const info = data?.resolveZip;
           if (info?.state === 'CO') setInitialCenter({ longitude: info.longitude, latitude: info.latitude, zoom: info.zoom });
@@ -463,7 +467,6 @@ export function Charities() {
       const localHood = localStorage.getItem('userNeighborhood');
       if (localHood) {
         const parsed = JSON.parse(localHood) as { name: string; lat: number; lng: number };
-        setActiveNeighborhood(parsed.name);
         setInitialCenter({ longitude: parsed.lng, latitude: parsed.lat, zoom: 14 });
       }
     }
@@ -473,9 +476,11 @@ export function Charities() {
   // Wait for preferences to finish loading before deciding (avoids flash for authed users with a zip).
   const showIntro =
     !introSkipped &&
+    !authLoading &&
     activeZip === null &&
     activeNeighborhood === null &&
-    (!isAuthenticated || !prefsLoading);
+    (!isAuthenticated || !prefsLoading) &&
+    !(prefsData?.myPreferences?.zipCode || prefsData?.myPreferences?.neighborhood);
 
   const isZipMode = /^\d/.test(locationQuery);
   const locationSuggestions = !isZipMode && locationQuery.trim().length > 0
@@ -514,33 +519,23 @@ export function Charities() {
     localStorage.removeItem('userNeighborhood');
   }
 
-  // Fly to zip-based center when initialCenter changes
+  // When initial location resolves: jump instantly (first time) or fly (subsequent changes).
+  // The map stays hidden (visibility:hidden) until onMoveEnd fires after the initial jump.
   useEffect(() => {
     if (!initialCenter) return;
-    const isFirst = !hasPositioned.current;
-    hasPositioned.current = true;
-    if (mapRef.current?.isStyleLoaded()) {
-      mapRef.current.flyTo({ center: [initialCenter.longitude, initialCenter.latitude], zoom: initialCenter.zoom + ZIP_ZOOM_OFFSET, duration: isFirst ? 0 : 800 });
-      if (isFirst) setMapReady(true);
+    const view = { longitude: initialCenter.longitude, latitude: initialCenter.latitude, zoom: initialCenter.zoom + ZIP_ZOOM_OFFSET };
+    if (!isInitiallyPositioned.current) {
+      isInitiallyPositioned.current = true;
+      awaitingInitialMove.current = true;
+      if (mapRef.current?.isStyleLoaded()) {
+        mapRef.current.jumpTo({ center: [view.longitude, view.latitude], zoom: view.zoom });
+      } else {
+        pendingCenterRef.current = view;
+      }
     } else {
-      pendingCenterRef.current = initialCenter;
+      mapRef.current?.flyTo({ center: [view.longitude, view.latitude], zoom: view.zoom, duration: 800 });
     }
   }, [initialCenter]);
-
-  // If showIntro becomes true (no saved location), mark map as ready — intro covers it anyway
-  useEffect(() => {
-    if (showIntro && !hasPositioned.current) setMapReady(true);
-  }, [showIntro]);
-
-  function handleMapLoad() {
-    const center = pendingCenterRef.current;
-    if (center && mapRef.current) {
-      hasPositioned.current = true;
-      mapRef.current.flyTo({ center: [center.longitude, center.latitude], zoom: center.zoom + ZIP_ZOOM_OFFSET, duration: 0 });
-      pendingCenterRef.current = null;
-      setMapReady(true);
-    }
-  }
 
   // Fly to selected pin or charity's pins, or return to saved view when deselected
   useEffect(() => {
@@ -573,6 +568,15 @@ export function Charities() {
     }
   }, [selectedCharityId, selectedGroupKey]);
 
+  function handleMapLoad() {
+    const center = pendingCenterRef.current;
+    if (center && mapRef.current) {
+      pendingCenterRef.current = null;
+      mapRef.current.jumpTo({ center: [center.longitude, center.latitude], zoom: center.zoom });
+      // awaitingInitialMove is already true; onMoveEnd will reveal the map
+    }
+  }
+
   return (
     <div className="flex relative" style={{ height: 'calc(100vh - 65px)' }}>
       {showIntro && (
@@ -594,7 +598,7 @@ export function Charities() {
               setToast({ message: `Near ${zip}` });
             });
           }}
-          onSkip={() => setIntroSkipped(true)}
+          onSkip={() => { setIntroSkipped(true); setMapVisible(true); }}
         />
       )}
       <div className="flex flex-1 overflow-hidden">
@@ -879,53 +883,55 @@ export function Charities() {
             </div>
           </div>
 
-          {/* Loading overlay — fades out once initial position is set */}
-          <div
-            className="absolute inset-0 bg-bg-primary pointer-events-none"
-            style={{ opacity: mapReady ? 0 : 1, transition: 'opacity 0.4s ease', zIndex: 8 }}
-          />
-
-          <Map
-            ref={mapRef}
-            mapboxAccessToken={import.meta.env.VITE_MAPBOX_TOKEN}
-            initialViewState={{ longitude: -104.98832, latitude: 39.73669, zoom: 11.5 }}
-            style={{ width: '100%', height: '100%' }}
-            mapStyle="mapbox://styles/mapbox/light-v11"
-            onLoad={handleMapLoad}
-            onMove={(e) => setZoom(e.viewState.zoom)}
-          >
-            {groups.map((group) => {
-              const key = groupKey(group);
-              const isSelected = key === selectedGroupKey;
-              const isHovered = group.entries.some((e) => e.charity.id === hoveredCharityId);
-              const isDimmed = selectedCharityId != null && !group.entries.some((e) => e.charity.id === selectedCharityId) && !isHovered;
-              const primaryEntry = [...group.entries].sort(
-                (a, b) => Number(a.location.isSublocation) - Number(b.location.isSublocation)
-              )[0];
-              return (
-                <Marker
-                  key={key}
-                  latitude={group.lat}
-                  longitude={group.lng}
-                  anchor="center"
-                  onClick={(e) => {
-                    e.originalEvent.stopPropagation();
-                    if (isSelected) {
-                      setSelectedGroupKey(null);
-                      setSelectedCharityId(null);
-                      setSelectedLocationId(null);
-                    } else {
-                      setSelectedGroupKey(key);
-                      setSelectedCharityId(primaryEntry.charity.id);
-                      setSelectedLocationId(primaryEntry.location.id);
-                    }
-                  }}
-                >
-                  <StackedPin group={group} isSelected={isSelected} isHovered={isHovered} isDimmed={isDimmed} zoom={zoom} />
-                </Marker>
-              );
-            })}
-          </Map>
+          <div style={{ visibility: mapVisible ? 'visible' : 'hidden', position: 'absolute', inset: 0 }}>
+            <Map
+              ref={mapRef}
+              mapboxAccessToken={import.meta.env.VITE_MAPBOX_TOKEN}
+              initialViewState={{ longitude: -104.98832, latitude: 39.73669, zoom: 11.5 }}
+              style={{ width: '100%', height: '100%' }}
+              mapStyle="mapbox://styles/mapbox/light-v11"
+              onLoad={handleMapLoad}
+              onMove={(e) => setZoom(e.viewState.zoom)}
+              onMoveEnd={() => {
+                if (awaitingInitialMove.current) {
+                  awaitingInitialMove.current = false;
+                  setMapVisible(true);
+                }
+              }}
+            >
+              {groups.map((group) => {
+                const key = groupKey(group);
+                const isSelected = key === selectedGroupKey;
+                const isHovered = group.entries.some((e) => e.charity.id === hoveredCharityId);
+                const isDimmed = selectedCharityId != null && !group.entries.some((e) => e.charity.id === selectedCharityId) && !isHovered;
+                const primaryEntry = [...group.entries].sort(
+                  (a, b) => Number(a.location.isSublocation) - Number(b.location.isSublocation)
+                )[0];
+                return (
+                  <Marker
+                    key={key}
+                    latitude={group.lat}
+                    longitude={group.lng}
+                    anchor="center"
+                    onClick={(e) => {
+                      e.originalEvent.stopPropagation();
+                      if (isSelected) {
+                        setSelectedGroupKey(null);
+                        setSelectedCharityId(null);
+                        setSelectedLocationId(null);
+                      } else {
+                        setSelectedGroupKey(key);
+                        setSelectedCharityId(primaryEntry.charity.id);
+                        setSelectedLocationId(primaryEntry.location.id);
+                      }
+                    }}
+                  >
+                    <StackedPin group={group} isSelected={isSelected} isHovered={isHovered} isDimmed={isDimmed} zoom={zoom} />
+                  </Marker>
+                );
+              })}
+            </Map>
+          </div>
         </div>
       </div>
 

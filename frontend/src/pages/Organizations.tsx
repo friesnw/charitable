@@ -210,7 +210,7 @@ export function Organizations() {
         <div className="flex items-center justify-between mb-1">
           <h1 className="text-2xl font-bold text-text-primary">Denver Nonprofits</h1>
           {!loading && (
-            <span className="text-sm text-text-secondary">{filteredCharities.length} organizations</span>
+            <span className="text-sm text-text-secondary">{filteredCharities.length} {filteredCharities.length === 1 ? 'organization' : 'organizations'}</span>
           )}
         </div>
         <button
