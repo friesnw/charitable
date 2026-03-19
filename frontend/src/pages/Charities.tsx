@@ -6,6 +6,7 @@ import { causeColor, causeIcon, FEATURED_TAGS, causesToTagLabels } from '../lib/
 import { nearestNeighborhood, NEIGHBORHOODS } from '../lib/neighborhoods';
 import { Icon } from '../components/ui/Icon';
 import { Toast } from '../components/ui/Toast';
+import { LocationQuickView } from '../components/ui/LocationQuickView';
 import { useAuth } from '../hooks/useAuth';
 import Map, { MapRef, Marker } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -145,17 +146,29 @@ function LocationDrawer({ group, tagLabels, onClose }: { group: LocationGroup; t
                     </div>
                   )}
                   <div className="px-4 pt-3 pb-4">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      {charity.logoUrl ? (
-                        <img src={cloudinaryUrl(charity.logoUrl, { w: 28, h: 28, fit: 'fit' })} alt={charity.name} className="w-6 h-6 rounded-full object-contain flex-shrink-0 border border-gray-100" />
-                      ) : null}
-                      <p className="text-xs text-gray-500">{charity.name}</p>
-                    </div>
                     <h3 className="text-base font-bold text-gray-900 leading-snug mb-1">{location.label}</h3>
                     {location.description && (
                       <p className="text-sm text-gray-700 mb-3">{location.description}</p>
                     )}
-                    <Link to={`/charities/${charity.slug}`} className="block text-center py-2.5 rounded-lg text-sm font-medium text-white bg-brand-secondary hover:opacity-90 transition-opacity">View charity →</Link>
+                    {/* Org section */}
+                    <div className="mt-3 pt-3 border-t border-gray-100">
+                      <div className="flex items-center gap-3 mb-3">
+                        {charity.logoUrl ? (
+                          <img src={cloudinaryUrl(charity.logoUrl, { w: 56, h: 56, fit: 'fit' })} alt={charity.name} className="w-10 h-10 rounded-full object-contain flex-shrink-0 border border-gray-100" />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-sm font-bold text-gray-500 flex-shrink-0">
+                            {charity.name.slice(0, 2).toUpperCase()}
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-gray-900 text-sm truncate">{charity.name}</p>
+                          {charity.description && (
+                            <p className="text-xs text-gray-500 line-clamp-2 mt-0.5">{charity.description}</p>
+                          )}
+                        </div>
+                      </div>
+                      <Link to={`/charities/${charity.slug}`} className="block text-center py-2.5 rounded-lg text-sm font-medium text-white bg-brand-secondary hover:opacity-90 transition-opacity">View organization →</Link>
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -182,16 +195,6 @@ function LocationDrawer({ group, tagLabels, onClose }: { group: LocationGroup; t
                     </button>
                   </div>
                   <div className="px-4 pt-3 pb-4">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      {charity.logoUrl ? (
-                        <img src={cloudinaryUrl(charity.logoUrl, { w: 32, h: 32, fit: 'fit' })} alt={charity.name} className="w-7 h-7 rounded-full object-contain flex-shrink-0 border border-gray-100" />
-                      ) : (
-                        <div className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-500 flex-shrink-0">
-                          {charity.name.slice(0, 2).toUpperCase()}
-                        </div>
-                      )}
-                      <p className="text-xs text-gray-500">{charity.name}</p>
-                    </div>
                     <h2 className="text-lg font-bold text-gray-900 leading-snug mb-1">{location.label}</h2>
                     {location.address && (
                       <p className="text-sm text-gray-500 mb-2">{location.address}</p>
@@ -199,7 +202,25 @@ function LocationDrawer({ group, tagLabels, onClose }: { group: LocationGroup; t
                     {location.description && (
                       <p className="text-sm text-gray-700 mb-3">{location.description}</p>
                     )}
-                    <Link to={`/charities/${charity.slug}`} className="block text-center py-2.5 rounded-lg text-sm font-medium text-white bg-brand-secondary hover:opacity-90 transition-opacity">View charity →</Link>
+                    {/* Org section */}
+                    <div className="mt-4 pt-4 border-t border-gray-100">
+                      <div className="flex items-center gap-3 mb-3">
+                        {charity.logoUrl ? (
+                          <img src={cloudinaryUrl(charity.logoUrl, { w: 56, h: 56, fit: 'fit' })} alt={charity.name} className="w-10 h-10 rounded-full object-contain flex-shrink-0 border border-gray-100" />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-sm font-bold text-gray-500 flex-shrink-0">
+                            {charity.name.slice(0, 2).toUpperCase()}
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-gray-900 text-sm truncate">{charity.name}</p>
+                          {charity.description && (
+                            <p className="text-xs text-gray-500 line-clamp-2 mt-0.5">{charity.description}</p>
+                          )}
+                        </div>
+                      </div>
+                      <Link to={`/charities/${charity.slug}`} className="block text-center py-2.5 rounded-lg text-sm font-medium text-white bg-brand-secondary hover:opacity-90 transition-opacity">View organization →</Link>
+                    </div>
                   </div>
                 </div>
               )}
@@ -350,13 +371,18 @@ function StackedPin({ group, isSelected, isHovered, isDimmed, zoom }: { group: L
 }
 
 const ZIP_ZOOM_OFFSET = -1;
+const PEEK_HEIGHT = 220;
 
 export function Charities() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const selectedTag = searchParams.get('tag') ?? null;
-  const viewMode = searchParams.get('view') === 'list' ? 'list' : 'map';
+
+  // URL params from homepage neighborhood navigation — center map without saving preferences
+  const urlLat = parseFloat(searchParams.get('lat') ?? '');
+  const urlLng = parseFloat(searchParams.get('lng') ?? '');
+  const hasUrlCenter = !isNaN(urlLat) && !isNaN(urlLng);
 
   const [zoom, setZoom] = useState(11.5);
   const [selectedGroupKey, setSelectedGroupKey] = useState<string | null>(null);
@@ -372,13 +398,21 @@ export function Charities() {
 
   const [mapVisible, setMapVisible] = useState(false);
 
+  // Mobile-specific state
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [sheetState, setSheetState] = useState<'peek' | 'full'>('peek');
+  const [isDraggingSheet, setIsDraggingSheet] = useState(false);
+  const [quickViewExpanded, setQuickViewExpanded] = useState(false);
+
   const mapRef = useRef<MapRef>(null);
+  const sheetRef = useRef<HTMLDivElement>(null);
+  const sheetTouchStartY = useRef(0);
   const savedView = useRef<{ center: [number, number]; zoom: number } | null>(null);
   const pendingCenterRef = useRef<{ longitude: number; latitude: number; zoom: number } | null>(null);
   const awaitingInitialMove = useRef(false);
   const isInitiallyPositioned = useRef(false);
 
-  const [introSkipped, setIntroSkipped] = useState(false);
+  const [introSkipped, setIntroSkipped] = useState(hasUrlCenter);
   const [activeNeighborhood, setActiveNeighborhood] = useState<string | null>(() => {
     const h = localStorage.getItem('userNeighborhood');
     return h ? (JSON.parse(h) as { name: string }).name : null;
@@ -412,25 +446,35 @@ export function Charities() {
   const groupKey = (g: LocationGroup) => g.address ?? `${g.lat},${g.lng}`;
   const selectedGroup = selectedGroupKey ? groups.find((g) => groupKey(g) === selectedGroupKey) ?? null : null;
 
+  function handleSheetTouchStart(e: React.TouchEvent) {
+    sheetTouchStartY.current = e.touches[0].clientY;
+    setIsDraggingSheet(true);
+  }
+
+  function handleSheetTouchMove(e: React.TouchEvent) {
+    if (!sheetRef.current) return;
+    const delta = e.touches[0].clientY - sheetTouchStartY.current;
+    const base = sheetState === 'peek' ? `calc(100% - ${PEEK_HEIGHT}px)` : '0px';
+    sheetRef.current.style.transform = `translateY(calc(${base} + ${delta}px))`;
+  }
+
+  function handleSheetTouchEnd(e: React.TouchEvent) {
+    const delta = e.changedTouches[0].clientY - sheetTouchStartY.current;
+    if (sheetState === 'peek' && delta < -60) {
+      setSheetState('full');
+    } else if (sheetState === 'full' && delta > 60) {
+      setSheetState('peek');
+    }
+    setIsDraggingSheet(false);
+  }
+
   function updateSelectedTag(tag: string | null) {
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
       if (tag) next.set('tag', tag); else next.delete('tag');
       return next;
     });
-  }
-
-  function updateViewMode(mode: 'list' | 'map') {
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev);
-      if (mode === 'list') next.set('view', 'list'); else next.delete('view');
-      return next;
-    });
-    if (mode === 'list') {
-      setSelectedGroupKey(null);
-      setSelectedCharityId(null);
-      setSelectedLocationId(null);
-    }
+    if (tag) setFilterOpen(true);
   }
 
   // Location from auth preferences
@@ -453,7 +497,6 @@ export function Charities() {
   }, [isAuthenticated, prefsData]);
 
   // Resolve initial map position from localStorage for unauthenticated users.
-  // activeZip / activeNeighborhood are already pre-populated via lazy useState — this only triggers the map move.
   useEffect(() => {
     if (!isAuthenticated) {
       const localZip = localStorage.getItem('userZip');
@@ -472,8 +515,14 @@ export function Charities() {
     }
   }, [isAuthenticated]);
 
+  // Center map on lat/lng URL params (e.g., from homepage neighborhood pills) — no preference save
+  useEffect(() => {
+    if (hasUrlCenter) {
+      setInitialCenter({ longitude: urlLng, latitude: urlLat, zoom: 14 });
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps — intentionally runs once on mount
+
   // Show intro when no location is set and user hasn't skipped.
-  // Wait for preferences to finish loading before deciding (avoids flash for authed users with a zip).
   const showIntro =
     !introSkipped &&
     !authLoading &&
@@ -501,7 +550,7 @@ export function Charities() {
     }
   }
 
-  // Sidebar-only: fly map, no toast, no preference save
+  // Sidebar-only / pill: fly map, no toast, no preference save
   function handleSidebarNeighborhoodSelect(name: string, lat: number, lng: number) {
     setActiveNeighborhood(name);
     setActiveZip(null);
@@ -520,7 +569,6 @@ export function Charities() {
   }
 
   // When initial location resolves: jump instantly (first time) or fly (subsequent changes).
-  // The map stays hidden (visibility:hidden) until onMoveEnd fires after the initial jump.
   useEffect(() => {
     if (!initialCenter) return;
     const view = { longitude: initialCenter.longitude, latitude: initialCenter.latitude, zoom: initialCenter.zoom + ZIP_ZOOM_OFFSET };
@@ -573,9 +621,10 @@ export function Charities() {
     if (center && mapRef.current) {
       pendingCenterRef.current = null;
       mapRef.current.jumpTo({ center: [center.longitude, center.latitude], zoom: center.zoom });
-      // awaitingInitialMove is already true; onMoveEnd will reveal the map
     }
   }
+
+  const locationLabel = activeZip ? `Near ${activeZip}` : activeNeighborhood ? `Near ${activeNeighborhood}` : 'Set location';
 
   return (
     <div className="flex relative" style={{ height: 'calc(100vh - 65px)' }}>
@@ -602,9 +651,9 @@ export function Charities() {
         />
       )}
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
-        <div className={['flex-shrink-0 flex-col border-r border-brand-tertiary bg-bg-primary', 'lg:flex lg:w-96', viewMode === 'list' ? 'flex w-full' : 'hidden'].join(' ')}>
-          {/* Location combobox row — fixed height, dropdown overflows absolutely */}
+        {/* Sidebar — desktop only */}
+        <div className="hidden lg:flex flex-shrink-0 flex-col border-r border-brand-tertiary bg-bg-primary lg:w-96">
+          {/* Location combobox row */}
           <div className={`relative flex-shrink-0 border-b px-4 py-2.5 flex items-center gap-2 ${locationEditing ? 'border-brand-secondary' : 'border-brand-tertiary'}`}>
             <Icon name="map-pin" className="w-4 h-4 text-text-secondary flex-shrink-0" />
             {locationEditing ? (
@@ -661,20 +710,9 @@ export function Charities() {
                 onClick={() => setLocationEditing(true)}
                 className="flex-1 min-w-0 text-left text-sm text-text-primary hover:text-brand-secondary transition-colors truncate"
               >
-                {activeZip ? `Near ${activeZip}` : activeNeighborhood ? `Near ${activeNeighborhood}` : 'Set location'}
+                {locationLabel}
               </button>
             )}
-          </div>
-
-          {/* Mobile-only: switch to map view */}
-          <div className="lg:hidden flex-shrink-0 border-b border-brand-tertiary">
-            <button
-              onClick={() => updateViewMode('map')}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold text-text-primary hover:bg-bg-accent transition-colors"
-            >
-              <Icon name="map-pin" className="w-4 h-4 text-text-secondary" />
-              Show map
-            </button>
           </div>
 
           {(selectedCharityId || selectedGroupKey) && (
@@ -822,8 +860,8 @@ export function Charities() {
           </div>
         </div>
 
-        {/* Map */}
-        <div className={['relative', 'lg:block lg:flex-1', viewMode === 'list' ? 'hidden' : 'flex-1'].join(' ')}>
+        {/* Map — always visible */}
+        <div className="relative flex-1">
           {toast && (
             <Toast
               key={toast.message}
@@ -832,8 +870,93 @@ export function Charities() {
               onDismiss={() => setToast(null)}
             />
           )}
-          {/* Tag filters */}
-          <div className="absolute top-0 left-0 right-0 z-10 p-3 pointer-events-none">
+
+          {/* Mobile top bar pill */}
+          <div className="lg:hidden absolute top-3 left-1/2 -translate-x-1/2 z-10 w-[calc(100%-1.5rem)] max-w-sm">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 px-4 py-2 relative">
+              {locationEditing ? (
+                <div className="flex items-center gap-2">
+                  <Icon name="map-pin" className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                  <input
+                    type="text"
+                    placeholder="ZIP or neighborhood..."
+                    value={locationQuery}
+                    autoFocus
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setLocationQuery(val);
+                      const digits = val.replace(/\D/g, '');
+                      if (/^\d/.test(val) && digits.length === 5) {
+                        resolveZip({ variables: { zip: digits } }).then(({ data }) => {
+                          const info = data?.resolveZip;
+                          if (!info) return;
+                          setActiveZip(digits);
+                          setActiveNeighborhood(null);
+                          setInitialCenter({ longitude: info.longitude, latitude: info.latitude, zoom: info.zoom });
+                          if (!isAuthenticated) { localStorage.setItem('userZip', digits); localStorage.removeItem('userNeighborhood'); }
+                          cancelEditing();
+                        });
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Escape') { cancelEditing(); return; }
+                      if (e.key === 'Enter' && locationSuggestions.length > 0) {
+                        const n = locationSuggestions[0];
+                        handleSidebarNeighborhoodSelect(n.name, n.lat, n.lng);
+                      }
+                    }}
+                    onBlur={() => setTimeout(cancelEditing, 150)}
+                    className="flex-1 min-w-0 outline-none text-sm text-gray-800 bg-transparent"
+                  />
+                  <button onClick={cancelEditing} className="text-gray-400 hover:text-gray-600 text-sm flex-shrink-0">✕</button>
+                  {locationSuggestions.length > 0 && (
+                    <ul className="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-2xl shadow-xl overflow-hidden z-20">
+                      {locationSuggestions.map((n) => (
+                        <li key={n.name}>
+                          <button
+                            onMouseDown={() => handleSidebarNeighborhoodSelect(n.name, n.lat, n.lng)}
+                            className="w-full text-left px-4 py-2.5 text-sm text-gray-800 hover:bg-gray-50 transition-colors"
+                          >
+                            {n.name}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setLocationEditing(true)}
+                    className="flex-1 min-w-0 text-left text-sm font-medium text-gray-800 truncate"
+                  >
+                    {locationLabel}
+                  </button>
+                  {selectedTag && (
+                    <span
+                      className="text-xs px-2 py-0.5 rounded-full text-white flex-shrink-0"
+                      style={{ backgroundColor: causeColor([selectedTag]) }}
+                    >
+                      {tagLabels.get(selectedTag) ?? selectedTag}
+                    </span>
+                  )}
+                  {/* Filter icon */}
+                  <button
+                    onClick={() => setFilterOpen((o) => !o)}
+                    className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-colors ${filterOpen ? 'bg-gray-900 text-white' : 'text-gray-500 hover:bg-gray-100'}`}
+                    aria-label="Toggle filters"
+                  >
+                    <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                      <path d="M17 3H3a1 1 0 0 0-.707 1.707l5.586 5.586A1 1 0 0 1 9 11v6l2-1.333V11a1 1 0 0 1 .121-.48l5.586-5.813A1 1 0 0 0 17 3Z" />
+                    </svg>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Tag filters — desktop: always at top; mobile: only when filterOpen, below pill */}
+          <div className={`absolute left-0 right-0 z-10 p-3 pointer-events-none ${!filterOpen ? 'hidden lg:block lg:top-0' : 'top-[68px] lg:top-0'}`}>
             <div className="pointer-events-auto flex gap-2 overflow-x-auto pb-1">
               <button
                 onClick={() => updateSelectedTag(null)}
@@ -865,26 +988,8 @@ export function Charities() {
             </div>
           </div>
 
-          {/* Map/List toggle pill — mobile only */}
-          <div className="lg:hidden absolute bottom-3 left-1/2 -translate-x-1/2 z-10">
-            <div className="flex rounded-full shadow-lg border border-gray-200 bg-white/95 backdrop-blur-sm overflow-hidden">
-              <button
-                onClick={() => updateViewMode('map')}
-                className="flex items-center gap-1.5 px-5 py-2.5 text-sm font-semibold transition-colors bg-gray-900 text-white"
-              >
-                Map
-              </button>
-              <button
-                onClick={() => updateViewMode('list')}
-                className="flex items-center gap-1.5 px-5 py-2.5 text-sm font-semibold transition-colors text-gray-600 hover:bg-gray-50"
-              >
-                List
-              </button>
-            </div>
-          </div>
-
           {/* Map controls */}
-          <div className="absolute right-3 bottom-16 lg:bottom-6 z-10 flex flex-col rounded-lg shadow-md overflow-hidden border border-gray-200">
+          <div className="absolute right-3 bottom-[240px] lg:bottom-6 z-10 flex flex-col rounded-lg shadow-md overflow-hidden border border-gray-200">
             <button
               onClick={() => mapRef.current?.zoomIn()}
               className="w-9 h-9 bg-white hover:bg-gray-50 flex items-center justify-center text-gray-700 border-b border-gray-200"
@@ -918,6 +1023,92 @@ export function Charities() {
                 <line x1="11.5" y1="8" x2="15" y2="8"/>
               </svg>
             </button>
+          </div>
+
+          {/* LocationQuickView — mobile only, shown before expanding to full drawer */}
+          {selectedGroup && !quickViewExpanded && (
+            <div className="lg:hidden absolute left-3 right-3 z-20" style={{ bottom: `${PEEK_HEIGHT + 12}px` }}>
+              <LocationQuickView
+                group={selectedGroup}
+                tagLabels={tagLabels}
+                onExpand={() => setQuickViewExpanded(true)}
+                onClose={() => {
+                  setSelectedGroupKey(null);
+                  setSelectedCharityId(null);
+                  setSelectedLocationId(null);
+                  setQuickViewExpanded(false);
+                }}
+              />
+            </div>
+          )}
+
+          {/* Bottom sheet — mobile only */}
+          <div
+            ref={sheetRef}
+            className="lg:hidden fixed bottom-0 left-0 right-0 z-20 bg-white rounded-t-2xl shadow-2xl flex flex-col"
+            style={{
+              height: '85vh',
+              transform: sheetState === 'peek' ? `translateY(calc(100% - ${PEEK_HEIGHT}px))` : 'translateY(0)',
+              transition: isDraggingSheet ? 'none' : 'transform 0.3s ease-out',
+            }}
+            onTouchStart={handleSheetTouchStart}
+            onTouchMove={handleSheetTouchMove}
+            onTouchEnd={handleSheetTouchEnd}
+          >
+            {/* Drag handle */}
+            <div className="flex justify-center pt-3 pb-2 flex-shrink-0">
+              <div className="w-10 h-1 rounded-full bg-gray-300" />
+            </div>
+            {/* Count */}
+            <div className="px-4 pb-2 flex-shrink-0">
+              <p className="text-sm font-semibold text-gray-700">
+                {loading ? 'Loading...' : `${charities.length} charities`}
+              </p>
+            </div>
+            {/* List */}
+            <div className="overflow-y-auto flex-1">
+              {loading && (
+                <>
+                  <SkeletonCard />
+                  <SkeletonCard />
+                  <SkeletonCard />
+                </>
+              )}
+              {error && <p className="text-red-500 p-4 text-sm">Error: {error.message}</p>}
+              {charities.map((charity) => (
+                <Link
+                  key={charity.id}
+                  to={`/charities/${charity.slug}`}
+                  className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                >
+                  {charity.logoUrl ? (
+                    <img src={cloudinaryUrl(charity.logoUrl, { w: 48, h: 48, fit: 'fit' })} alt={charity.name} className="w-10 h-10 rounded-full object-contain flex-shrink-0 border border-gray-100" />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-500 flex-shrink-0">
+                      {charity.name.slice(0, 2).toUpperCase()}
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-gray-900 text-sm truncate">{charity.name}</p>
+                    {charity.description && (
+                      <p className="text-xs text-gray-500 line-clamp-2 mt-0.5">{charity.description}</p>
+                    )}
+                    {charity.causeTags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {charity.causeTags.slice(0, 3).map((tag) => (
+                          <span key={tag} className="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded">
+                            {tagLabels.get(tag) ?? tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-gray-300 flex-shrink-0">
+                    <path fillRule="evenodd" clipRule="evenodd" d="M7.21 14.77a.75.75 0 0 1 .02-1.06L11.168 10 7.23 6.29a.75.75 0 1 1 1.04-1.08l4.5 4.25a.75.75 0 0 1 0 1.08l-4.5 4.25a.75.75 0 0 1-1.06-.02Z" />
+                  </svg>
+                </Link>
+              ))}
+            </div>
           </div>
 
           <div style={{ visibility: mapVisible ? 'visible' : 'hidden', position: 'absolute', inset: 0 }}>
@@ -956,10 +1147,12 @@ export function Charities() {
                         setSelectedGroupKey(null);
                         setSelectedCharityId(null);
                         setSelectedLocationId(null);
+                        setQuickViewExpanded(false);
                       } else {
                         setSelectedGroupKey(key);
                         setSelectedCharityId(primaryEntry.charity.id);
                         setSelectedLocationId(primaryEntry.location.id);
+                        setQuickViewExpanded(false);
                       }
                     }}
                   >
@@ -972,12 +1165,25 @@ export function Charities() {
         </div>
       </div>
 
+      {/* LocationDrawer — always on desktop; only when quickViewExpanded on mobile */}
       {selectedGroup && (
-        <LocationDrawer
-          group={selectedGroup}
-          tagLabels={tagLabels}
-          onClose={() => { setSelectedGroupKey(null); setSelectedCharityId(null); setSelectedLocationId(null); }}
-        />
+        <div className={quickViewExpanded ? '' : 'hidden lg:block'}>
+          <LocationDrawer
+            group={selectedGroup}
+            tagLabels={tagLabels}
+            onClose={() => {
+              if (quickViewExpanded) {
+                // Mobile: go back to quick view
+                setQuickViewExpanded(false);
+              } else {
+                // Desktop: close completely
+                setSelectedGroupKey(null);
+                setSelectedCharityId(null);
+                setSelectedLocationId(null);
+              }
+            }}
+          />
+        </div>
       )}
 
     </div>
