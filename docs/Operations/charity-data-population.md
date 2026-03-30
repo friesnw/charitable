@@ -244,25 +244,46 @@ Each charity should have at least one location. For each physical site, collect:
 
 ---
 
-## 7. Stage 6 — Admin UI Entry
+## 7. Stage 6 — Database Entry
 
-Once all content is drafted and verified:
+**When Claude is performing this stage, always write directly to the local PostgreSQL database (`app_db`) — never present a manual entry table for the user.**
 
-1. Navigate to `/admin/charities`. Find the charity or create a new record.
-2. **Core identity fields:**
-   - `name`, `slug`, `ein`, `website_url`, `volunteer_url`
-   - `founded_year`, `primary_address`
-   - `cause_tags` (select from the 11 valid tags: `animals`, `arts`, `education`, `environment`, `families`, `health`, `housing`, `hunger`, `mental-health`, `seniors`, `youth`)
-   - `donate_url` — use the link from the charity's own website (e.g., their "Give" or "Donate Now" button). Do not use every.org unless that is the charity's own linked destination. Note: the charity's donate button may link to a third-party platform (Donorbox, Colorado Gives, etc.) — that is fine, use whatever their site links to.
-   - `every_org_slug` — only populate if the charity's site explicitly links to every.org
-3. **Content fields:**
-   - `description`, `impact`, `program_highlights`
-   - `location_description`, `usage_credit`
-   - `cover_photo_url`, `content_photo_url_1`, `content_photo_url_2`
-4. Save the charity record.
-5. Add or edit locations under the Locations section.
-6. Check **Reviewed** (`is_reviewed = true`) once all content is complete and verified.
-7. Spot-check the detail page at `/charities/[slug]` to confirm all content renders correctly — no broken images, no missing sections, impact cards display correctly.
+### Step 1 — Check what already exists
+
+Before drafting or inserting anything, query the DB first:
+
+```sql
+SELECT * FROM charities WHERE ein = '<EIN>' OR slug = '<expected-slug>';
+SELECT * FROM charity_locations WHERE charity_id = <id>;
+```
+
+Use the existing record as the starting point — only research and fill in what's missing.
+
+### Step 2 — Insert or update the charity
+
+If no record exists, INSERT. If one exists, UPDATE only the fields that are empty or stale. Never overwrite fields that already have good data without comparing first.
+
+**Fields to populate:**
+- `name`, `slug`, `ein`, `website_url`, `volunteer_url`
+- `founded_year`, `primary_address`
+- `cause_tags` — valid values: `animals`, `arts`, `education`, `environment`, `families`, `health`, `housing`, `hunger`, `mental-health`, `seniors`, `youth`
+- `donate_url` — use the link from the charity's own website. Do not use every.org unless that is the charity's own linked destination. The charity's donate button may link to a third-party platform (Donorbox, Colorado Gives, etc.) — that is fine, use whatever their site links to.
+- `every_org_slug` — only populate if the charity's site explicitly links to every.org
+- `description`, `impact`, `program_highlights`
+- `location_description`, `usage_credit`
+- `cover_photo_url`, `content_photo_url_1`, `content_photo_url_2` — leave NULL until photo usage is approved
+
+### Step 3 — Insert or update locations
+
+Check existing locations first (`SELECT * FROM charity_locations WHERE charity_id = <id>`), then INSERT or UPDATE as needed.
+
+### Step 4 — Mark reviewed
+
+Set `is_reviewed = true` once all content is complete and verified.
+
+### Step 5 — Spot-check
+
+Confirm the detail page at `/charities/[slug]` renders correctly — no broken images, no missing sections, impact cards display correctly.
 
 ---
 

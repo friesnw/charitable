@@ -23,6 +23,7 @@ const MOCK_CHARITY = {
   impact: '500K+ meals distributed annually\n12,000 families served each month',
   programHighlights: '(heart)Serving families since 1978\n(people)12,000 families per month\n(star)Award-winning distribution network',
   usageCredit: null,
+  approvedByCharity: false,
   ctaLabel: null,
   ctaUrl: null,
   locationDescription: null,

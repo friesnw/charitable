@@ -34,6 +34,7 @@ const GET_CHARITY = gql`
       impact
       programHighlights
       usageCredit
+      approvedByCharity
       ctaLabel
       ctaUrl
       locationDescription
@@ -80,6 +81,7 @@ interface Charity {
   impact: string | null;
   programHighlights: string | null;
   usageCredit: string | null;
+  approvedByCharity: boolean;
   ctaLabel: string | null;
   ctaUrl: string | null;
   locationDescription: string | null;

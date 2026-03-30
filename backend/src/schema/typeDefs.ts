@@ -33,6 +33,7 @@ export const typeDefs = `#graphql
     everyOrgClaimed: Boolean!
     isActive: Boolean!
     isReviewed: Boolean!
+    approvedByCharity: Boolean!
     featured: Boolean!
     locations: [CharityLocation!]!
     createdAt: String
@@ -119,6 +120,7 @@ export const typeDefs = `#graphql
       contentPhotoUrl1: String
       contentPhotoUrl2: String
       isReviewed: Boolean
+      approvedByCharity: Boolean
       impact: String
       locationDescription: String
       programHighlights: String

@@ -35,6 +35,7 @@ export interface StoryCharity {
   impact: string | null;
   programHighlights: string | null;
   usageCredit: string | null;
+  approvedByCharity: boolean;
   ctaLabel: string | null;
   ctaUrl: string | null;
   locationDescription: string | null;
@@ -305,9 +306,9 @@ export function CharityDetail({ charity, tagLabels }: CharityDetailProps) {
         )}
 
         {/* Usage credit */}
-        {charity.usageCredit && (
+        {(charity.usageCredit || charity.approvedByCharity) && (
           <div className="space-y-1">
-            {charity.usageCredit.split('\n').filter(Boolean).map((line, i) => (
+            {(charity.usageCredit || `Info and photography courtesy of ${charity.name}`).split('\n').filter(Boolean).map((line, i) => (
               <p key={i} className="text-xs uppercase tracking-widest text-gray-400 leading-relaxed">{line}</p>
             ))}
           </div>
