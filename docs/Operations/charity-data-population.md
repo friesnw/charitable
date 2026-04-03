@@ -74,16 +74,36 @@ This is especially important for impact numbers — an incorrect stat displayed 
 ### `description` (TEXT)
 
 - 2–3 short paragraphs, written in third person.
-- Lead with who they serve and their core mission; follow with their approach or model.
+- **Lead with what the organization does** — the core service or offering, who it serves, what it provides. The first sentence should answer: what does this org actually do for people?
+- Do not open with history, founding year, or "since [year]." Do not open with size or scale ("one of the largest..."). Do not open with a description of their facilities.
+- History and tenure belong at the end of the last paragraph at most, and only if genuinely notable.
+- **Do not include specific numbers or statistics.** Quantities, percentages, and impact figures belong exclusively in the `impact` field.
+- Keep specific named locations (building names, campuses) out of the description unless essential — those details belong in the location records.
 - ~100–200 words total.
 - Adapt language from the About page — do not copy-paste verbatim.
 - Each paragraph is separated by a newline; the UI renders each as its own `<p>` tag.
 
-**Example — Warren Village (prod):**
+**Good examples:**
+```
+Humane Colorado connects homeless pets with caring families through adoption, reunites lost animals with their owners, and provides affordable veterinary care for owned pets whose families need help with costs.
+
+Operating across several facilities in Colorado, the organization serves dogs, cats, small mammals, horses, and other animals in need. Programs range from full-service shelter and adoption centers to low-cost spay/neuter and vaccine clinics, temporary pet housing, and humane education for community members of all ages.
+
+Humane Colorado partners with law enforcement, Colorado State University, and community donors to address animal welfare challenges that extend well beyond shelter walls.
+```
+
 ```
 Warren Village serves unhoused and unstably housed low-income single-parent families in the Denver area. They provide families with the space and resources to achieve economic mobility and navigate and disrupt systems of poverty.
 
 Warren Village utilizes a two-generation approach to empower both parents and their children through life-skills classes, a high-quality Early Learning Center, education and career support, and resource navigation.
+```
+
+**Avoid:**
+```
+❌ "Founded in 1979, Habitat for Humanity has built homes across the metro area..."  (leads with history)
+❌ "Since 1910, Humane Colorado has cared for animals in need..."  (leads with history)
+❌ "Humane Colorado is one of the largest shelters in the region, operating several facilities..."  (leads with size/scale, not offerings)
+❌ "The Harmony Equine Center in Franktown rehabilitates horses..."  (named location detail belongs in location record)
 ```
 
 ---
@@ -217,10 +237,6 @@ Two supplementary images shown in the right column alongside the impact stats. B
 4. Paste into the Admin UI field.
 5. Set `usage_credit` to `Info and photography courtesy of [Org Name].` (add photographer names if known).
 
-### Logo (`logo_url`)
-
-Do not upload manually. Run `upload-logos.ts` after creating the charity record — it auto-fetches and uploads the logo from the charity's website favicon. See Stage 7.
-
 ---
 
 ## 6. Stage 5 — Locations
@@ -287,27 +303,10 @@ Confirm the detail page at `/charities/[slug]` renders correctly — no broken i
 
 ---
 
-## 8. Stage 7 — Post-Entry Scripts
+## 8. Stage 7 — Sync to Prod
 
-After saving via Admin UI, run these from the `backend/` directory:
+Do not rush to sync. Make all edits locally first, spot-check at `/charities/[slug]`, then sync to prod via `sync-content.ts` when ready.
 
-```bash
-# Auto-populate Street View photos for any locations without photo_url
-npx tsx scripts/populate-street-view.ts
-
-# Upload logo from charity website favicon to Cloudinary
-npx tsx scripts/upload-logos.ts
-```
-
-To run against the dev or prod database:
-```bash
-DATABASE_URL=<render-url> npx tsx scripts/populate-street-view.ts
-DATABASE_URL=<render-url> npx tsx scripts/upload-logos.ts
-```
-
-### Syncing to prod
-
-Do not rush to sync. Make all edits locally first, spot-check at `/charities/[slug]`, then sync to prod via `sync-content.ts` when ready. The database is the source of truth — Render provides automated backups of prod, and `sync-content.ts` can repopulate any environment from another at any time.
 
 ---
 

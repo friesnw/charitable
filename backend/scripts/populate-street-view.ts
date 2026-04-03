@@ -17,6 +17,14 @@ import { Pool } from 'pg';
 import { getDatabaseConfig } from '../src/env.js';
 
 // ---------------------------------------------------------------------------
+// CLI args
+// ---------------------------------------------------------------------------
+
+const args = process.argv.slice(2);
+const idArg = args.includes('--id') ? Number(args[args.indexOf('--id') + 1]) : null;
+const useCoords = args.includes('--use-coords');
+
+// ---------------------------------------------------------------------------
 // Env validation
 // ---------------------------------------------------------------------------
 
@@ -129,13 +137,15 @@ async function main() {
   const pool = new Pool(getDatabaseConfig());
 
   try {
-    const { rows } = await pool.query<LocationRow>(`
-      SELECT id, label, address, latitude, longitude
-      FROM charity_locations
-      WHERE photo_url IS NULL
-        AND (latitude IS NOT NULL OR address IS NOT NULL)
-      ORDER BY id ASC
-    `);
+    const { rows } = await pool.query<LocationRow>(
+      `SELECT id, label, address, latitude, longitude
+       FROM charity_locations
+       WHERE (photo_url IS NULL OR $1)
+         AND (latitude IS NOT NULL OR address IS NOT NULL)
+         AND ($2 OR id = $3)
+       ORDER BY id ASC`,
+      [idArg !== null, idArg === null, idArg ?? 0]
+    );
 
     if (rows.length === 0) {
       console.log('No locations to process.');
@@ -152,14 +162,15 @@ async function main() {
       const tag = `[${loc.id}] ${loc.label}`;
 
       try {
-        // Determine the location parameter for Google APIs
-        const hasCoords = loc.latitude != null && loc.longitude != null;
+        // Prefer address string for Street View — raw coordinates can snap to
+        // nearby panoramas (e.g. a bus station) rather than the building itself.
+        // Pass --use-coords to override and use lat/lng instead.
         let locationParam: string;
 
-        if (hasCoords) {
-          locationParam = `${parseFloat(loc.latitude!).toFixed(7)},${parseFloat(loc.longitude!).toFixed(7)}`;
-        } else if (loc.address) {
+        if (!useCoords && loc.address) {
           locationParam = loc.address;
+        } else if (loc.latitude != null && loc.longitude != null) {
+          locationParam = `${parseFloat(loc.latitude!).toFixed(7)},${parseFloat(loc.longitude!).toFixed(7)}`;
         } else {
           console.log(`  SKIP  ${tag} — incomplete location data`);
           skipped++;
