@@ -113,7 +113,7 @@ export const charityResolvers = {
   Charity: {
     locations: async (parent: { id: number }) => {
       const result = await pool.query(
-        'SELECT * FROM charity_locations WHERE charity_id = $1 ORDER BY id ASC',
+        'SELECT * FROM charity_locations WHERE charity_id = $1 ORDER BY display_order ASC, id ASC',
         [parent.id]
       );
       return result.rows.map(toLocation);

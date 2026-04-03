@@ -6,7 +6,6 @@ import { causeColor, causeIcon, FEATURED_TAGS, causesToTagLabels } from '../lib/
 import { nearestNeighborhood, NEIGHBORHOODS } from '../lib/neighborhoods';
 import { Icon } from '../components/ui/Icon';
 import { Toast } from '../components/ui/Toast';
-import { LocationQuickView } from '../components/ui/LocationQuickView';
 import { useAuth } from '../hooks/useAuth';
 import Map, { MapRef, Marker } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -108,6 +107,7 @@ function CauseDot({ color, icon, size = 32 }: { color: string; icon: string; siz
 
 function LocationDrawer({ group, tagLabels, onClose }: { group: LocationGroup; tagLabels: Map<string, string>; onClose: () => void }) {
   const [visible, setVisible] = useState(false);
+  const [drawerSnap, setDrawerSnap] = useState<'partial' | 'full'>('partial');
   const touchStartY = useRef<number>(0);
   const hood = nearestNeighborhood(group.lat, group.lng);
   const sorted = [...group.entries].sort((a, b) => Number(a.location.isSublocation) - Number(b.location.isSublocation));
@@ -122,12 +122,20 @@ function LocationDrawer({ group, tagLabels, onClose }: { group: LocationGroup; t
       className="fixed bottom-0 left-0 right-0 z-30 transition-transform duration-300 ease-out lg:left-auto lg:right-4 lg:bottom-4 lg:w-[420px]"
       style={{ transform: visible ? 'translateY(0)' : 'translateY(100%)' }}
     >
-      <div className="bg-white rounded-t-2xl lg:rounded-2xl shadow-2xl overflow-hidden max-h-[85vh] flex flex-col">
+      <div className={`bg-white rounded-t-2xl lg:rounded-2xl shadow-2xl overflow-hidden flex flex-col transition-[max-height] duration-300 ease-out ${drawerSnap === 'partial' ? 'max-h-[62vh] lg:max-h-[85vh]' : 'max-h-[85vh]'}`}>
         {/* Drag handle — mobile only */}
         <div
           className="flex justify-center pt-3 pb-1 flex-shrink-0 lg:hidden"
           onTouchStart={(e) => { touchStartY.current = e.touches[0].clientY; }}
-          onTouchEnd={(e) => { if (e.changedTouches[0].clientY - touchStartY.current > 80) onClose(); }}
+          onTouchEnd={(e) => {
+            const delta = e.changedTouches[0].clientY - touchStartY.current;
+            if (drawerSnap === 'partial') {
+              if (delta < -60) setDrawerSnap('full');
+              else if (delta > 80) onClose();
+            } else {
+              if (delta > 60) setDrawerSnap('partial');
+            }
+          }}
         >
           <div className="w-10 h-1 rounded-full bg-gray-300" />
         </div>
@@ -402,7 +410,6 @@ export function Charities() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [sheetState, setSheetState] = useState<'peek' | 'full'>('peek');
   const [isDraggingSheet, setIsDraggingSheet] = useState(false);
-  const [quickViewExpanded, setQuickViewExpanded] = useState(false);
 
   const mapRef = useRef<MapRef>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
@@ -596,7 +603,8 @@ export function Charities() {
       if (!group) return;
       const center = map.getCenter();
       savedView.current = { center: [center.lng, center.lat], zoom: map.getZoom() };
-      map.flyTo({ center: [group.lng, group.lat], zoom: 14, duration: 600, padding: pad });
+      const isMobile = window.innerWidth < 1024;
+      map.flyTo({ center: [group.lng, group.lat], zoom: isMobile ? 13 : 14, duration: 600, padding: pad });
     } else if (selectedCharityId) {
       const charity = charities.find((c) => c.id === selectedCharityId);
       const locs = charity?.locations.filter((l) => l.latitude != null && l.longitude != null) ?? [];
@@ -1043,83 +1051,63 @@ export function Charities() {
               <div className="w-10 h-1 rounded-full bg-gray-300" />
             </div>
 
-            {/* Quick view — replaces list when a pin is selected */}
-            {selectedGroup && !quickViewExpanded ? (
-              <div className="flex-1 overflow-hidden border-t border-gray-100">
-                <LocationQuickView
-                  flat
-                  group={selectedGroup}
-                  tagLabels={tagLabels}
-                  onExpand={() => setQuickViewExpanded(true)}
-                  onClose={() => {
-                    setSelectedGroupKey(null);
-                    setSelectedCharityId(null);
-                    setSelectedLocationId(null);
-                    setQuickViewExpanded(false);
-                  }}
-                />
-              </div>
-            ) : (
-              <>
-                {/* Count header */}
-                <div className="px-4 pb-2 flex-shrink-0">
-                  <p className="text-sm font-semibold text-gray-700">
-                    {loading ? 'Loading...' : `${charities.length} charities`}
-                  </p>
-                </div>
-                {/* List */}
-                <div className="overflow-y-auto flex-1">
-                  {loading && (
-                    <>
-                      <SkeletonCard />
-                      <SkeletonCard />
-                      <SkeletonCard />
-                    </>
+            {/* Count header */}
+            <div className="px-4 pb-2 flex-shrink-0">
+              <p className="text-sm font-semibold text-gray-700">
+                {loading ? 'Loading...' : `${charities.length} charities`}
+              </p>
+            </div>
+            {/* List */}
+            <div className="overflow-y-auto flex-1">
+              {loading && (
+                <>
+                  <SkeletonCard />
+                  <SkeletonCard />
+                  <SkeletonCard />
+                </>
+              )}
+              {error && <p className="text-red-500 p-4 text-sm">Error: {error.message}</p>}
+              {charities.map((charity) => (
+                <Link
+                  key={charity.id}
+                  to={`/charities/${charity.slug}`}
+                  className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                >
+                  {charity.logoUrl ? (
+                    <img src={cloudinaryUrl(charity.logoUrl, { w: 48, h: 48, fit: 'fit' })} alt={charity.name} className="w-10 h-10 rounded-full object-contain flex-shrink-0 border border-gray-100" />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-500 flex-shrink-0">
+                      {charity.name.slice(0, 2).toUpperCase()}
+                    </div>
                   )}
-                  {error && <p className="text-red-500 p-4 text-sm">Error: {error.message}</p>}
-                  {charities.map((charity) => (
-                    <Link
-                      key={charity.id}
-                      to={`/charities/${charity.slug}`}
-                      className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors"
-                    >
-                      {charity.logoUrl ? (
-                        <img src={cloudinaryUrl(charity.logoUrl, { w: 48, h: 48, fit: 'fit' })} alt={charity.name} className="w-10 h-10 rounded-full object-contain flex-shrink-0 border border-gray-100" />
-                      ) : (
-                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-500 flex-shrink-0">
-                          {charity.name.slice(0, 2).toUpperCase()}
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-gray-900 text-sm truncate">{charity.name}</p>
-                        {charity.description && (
-                          <p className="text-xs text-gray-500 line-clamp-2 mt-0.5">{charity.description}</p>
-                        )}
-                        {charity.causeTags.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {charity.causeTags.slice(0, 3).map((tag) => (
-                              <span key={tag} className="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded">
-                                {tagLabels.get(tag) ?? tag}
-                              </span>
-                            ))}
-                          </div>
-                        )}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-gray-900 text-sm truncate">{charity.name}</p>
+                    {charity.description && (
+                      <p className="text-xs text-gray-500 line-clamp-2 mt-0.5">{charity.description}</p>
+                    )}
+                    {charity.causeTags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {charity.causeTags.slice(0, 3).map((tag) => (
+                          <span key={tag} className="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded">
+                            {tagLabels.get(tag) ?? tag}
+                          </span>
+                        ))}
                       </div>
-                      <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-gray-300 flex-shrink-0">
-                        <path fillRule="evenodd" clipRule="evenodd" d="M7.21 14.77a.75.75 0 0 1 .02-1.06L11.168 10 7.23 6.29a.75.75 0 1 1 1.04-1.08l4.5 4.25a.75.75 0 0 1 0 1.08l-4.5 4.25a.75.75 0 0 1-1.06-.02Z" />
-                      </svg>
-                    </Link>
-                  ))}
-                </div>
-              </>
-            )}
+                    )}
+                  </div>
+                  <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-gray-300 flex-shrink-0">
+                    <path fillRule="evenodd" clipRule="evenodd" d="M7.21 14.77a.75.75 0 0 1 .02-1.06L11.168 10 7.23 6.29a.75.75 0 1 1 1.04-1.08l4.5 4.25a.75.75 0 0 1 0 1.08l-4.5 4.25a.75.75 0 0 1-1.06-.02Z" />
+                  </svg>
+                </Link>
+              ))}
+            </div>
           </div>
 
           <div style={{ visibility: mapVisible ? 'visible' : 'hidden', position: 'absolute', inset: 0 }}>
             <Map
               ref={mapRef}
               mapboxAccessToken={import.meta.env.VITE_MAPBOX_TOKEN}
-              initialViewState={{ longitude: -104.98832, latitude: 39.73669, zoom: 11.5 }}
+              initialViewState={{ longitude: -104.98832, latitude: 39.73669, zoom: window.innerWidth < 1024 ? 10.5 : 11.5 }}
               style={{ width: '100%', height: '100%' }}
               mapStyle="mapbox://styles/mapbox/light-v11"
               onLoad={handleMapLoad}
@@ -1151,13 +1139,11 @@ export function Charities() {
                         setSelectedGroupKey(null);
                         setSelectedCharityId(null);
                         setSelectedLocationId(null);
-                        setQuickViewExpanded(false);
                       } else {
                         setSelectedGroupKey(key);
                         setSelectedCharityId(primaryEntry.charity.id);
                         setSelectedLocationId(primaryEntry.location.id);
-                        setQuickViewExpanded(false);
-                        setSheetState('peek'); // snap sheet down so map is visible
+                        setSheetState('peek'); // snap list sheet down so map is visible behind drawer
                       }
                     }}
                   >
@@ -1170,25 +1156,18 @@ export function Charities() {
         </div>
       </div>
 
-      {/* LocationDrawer — always on desktop; only when quickViewExpanded on mobile */}
+      {/* LocationDrawer — mobile and desktop */}
       {selectedGroup && (
-        <div className={quickViewExpanded ? '' : 'hidden lg:block'}>
-          <LocationDrawer
-            group={selectedGroup}
-            tagLabels={tagLabels}
-            onClose={() => {
-              if (quickViewExpanded) {
-                // Mobile: go back to quick view
-                setQuickViewExpanded(false);
-              } else {
-                // Desktop: close completely
-                setSelectedGroupKey(null);
-                setSelectedCharityId(null);
-                setSelectedLocationId(null);
-              }
-            }}
-          />
-        </div>
+        <LocationDrawer
+          key={selectedGroupKey ?? ''}
+          group={selectedGroup}
+          tagLabels={tagLabels}
+          onClose={() => {
+            setSelectedGroupKey(null);
+            setSelectedCharityId(null);
+            setSelectedLocationId(null);
+          }}
+        />
       )}
 
     </div>

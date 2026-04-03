@@ -100,7 +100,32 @@ export function CharityDetail() {
   const tagLabels = causesToTagLabels(causesData?.causes ?? []);
 
   if (loading) {
-    return <p className="text-text-secondary">Loading...</p>;
+    return (
+      <div className="-mx-4 -mt-8 -mb-8 animate-pulse">
+        {/* Hero */}
+        <div className="h-[220px] md:h-[300px] bg-gray-200" />
+        <div className="px-4">
+          {/* Title */}
+          <div className="mt-4 mb-2 space-y-2">
+            <div className="h-7 bg-gray-200 rounded w-2/3" />
+            <div className="h-4 bg-gray-100 rounded w-1/3" />
+          </div>
+          {/* Cause tags */}
+          <div className="flex gap-2 mt-3">
+            <div className="h-6 bg-gray-100 rounded-full w-20" />
+            <div className="h-6 bg-gray-100 rounded-full w-24" />
+          </div>
+          {/* Description */}
+          <div className="mt-5 space-y-2">
+            <div className="h-4 bg-gray-100 rounded w-full" />
+            <div className="h-4 bg-gray-100 rounded w-full" />
+            <div className="h-4 bg-gray-100 rounded w-3/4" />
+          </div>
+          {/* Donate button */}
+          <div className="mt-6 h-11 bg-gray-200 rounded-xl w-full" />
+        </div>
+      </div>
+    );
   }
 
   if (error) {

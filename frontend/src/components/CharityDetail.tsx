@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { cloudinaryUrl } from '../lib/cloudinary';
 import { causeColor } from '../lib/causeColors';
 import { DonateButton } from './ui/DonateButton';
@@ -117,6 +118,7 @@ export function CharityDetail({ charity, tagLabels }: CharityDetailProps) {
   };
 
   return (
+    <>
     <div className="-mx-4 -mt-8 -mb-8">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
@@ -315,8 +317,11 @@ export function CharityDetail({ charity, tagLabels }: CharityDetailProps) {
         )}
       </div>
 
-      {/* Sticky action buttons */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-3 z-10">
+    </div>
+
+    {/* Sticky action buttons — rendered in a portal to escape any ancestor stacking context */}
+    {createPortal(
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-3 z-50">
         <div className="flex gap-3 px-4 mx-auto w-full max-w-4xl">
           {charity.donateUrl && (
             <DonateButton
@@ -349,7 +354,9 @@ export function CharityDetail({ charity, tagLabels }: CharityDetailProps) {
             </a>
           )}
         </div>
-      </div>
-    </div>
+      </div>,
+      document.body
+    )}
+    </>
   );
 }
