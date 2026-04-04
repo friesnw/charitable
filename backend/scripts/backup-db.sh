@@ -14,7 +14,7 @@ if [ -z "${DATABASE_URL:-}" ]; then
 fi
 
 echo "Backing up prod database to $OUTPUT ..."
-pg_dump --no-acl --no-owner --format=custom --file="$OUTPUT" "$DATABASE_URL"
+/opt/homebrew/opt/postgresql@18/bin/pg_dump --no-acl --no-owner --format=custom --file="$OUTPUT" "$DATABASE_URL"
 echo "Done. File size: $(du -sh "$OUTPUT" | cut -f1)"
 
 # Keep only the 10 most recent dumps
