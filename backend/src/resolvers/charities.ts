@@ -47,6 +47,7 @@ function toLocation(row: Record<string, unknown>) {
     photoUrl: row.photo_url ?? null,
     isReviewed: row.is_reviewed ?? false,
     isSublocation: row.is_sublocation ?? false,
+    displayOrder: row.display_order ?? 0,
   };
 }
 
@@ -207,6 +208,7 @@ export const charityResolvers = {
         photoUrl: 'photo_url',
         isReviewed: 'is_reviewed',
         isSublocation: 'is_sublocation',
+        displayOrder: 'display_order',
       };
 
       const setClauses: string[] = [];

@@ -50,6 +50,7 @@ export const typeDefs = `#graphql
     photoUrl: String
     isReviewed: Boolean!
     isSublocation: Boolean!
+    displayOrder: Int!
   }
 
   type AuthPayload {
@@ -152,6 +153,7 @@ export const typeDefs = `#graphql
       photoUrl: String
       isReviewed: Boolean
       isSublocation: Boolean
+      displayOrder: Int
     ): CharityLocation!
 
     createCharityLocation(

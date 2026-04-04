@@ -12,7 +12,7 @@ const GET_ADMIN_CHARITY = gql`
       primaryAddress causeTags donateUrl foundedYear isActive isReviewed approvedByCharity featured
       impact locationDescription programHighlights usageCredit ctaLabel ctaUrl
       locations {
-        id label description address latitude longitude photoUrl isReviewed isSublocation
+        id label description address latitude longitude photoUrl isReviewed isSublocation displayOrder
       }
     }
   }
@@ -56,13 +56,13 @@ const UPDATE_CHARITY = gql`
 const UPDATE_LOCATION = gql`
   mutation UpdateCharityLocationEdit(
     $id: ID! $label: String $description: String $address: String
-    $latitude: Float $longitude: Float $photoUrl: String $isSublocation: Boolean
+    $latitude: Float $longitude: Float $photoUrl: String $isSublocation: Boolean $displayOrder: Int
   ) {
     updateCharityLocation(
       id: $id label: $label description: $description address: $address
-      latitude: $latitude longitude: $longitude photoUrl: $photoUrl isSublocation: $isSublocation
+      latitude: $latitude longitude: $longitude photoUrl: $photoUrl isSublocation: $isSublocation displayOrder: $displayOrder
     ) {
-      id label description address latitude longitude photoUrl isReviewed isSublocation
+      id label description address latitude longitude photoUrl isReviewed isSublocation displayOrder
     }
   }
 `;
@@ -96,6 +96,7 @@ interface LocationData {
   longitude: number | null;
   photoUrl: string | null;
   isSublocation: boolean;
+  displayOrder: number;
 }
 
 interface CharityData {
@@ -160,6 +161,7 @@ interface LocationForm {
   latitude: string;
   longitude: string;
   isSublocation: boolean;
+  displayOrder: string;
 }
 
 function initEditForm(c: CharityData): EditForm {
@@ -197,6 +199,7 @@ function initLocationForm(loc: LocationData): LocationForm {
     latitude: loc.latitude?.toString() ?? '',
     longitude: loc.longitude?.toString() ?? '',
     isSublocation: loc.isSublocation,
+    displayOrder: loc.displayOrder.toString(),
   };
 }
 
@@ -220,7 +223,7 @@ export function AdminCharityEdit() {
   const initialLocationForms = useRef<Record<string, LocationForm>>({});
   const [expandedLocId, setExpandedLocId] = useState<string | null>(null);
   const [showAddLocation, setShowAddLocation] = useState(false);
-  const [newLocForm, setNewLocForm] = useState<LocationForm>({ label: '', description: '', address: '', latitude: '', longitude: '', isSublocation: false });
+  const [newLocForm, setNewLocForm] = useState<LocationForm>({ label: '', description: '', address: '', latitude: '', longitude: '', isSublocation: false, displayOrder: '0' });
   const [uploadingField, setUploadingField] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -351,6 +354,7 @@ export function AdminCharityEdit() {
           latitude: form.latitude ? parseFloat(form.latitude) : null,
           longitude: form.longitude ? parseFloat(form.longitude) : null,
           isSublocation: form.isSublocation,
+          displayOrder: form.displayOrder !== '' ? parseInt(form.displayOrder, 10) : 0,
         },
       });
       initialLocationForms.current = { ...initialLocationForms.current, [locId]: form };
@@ -395,7 +399,7 @@ export function AdminCharityEdit() {
       },
     });
     setShowAddLocation(false);
-    setNewLocForm({ label: '', description: '', address: '', latitude: '', longitude: '', isSublocation: false });
+    setNewLocForm({ label: '', description: '', address: '', latitude: '', longitude: '', isSublocation: false, displayOrder: '0' });
   }
 
   const isDirty = editForm !== null && JSON.stringify(editForm) !== JSON.stringify(initialEditForm.current);
@@ -845,6 +849,11 @@ export function AdminCharityEdit() {
                                 <label className={labelCls}>Description</label>
                                 <textarea className={inputCls} rows={3} value={form.description}
                                   onChange={e => setLocationForms(f => ({ ...f, [loc.id]: { ...f[loc.id], description: e.target.value } }))} />
+                              </div>
+                              <div>
+                                <label className={labelCls}>Display Order</label>
+                                <input className={inputCls} type="number" value={form.displayOrder}
+                                  onChange={e => setLocationForms(f => ({ ...f, [loc.id]: { ...f[loc.id], displayOrder: e.target.value } }))} />
                               </div>
                               <div className="col-span-2 md:col-span-4">
                                 <label className="flex items-center gap-2 text-sm text-text-primary cursor-pointer">
