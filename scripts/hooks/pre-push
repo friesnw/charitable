@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Pre-push hook: backs up prod DB before any push to main.
+# Install via: bash scripts/install-hooks.sh
+
+while read local_ref local_sha remote_ref remote_sha; do
+  if [[ "$remote_ref" == "refs/heads/main" ]]; then
+    echo "→ Pushing to main — running prod backup first..."
+
+    # Load DATABASE_URL from backend/.env if not already set
+    if [ -z "${DATABASE_URL:-}" ] && [ -f "backend/.env" ]; then
+      export DATABASE_URL=$(grep '^DATABASE_URL=' backend/.env | cut -d= -f2-)
+    fi
+
+    if [ -z "${DATABASE_URL:-}" ]; then
+      echo "WARNING: DATABASE_URL not found in backend/.env — skipping backup."
+      echo "  Add DATABASE_URL=<prod-render-url> to backend/.env to enable automatic backups."
+      exit 0
+    fi
+
+    bash backend/scripts/backup-db.sh || {
+      echo "ERROR: Backup failed — push blocked. Fix the backup issue before pushing to main."
+      exit 1
+    }
+
+    echo "✓ Backup complete. Proceeding with push."
+  fi
+done
+
+exit 0

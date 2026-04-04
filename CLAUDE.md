@@ -70,6 +70,11 @@ I will frequently reference the /docs/tasks folder, with which we will manage ou
 
 **Never assume a database is empty.** Always query first (`SELECT COUNT(*) FROM table_name`) before suggesting any destructive operation.
 
+**Before any operation that writes to prod** (sync scripts, direct psql on prod, manual SQL, running `sync-content.ts`): run a prod backup first and verify the dump file is non-zero before continuing. This applies when running these operations on the user's behalf.
+```bash
+npm run backup:prod --prefix backend
+```
+
 ## Database
 
 - **Local**: Uses individual `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` env vars

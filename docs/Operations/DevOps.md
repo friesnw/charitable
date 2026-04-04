@@ -82,15 +82,14 @@ Never edit existing migration files. Never run destructive SQL (`DELETE`, `DROP`
 
 Render's free PostgreSQL tier has **no automated backups** and **expires after 90 days**.
 
+Backups run automatically before every push to `main` via a git pre-push hook. Dumps are stored in `backups/` (gitignored — keep off-machine in iCloud/Drive). The 10 most recent dumps are retained automatically.
+
+**Setup (run once per machine):** `bash scripts/install-hooks.sh`
+
 **Manual backup:**
 ```bash
-pg_dump \
-  --no-acl --no-owner --format=custom \
-  --file="backups/goodlocal_$(date +%Y%m%d).dump" \
-  "<prod-external-url>"
+npm run backup:prod --prefix backend
 ```
-
-Store dumps in `backups/` (already gitignored). Keep off-machine (iCloud, Google Drive, etc).
 
 **Restore to local for verification:**
 ```bash
@@ -100,9 +99,23 @@ psql goodlocal_restore_test -c "SELECT COUNT(*) FROM charities;"
 dropdb goodlocal_restore_test
 ```
 
-**Recommended cadence:** weekly, or after any major content entry session.
-
 **Before the 90-day free tier expires:** upgrade to Render paid PostgreSQL ($7/mo) or migrate to Neon/Supabase. Set a calendar reminder when you create a new DB instance.
+
+---
+
+## Before Any Risky Operation
+
+Run a manual backup before any of the following:
+- Syncing data between environments (`sync-content.ts`)
+- Running a script that writes directly to prod
+- Applying a migration to prod manually
+- Any direct `psql` session on prod
+
+```bash
+npm run backup:prod --prefix backend
+```
+
+Verify the dump file exists and is non-zero (`ls -lh backups/`) before continuing.
 
 ---
 
