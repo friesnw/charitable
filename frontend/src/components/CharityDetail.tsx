@@ -51,7 +51,8 @@ interface CharityDetailProps {
 
 function bareDomain(url: string): string {
   try {
-    return new URL(url).hostname.replace(/^www\./, '');
+    const host = new URL(url).hostname;
+    return host.startsWith('www.') ? host : `www.${host}`;
   } catch {
     return url;
   }
@@ -307,11 +308,24 @@ export function CharityDetail({ charity, tagLabels }: CharityDetailProps) {
           />
         )}
 
+        {/* Website link */}
+        {charity.websiteUrl && (
+          <a
+            href={charity.websiteUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 underline underline-offset-2 transition-colors"
+          >
+            <Icon name="globe" className="w-3.5 h-3.5 shrink-0" />
+            {bareDomain(charity.websiteUrl)}
+          </a>
+        )}
+
         {/* Usage credit */}
         {(charity.usageCredit || charity.approvedByCharity) && (
           <div className="space-y-1">
             {(charity.usageCredit || `Info and photography courtesy of ${charity.name}`).split('\n').filter(Boolean).map((line, i) => (
-              <p key={i} className="text-xs uppercase tracking-widest text-gray-400 leading-relaxed">{line}</p>
+              <p key={i} className="text-xs tracking-wide text-gray-400 leading-relaxed">{line}</p>
             ))}
           </div>
         )}
@@ -331,7 +345,17 @@ export function CharityDetail({ charity, tagLabels }: CharityDetailProps) {
               className="flex-1"
             />
           )}
-          {charity.volunteerUrl && (
+          {charity.ctaUrl && charity.ctaLabel ? (
+            <a
+              href={charity.ctaUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              <Icon name="globe" className="w-4 h-4 shrink-0" />
+              {charity.ctaLabel}
+            </a>
+          ) : charity.volunteerUrl ? (
             <a
               href={charity.volunteerUrl}
               target="_blank"
@@ -341,18 +365,7 @@ export function CharityDetail({ charity, tagLabels }: CharityDetailProps) {
               <Icon name="volunteer" className="w-4 h-4 shrink-0" />
               Volunteer
             </a>
-          )}
-          {(charity.ctaUrl || charity.websiteUrl) && (
-            <a
-              href={charity.ctaUrl ?? charity.websiteUrl!}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
-            >
-              <Icon name="globe" className="w-4 h-4 shrink-0" />
-              {charity.ctaLabel ?? bareDomain(charity.websiteUrl!)}
-            </a>
-          )}
+          ) : null}
         </div>
       </div>,
       document.body
