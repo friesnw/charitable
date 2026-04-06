@@ -1,11 +1,11 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Map, { MapRef } from 'react-map-gl/mapbox';
-import { ButtonLink } from '../components/ui/Button';
-import { useQuery, gql } from '@apollo/client';
-import { useAuth } from '../hooks/useAuth';
-import { NEIGHBORHOODS } from '../lib/neighborhoods';
-import { causeIcon, causeColor } from '../lib/causeColors';
+import { useState, useRef, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import Map, { MapRef } from "react-map-gl/mapbox";
+import { ButtonLink } from "../components/ui/Button";
+import { useQuery, gql } from "@apollo/client";
+import { useAuth } from "../hooks/useAuth";
+import { NEIGHBORHOODS } from "../lib/neighborhoods";
+import { causeIcon, causeColor } from "../lib/causeColors";
 
 const GET_CHARITY_COUNT = gql`
   query GetCharityCountForTag($tags: [String]) {
@@ -16,36 +16,36 @@ const GET_CHARITY_COUNT = gql`
 `;
 
 const HERO_NEIGHBORHOODS = [
-  'Cap Hill',
-  'RiNo',
-  'Highland',
-  'LoDo',
-  'Five Points',
-  'City Park',
-  'Baker',
-  'Wash Park',
-  'Cherry Creek',
-  'Edgewater',
+  "Cap Hill",
+  "RiNo",
+  "Highland",
+  "LoDo",
+  "Five Points",
+  "City Park",
+  "Baker",
+  "Wash Park",
+  "Cherry Creek",
+  "Edgewater",
 ];
 
 const SURVEY_TAGS = [
-  { slug: 'housing', label: 'Housing' },
-  { slug: 'hunger', label: 'Hunger' },
-  { slug: 'animals', label: 'Animals' },
-  { slug: 'mental-health', label: 'Mental Health' },
-  { slug: 'youth', label: 'Youth' },
-  { slug: 'education', label: 'Education' },
-  { slug: 'environment', label: 'Environment' },
-  { slug: 'families', label: 'Families' },
+  { slug: "housing", label: "Housing" },
+  { slug: "hunger", label: "Hunger" },
+  { slug: "animals", label: "Animals" },
+  { slug: "mental-health", label: "Mental Health" },
+  { slug: "youth", label: "Youth" },
+  { slug: "education", label: "Education" },
+  { slug: "environment", label: "Environment" },
+  { slug: "families", label: "Families" },
 ];
 
 const VALUE_PROP_CAUSES = [
-  'housing',
-  'hunger',
-  'animals',
-  'mental-health',
-  'youth',
-  'education',
+  "housing",
+  "hunger",
+  "animals",
+  "mental-health",
+  "youth",
+  "education",
 ];
 
 const neighborhoodPills = HERO_NEIGHBORHOODS.map((name) => {
@@ -65,7 +65,9 @@ const PAN_STOPS = [
 export function Home() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const [selectedSurveyTag, setSelectedSurveyTag] = useState<string | null>(null);
+  const [selectedSurveyTag, setSelectedSurveyTag] = useState<string | null>(
+    null,
+  );
   const [mapReady, setMapReady] = useState(false);
   const mapRef = useRef<MapRef>(null);
   const stopIndexRef = useRef(0);
@@ -75,7 +77,11 @@ export function Home() {
     if (!map) return;
     stopIndexRef.current = (stopIndexRef.current + 1) % PAN_STOPS.length;
     const { longitude, latitude } = PAN_STOPS[stopIndexRef.current];
-    map.easeTo({ center: [longitude, latitude], duration: 18000, easing: (t) => t });
+    map.easeTo({
+      center: [longitude, latitude],
+      duration: 18000,
+      easing: (t) => t,
+    });
   }, []);
 
   useEffect(() => {
@@ -83,7 +89,9 @@ export function Home() {
     return () => clearInterval(interval);
   }, [panToNext]);
 
-  const selectedSurveyLabel = SURVEY_TAGS.find((t) => t.slug === selectedSurveyTag)?.label;
+  const selectedSurveyLabel = SURVEY_TAGS.find(
+    (t) => t.slug === selectedSurveyTag,
+  )?.label;
 
   const { data: countData } = useQuery(GET_CHARITY_COUNT, {
     variables: { tags: selectedSurveyTag ? [selectedSurveyTag] : undefined },
@@ -96,22 +104,26 @@ export function Home() {
       {/* Section 1 — Hero */}
       <section
         className="relative bg-brand-primary"
-        style={{ height: 'calc(100vh - 65px)' }}
+        style={{ height: "calc(100vh - 65px)" }}
       >
         {/* Map background */}
         <div className="absolute inset-0 pointer-events-none">
           <Map
             ref={mapRef}
             mapboxAccessToken={import.meta.env.VITE_MAPBOX_TOKEN}
-            initialViewState={{ longitude: -104.9903, latitude: 39.7392, zoom: 12 }}
+            initialViewState={{
+              longitude: -104.9903,
+              latitude: 39.7392,
+              zoom: 12,
+            }}
             mapStyle="mapbox://styles/mapbox/dark-v11"
             interactive={false}
             attributionControl={false}
-            style={{ width: '100%', height: '100%' }}
+            style={{ width: "100%", height: "100%" }}
             onLoad={(e) => {
               e.target.getStyle().layers.forEach((layer) => {
-                if (layer.type === 'symbol') {
-                  e.target.setLayoutProperty(layer.id, 'visibility', 'none');
+                if (layer.type === "symbol") {
+                  e.target.setLayoutProperty(layer.id, "visibility", "none");
                 }
               });
               setMapReady(true);
@@ -121,19 +133,27 @@ export function Home() {
           {/* Solid cover fades out after labels are suppressed, preventing flicker */}
           <div
             className="absolute inset-0 transition-opacity duration-700"
-            style={{ backgroundColor: '#343D47', opacity: mapReady ? 0 : 1, pointerEvents: 'none' }}
+            style={{
+              backgroundColor: "#343D47",
+              opacity: mapReady ? 0 : 1,
+              pointerEvents: "none",
+            }}
           />
           {/* Radial vignette — dark at edges, map visible in center */}
           <div
             className="absolute inset-0"
             style={{
-              background: 'radial-gradient(ellipse 60% 55% at 50% 50%, rgba(52,61,71,0.35) 0%, rgba(52,61,71,0.70) 55%, rgba(52,61,71,0.97) 100%)',
+              background:
+                "radial-gradient(ellipse 60% 55% at 50% 50%, rgba(52,61,71,0.35) 0%, rgba(52,61,71,0.70) 55%, rgba(52,61,71,0.97) 100%)",
             }}
           />
           {/* Bottom fade to #2B323B */}
           <div
             className="absolute inset-x-0 bottom-0"
-            style={{ height: '28%', background: 'linear-gradient(to bottom, transparent, #22282F)' }}
+            style={{
+              height: "28%",
+              background: "linear-gradient(to bottom, transparent, #22282F)",
+            }}
           />
         </div>
 
@@ -160,7 +180,11 @@ export function Home() {
             {neighborhoodPills.map(({ name, lat, lng }) => (
               <button
                 key={name}
-                onClick={() => navigate(`/charities?lat=${lat}&lng=${lng}&neighborhood=${encodeURIComponent(name)}`)}
+                onClick={() =>
+                  navigate(
+                    `/charities?lat=${lat}&lng=${lng}&neighborhood=${encodeURIComponent(name)}`,
+                  )
+                }
                 className="flex-shrink-0 text-sm px-3 py-1.5 rounded-full border border-white/20 bg-white/10 text-white/70 hover:border-brand-accent hover:text-brand-accent transition-colors"
               >
                 {name}
@@ -176,21 +200,24 @@ export function Home() {
           {/* Left: text */}
           <div className="flex-1">
             <h2 className="font-heading font-bold text-2xl md:text-3xl text-text-primary leading-snug">
-             A connection to non-profits in our community, so we can give better.
+              A connection to non-profits in our community, so we can give
+              better.
             </h2>
             <ol className="mt-8 flex flex-col gap-4">
               <li className="flex items-start gap-3">
-                <span className="flex-shrink-0 w-7 h-7 rounded-full bg-brand-secondary text-white text-sm font-bold flex items-center justify-center">
+                <span className="flex-shrink-0 w-7 h-7 rounded-full bg-flair-green text-white text-sm font-bold flex items-center justify-center">
                   1
                 </span>
-                <span className="font-sans text-text-primary pt-0.5">Find trusted local charities in your neighborhood</span>
+                <span className="font-sans text-text-primary pt-0.5">
+                  Find trusted local charities in your neighborhood
+                </span>
               </li>
               <li className="flex items-start gap-3">
-                <span className="flex-shrink-0 w-7 h-7 rounded-full bg-brand-secondary text-white text-sm font-bold flex items-center justify-center">
+                <span className="flex-shrink-0 w-7 h-7 rounded-full bg-flair-green text-white text-sm font-bold flex items-center justify-center">
                   2
                 </span>
                 <span className="font-sans text-text-primary pt-0.5">
-                  Track your giving to see your impact
+                  Give directly to the causes that matter most to you
                 </span>
               </li>
             </ol>
@@ -206,7 +233,8 @@ export function Home() {
             {VALUE_PROP_CAUSES.map((slug) => {
               const color = causeColor([slug]);
               const icon = causeIcon([slug]);
-              const label = SURVEY_TAGS.find((t) => t.slug === slug)?.label ?? slug;
+              const label =
+                SURVEY_TAGS.find((t) => t.slug === slug)?.label ?? slug;
               return (
                 <div
                   key={slug}
@@ -219,7 +247,9 @@ export function Home() {
                   >
                     {icon}
                   </span>
-                  <span className="font-sans text-sm font-medium text-text-primary">{label}</span>
+                  <span className="font-sans text-sm font-medium text-text-primary">
+                    {label}
+                  </span>
                 </div>
               );
             })}
@@ -241,8 +271,8 @@ export function Home() {
                 onClick={() => setSelectedSurveyTag(isSelected ? null : slug)}
                 className={`px-5 py-2.5 rounded-full font-sans text-sm font-medium border transition-colors ${
                   isSelected
-                    ? 'bg-brand-secondary text-white border-brand-secondary'
-                    : 'bg-bg-primary text-text-secondary border-brand-tertiary hover:border-brand-secondary hover:text-text-primary'
+                    ? "bg-brand-secondary text-white border-brand-secondary"
+                    : "bg-bg-primary text-text-secondary border-brand-tertiary hover:border-brand-secondary hover:text-text-primary"
                 }`}
               >
                 {label}
@@ -252,10 +282,13 @@ export function Home() {
         </div>
         <div
           className={`mt-8 transition-opacity duration-300 ${
-            selectedSurveyTag ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            selectedSurveyTag ? "opacity-100" : "opacity-0 pointer-events-none"
           }`}
         >
-          <ButtonLink to={`/charities?tag=${selectedSurveyTag ?? ''}`} variant="link">
+          <ButtonLink
+            to={`/charities?tag=${selectedSurveyTag ?? ""}`}
+            variant="link"
+          >
             {charityCount !== null
               ? `Find ${charityCount} charities helping with ${selectedSurveyLabel} →`
               : `Find charities helping with ${selectedSurveyLabel} →`}

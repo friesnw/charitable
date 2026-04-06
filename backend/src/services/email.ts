@@ -20,7 +20,7 @@ export async function sendMagicLink(email: string, token: string): Promise<void>
           Click the button below to sign in. This link expires in 15 minutes.
         </p>
         <a href="${magicLink}"
-           style="display: inline-block; background: #2563eb; color: white; padding: 14px 28px;
+           style="display: inline-block; background: #ED4213; color: white; padding: 14px 28px;
                   text-decoration: none; border-radius: 6px; font-weight: 500;">
           Sign in to GoodLocal
         </a>

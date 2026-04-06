@@ -87,7 +87,7 @@ npm run backup:prod --prefix backend
 
 | Environment | Frontend | Backend / API | Database |
 |-------------|----------|---------------|----------|
-| **Local** | http://localhost:5173 | http://localhost:4000 | local PostgreSQL (`app_db`) |
+| **Local** | http://localhost:3000 | http://localhost:4000 | local PostgreSQL (`app_db`) |
 | **Dev (Render)** | https://goodlocal-frontend.onrender.com | Render backend service | Render PostgreSQL (dev) |
 | **Prod** | https://goodlocal.org | Render backend service | Render PostgreSQL (prod) |
 

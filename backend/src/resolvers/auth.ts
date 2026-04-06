@@ -1,5 +1,5 @@
 import { pool } from '../db.js';
-import { signToken, generateMagicToken, getMagicLinkExpiry, Context } from '../auth.js';
+import { signToken, generateMagicToken, Context } from '../auth.js';
 import { sendMagicLink } from '../services/email.js';
 import { GraphQLError } from 'graphql';
 
@@ -27,15 +27,14 @@ export const authResolvers = {
     requestMagicLink: async (_: unknown, { email }: { email: string }) => {
       const normalizedEmail = email.toLowerCase().trim();
 
-      // Generate token and expiry
+      // Generate token
       const token = generateMagicToken();
-      const expiresAt = getMagicLinkExpiry();
 
-      // Store in DB
+      // Store in DB — use DB clock for expires_at to avoid JS timezone mismatch
       await pool.query(
         `INSERT INTO magic_link_tokens (email, token, expires_at)
-         VALUES ($1, $2, $3)`,
-        [normalizedEmail, token, expiresAt]
+         VALUES ($1, $2, NOW() + INTERVAL '15 minutes')`,
+        [normalizedEmail, token]
       );
 
       // Send email
