@@ -710,7 +710,7 @@ export function Charities() {
   const [mapVisible, setMapVisible] = useState(false);
 
   // Mobile-specific state
-  const [filterOpen, setFilterOpen] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(true);
   const [sheetState, setSheetState] = useState<"peek" | "full">("peek");
   const [isDraggingSheet, setIsDraggingSheet] = useState(false);
 
@@ -1615,7 +1615,7 @@ export function Charities() {
           </div>
 
           {/* Map controls */}
-          <div className="absolute right-3 bottom-[240px] lg:bottom-6 z-10 flex flex-col rounded-lg shadow-md overflow-hidden border border-gray-200">
+          <div className={`absolute right-3 z-10 flex flex-col rounded-lg shadow-md overflow-hidden border border-gray-200 lg:bottom-6 ${selectedTag ? "bottom-[240px]" : "bottom-6"}`}>
             <button
               onClick={() => mapRef.current?.zoomIn()}
               className="w-9 h-9 bg-white hover:bg-gray-50 flex items-center justify-center text-gray-700 border-b border-gray-200"
@@ -1678,8 +1678,8 @@ export function Charities() {
             </button>
           </div>
 
-          {/* Bottom sheet — mobile only */}
-          <div
+          {/* Bottom sheet — mobile only, shown when a cause tag is selected */}
+          {selectedTag && <div
             ref={sheetRef}
             className="lg:hidden fixed bottom-0 left-0 right-0 z-20 bg-white rounded-t-2xl shadow-2xl flex flex-col"
             style={{
@@ -1776,7 +1776,7 @@ export function Charities() {
                 </Link>
               ))}
             </div>
-          </div>
+          </div>}
 
           <div
             style={{
