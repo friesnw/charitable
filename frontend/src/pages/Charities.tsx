@@ -685,6 +685,7 @@ export function Charities() {
   // URL params from homepage neighborhood navigation — center map without saving preferences
   const urlLat = parseFloat(searchParams.get("lat") ?? "");
   const urlLng = parseFloat(searchParams.get("lng") ?? "");
+  const urlNeighborhood = searchParams.get("neighborhood");
   const hasUrlCenter = !isNaN(urlLat) && !isNaN(urlLng);
 
   const [zoom, setZoom] = useState(11.5);
@@ -846,6 +847,7 @@ export function Charities() {
   // Location from auth preferences
   useEffect(() => {
     if (!isAuthenticated || !prefsData?.myPreferences) return;
+    if (hasUrlCenter) return;
     const { zipCode, neighborhood } = prefsData.myPreferences;
     if (zipCode) {
       setActiveZip(zipCode);
@@ -870,6 +872,7 @@ export function Charities() {
   // Resolve initial map position from localStorage for unauthenticated users.
   useEffect(() => {
     if (!isAuthenticated) {
+      if (hasUrlCenter) return;
       const localZip = localStorage.getItem("userZip");
       if (localZip) {
         resolveZip({ variables: { zip: localZip } }).then(({ data }) => {
@@ -899,10 +902,15 @@ export function Charities() {
     }
   }, [isAuthenticated]);
 
-  // Center map on lat/lng URL params (e.g., from homepage neighborhood pills) — no preference save
+  // Center map on lat/lng URL params (e.g., from homepage neighborhood pills) — saves to localStorage but not auth prefs
   useEffect(() => {
     if (hasUrlCenter) {
       setInitialCenter({ longitude: urlLng, latitude: urlLat, zoom: 14 });
+      if (urlNeighborhood) {
+        setActiveNeighborhood(urlNeighborhood);
+        localStorage.setItem("userNeighborhood", JSON.stringify({ name: urlNeighborhood, lat: urlLat, lng: urlLng }));
+        localStorage.removeItem("userZip");
+      }
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps — intentionally runs once on mount
 
@@ -955,11 +963,8 @@ export function Charities() {
     setActiveNeighborhood(name);
     setActiveZip(null);
     setInitialCenter({ longitude: lng, latitude: lat, zoom: 14 });
-    if (!isAuthenticated)
-      localStorage.setItem(
-        "userNeighborhood",
-        JSON.stringify({ name, lat, lng }),
-      );
+    localStorage.setItem("userNeighborhood", JSON.stringify({ name, lat, lng }));
+    localStorage.removeItem("userZip");
     cancelEditing();
   }
 
@@ -1161,10 +1166,8 @@ export function Charities() {
                             latitude: info.latitude,
                             zoom: info.zoom,
                           });
-                          if (!isAuthenticated) {
-                            localStorage.setItem("userZip", digits);
-                            localStorage.removeItem("userNeighborhood");
-                          }
+                          localStorage.setItem("userZip", digits);
+                          localStorage.removeItem("userNeighborhood");
                           cancelEditing();
                         },
                       );

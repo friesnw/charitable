@@ -160,7 +160,7 @@ export function Home() {
             {neighborhoodPills.map(({ name, lat, lng }) => (
               <button
                 key={name}
-                onClick={() => navigate(`/charities?lat=${lat}&lng=${lng}`)}
+                onClick={() => navigate(`/charities?lat=${lat}&lng=${lng}&neighborhood=${encodeURIComponent(name)}`)}
                 className="flex-shrink-0 text-sm px-3 py-1.5 rounded-full border border-white/20 bg-white/10 text-white/70 hover:border-brand-accent hover:text-brand-accent transition-colors"
               >
                 {name}
