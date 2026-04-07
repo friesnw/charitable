@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { useQuery, gql } from "@apollo/client";
 import { cloudinaryUrl } from "../lib/cloudinary";
@@ -206,6 +206,11 @@ export function Organizations() {
     tagsParam && tagsParam !== "all"
       ? tagsParam.split(",").filter(Boolean)
       : [];
+
+  // Retroactively set flag for anyone who already has a tags param (existing users)
+  useEffect(() => {
+    if (tagsParam !== null) localStorage.setItem("hasPickedCauses", "true");
+  }, [tagsParam]);
 
   const [filterOverlayOpen, setFilterOverlayOpen] = useState(false);
 
