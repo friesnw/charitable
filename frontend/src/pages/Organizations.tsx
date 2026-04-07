@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { useQuery, gql } from "@apollo/client";
 import { cloudinaryUrl } from "../lib/cloudinary";
-import { causeColor, causeIcon, causeColorMuted } from "../lib/causeColors";
+import { causeColor, causeIcon } from "../lib/causeColors";
 import { nearestNeighborhood } from "../lib/neighborhoods";
 
 const GET_CAUSES = gql`
@@ -74,11 +74,9 @@ function primaryNeighborhood(charity: Charity): string | null {
 function CharityCard({
   charity,
   tagLabels,
-  tagStyle,
 }: {
   charity: Charity;
   tagLabels: Map<string, string>;
-  tagStyle: string;
 }) {
   const heroLocation = charity.locations.find((l) => l.photoUrl) ?? charity.locations[0] ?? null;
   const featuredPhoto = charity.coverPhotoUrl ?? heroLocation?.photoUrl ?? null;
@@ -128,32 +126,18 @@ function CharityCard({
           </div>
           {charity.causeTags.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-1.5">
-              {charity.causeTags.map((tag) =>
-                tagStyle === 'b' ? (
-                  <span
-                    key={tag}
-                    className="text-xs px-1.5 py-0.5 rounded-full font-medium"
-                    style={{
-                      backgroundColor: 'rgba(237,66,19,0.08)',
-                      color: 'var(--brand-secondary)',
-                    }}
-                  >
-                    {tagLabels.get(tag) ?? tag}
-                  </span>
-                ) : (
-                  <span
-                    key={tag}
-                    className="text-xs px-1.5 py-0.5 rounded-full font-medium inline-flex items-center gap-0.5"
-                    style={{
-                      backgroundColor: `${causeColorMuted([tag])}18`,
-                      color: causeColorMuted([tag]),
-                    }}
-                  >
-                    <span className="text-[8px] leading-none" aria-hidden>●</span>
-                    {tagLabels.get(tag) ?? tag}
-                  </span>
-                )
-              )}
+              {charity.causeTags.map((tag) => (
+                <span
+                  key={tag}
+                  className="text-xs px-1.5 py-0.5 rounded-full font-medium"
+                  style={{
+                    backgroundColor: `${causeColor([tag])}18`,
+                    color: causeColor([tag]),
+                  }}
+                >
+                  {causeIcon([tag])} {tagLabels.get(tag) ?? tag}
+                </span>
+              ))}
             </div>
           )}
           </div>
@@ -198,7 +182,6 @@ export function Organizations() {
   const [searchParams, setSearchParams] = useSearchParams();
   // tags= is comma-separated multi-select; 'all' means no filter
   const tagsParam = searchParams.get("tags");
-  const tagStyle = searchParams.get("tagStyle") ?? "a";
   // Only redirect to /causes on first-ever visit (before they've picked causes)
   const hasPickedCauses = localStorage.getItem("hasPickedCauses") === "true";
   const showList = tagsParam !== null || hasPickedCauses;
@@ -269,32 +252,20 @@ export function Organizations() {
         {/* Selected tags + filter button */}
         <div className="flex items-center gap-2 flex-wrap">
           {selectedTags.length > 0 ? (
-            selectedTags.map((tag) =>
-              tagStyle === 'b' ? (
-                <span
-                  key={tag}
-                  className="text-xs px-3 py-1.5 rounded-full font-medium"
-                  style={{
-                    backgroundColor: 'rgba(237,66,19,0.08)',
-                    color: 'var(--brand-secondary)',
-                  }}
-                >
-                  {tagLabels.get(tag) ?? tag}
-                </span>
-              ) : (
-                <span
-                  key={tag}
-                  className="text-xs px-3 py-1.5 rounded-full font-medium inline-flex items-center gap-1"
-                  style={{
-                    backgroundColor: `${causeColorMuted([tag])}18`,
-                    color: causeColorMuted([tag]),
-                  }}
-                >
-                  <span className="text-[8px] leading-none" aria-hidden>●</span>
-                  {tagLabels.get(tag) ?? tag}
-                </span>
-              )
-            )
+            selectedTags.map((tag) => (
+              <span
+                key={tag}
+                className="text-xs px-3 py-1.5 rounded-full font-medium flex items-center gap-1"
+                style={{
+                  backgroundColor: causeColor([tag]),
+                  color: "white",
+                  border: `2px solid ${causeColor([tag])}`,
+                }}
+              >
+                <span style={{ fontSize: 11 }}>{causeIcon([tag])}</span>
+                {tagLabels.get(tag) ?? tag}
+              </span>
+            ))
           ) : (
             <span className="text-sm text-text-secondary">All causes</span>
           )}
@@ -343,7 +314,6 @@ export function Organizations() {
               key={charity.id}
               charity={charity}
               tagLabels={tagLabels}
-              tagStyle={tagStyle}
             />
           ))}
         </div>
