@@ -162,11 +162,11 @@ function pinSize(zoom: number): number {
 }
 
 function snapZoom(zoom: number): number {
-  if (zoom < 9.5) return 8;    // full metro → max clusters
-  if (zoom < 11) return 10;    // large district clusters
+  if (zoom < 9.5) return 8; // full metro → max clusters
+  if (zoom < 11) return 10; // large district clusters
   if (zoom < 12.5) return 11.5; // neighborhood clusters
-  if (zoom < 14) return 13;    // block-level clusters
-  return 15;                   // individual pins
+  if (zoom < 14) return 13; // block-level clusters
+  return 15; // individual pins
 }
 
 function CauseDot({
@@ -313,7 +313,7 @@ function LocationDrawer({
                         to={`/charities/${charity.slug}`}
                         className="block text-center py-2.5 rounded-lg text-sm font-medium text-white bg-brand-secondary hover:opacity-90 transition-opacity"
                       >
-                        View organization →
+                        View charity →
                       </Link>
                     </div>
                   </div>
@@ -407,7 +407,7 @@ function LocationDrawer({
                         to={`/charities/${charity.slug}`}
                         className="block text-center py-2.5 rounded-lg text-sm font-medium text-white bg-brand-secondary hover:opacity-90 transition-opacity"
                       >
-                        View organization →
+                        View charity →
                       </Link>
                     </div>
                   </div>
@@ -747,6 +747,7 @@ export function Charities() {
   } | null>(null);
   const awaitingInitialMove = useRef(false);
   const isInitiallyPositioned = useRef(false);
+  const programmaticFlyRef = useRef(false);
 
   const [introSkipped, setIntroSkipped] = useState(true);
   const [activeNeighborhood, setActiveNeighborhood] = useState<string | null>(
@@ -806,10 +807,15 @@ export function Charities() {
 
   const snappedZoom = snapZoom(zoom);
   const clusterRadius =
-    snappedZoom <= 8 ? 80 :
-    snappedZoom <= 10 ? 70 :
-    snappedZoom <= 11.5 ? 60 :
-    snappedZoom <= 13 ? 50 : 40;
+    snappedZoom <= 8
+      ? 80
+      : snappedZoom <= 10
+        ? 70
+        : snappedZoom <= 11.5
+          ? 60
+          : snappedZoom <= 13
+            ? 50
+            : 40;
   const { clusters, supercluster } = useSupercluster({
     points: clusterPoints,
     bounds,
@@ -825,8 +831,7 @@ export function Charities() {
     .filter((t) => !FEATURED_TAGS.includes(t))
     .sort();
   const effectiveShowAll =
-    showAllTags ||
-    selectedTags.some((t) => remainingTags.includes(t));
+    showAllTags || selectedTags.some((t) => remainingTags.includes(t));
   const visibleTags = effectiveShowAll
     ? [...featuredTags, ...remainingTags]
     : featuredTags;
@@ -934,7 +939,10 @@ export function Charities() {
       setInitialCenter({ longitude: urlLng, latitude: urlLat, zoom: 14 });
       if (urlNeighborhood) {
         setActiveNeighborhood(urlNeighborhood);
-        localStorage.setItem("userNeighborhood", JSON.stringify({ name: urlNeighborhood, lat: urlLat, lng: urlLng }));
+        localStorage.setItem(
+          "userNeighborhood",
+          JSON.stringify({ name: urlNeighborhood, lat: urlLat, lng: urlLng }),
+        );
         localStorage.removeItem("userZip");
       }
     }
@@ -989,7 +997,10 @@ export function Charities() {
     setActiveNeighborhood(name);
     setActiveZip(null);
     setInitialCenter({ longitude: lng, latitude: lat, zoom: 14 });
-    localStorage.setItem("userNeighborhood", JSON.stringify({ name, lat, lng }));
+    localStorage.setItem(
+      "userNeighborhood",
+      JSON.stringify({ name, lat, lng }),
+    );
     localStorage.removeItem("userZip");
     cancelEditing();
   }
@@ -1046,9 +1057,22 @@ export function Charities() {
         zoom: map.getZoom(),
       };
       const isMobile = window.innerWidth < 1024;
+      programmaticFlyRef.current = true;
       map.flyTo({
         center: [group.lng, group.lat],
         zoom: isMobile ? 13 : 14,
+        duration: 600,
+        padding: pad,
+      });
+    } else if (selectedLocationId) {
+      const loc = charities
+        .flatMap((c) => c.locations)
+        .find((l) => l.id === selectedLocationId);
+      if (!loc || loc.latitude == null || loc.longitude == null) return;
+      programmaticFlyRef.current = true;
+      map.flyTo({
+        center: [loc.longitude, loc.latitude],
+        zoom: 14,
         duration: 600,
         padding: pad,
       });
@@ -1064,6 +1088,7 @@ export function Charities() {
         center: [center.lng, center.lat],
         zoom: map.getZoom(),
       };
+      programmaticFlyRef.current = true;
       if (locs.length === 1) {
         map.flyTo({
           center: [locs[0].longitude!, locs[0].latitude!],
@@ -1083,6 +1108,7 @@ export function Charities() {
         );
       }
     } else if (savedView.current) {
+      programmaticFlyRef.current = true;
       map.flyTo({
         center: savedView.current.center,
         zoom: savedView.current.zoom,
@@ -1090,12 +1116,17 @@ export function Charities() {
       });
       savedView.current = null;
     }
-  }, [selectedCharityId, selectedGroupKey]);
+  }, [selectedCharityId, selectedGroupKey, selectedLocationId]);
 
-  // Clear selection when zoom snaps to a tier where the selected pin is now inside a cluster
+  // Clear selection when the user manually zooms out past a cluster boundary.
+  // Guarded by programmaticFlyRef so flyTo animations don't race-clear selection.
   const prevSnappedZoomRef = useRef(snappedZoom);
   useEffect(() => {
-    if (snappedZoom < prevSnappedZoomRef.current && selectedGroupKey) {
+    if (
+      snappedZoom < prevSnappedZoomRef.current &&
+      selectedGroupKey &&
+      !programmaticFlyRef.current
+    ) {
       setSelectedGroupKey(null);
       setSelectedCharityId(null);
       setSelectedLocationId(null);
@@ -1395,11 +1426,12 @@ export function Charities() {
                             <button
                               key={loc.id}
                               onClick={() => {
-                                setSelectedLocationId(
-                                  isHighlighted ? null : loc.id,
-                                );
-                                if (isShared && locGroup)
-                                  setSelectedGroupKey(groupKey(locGroup));
+                                const next = isHighlighted ? null : loc.id;
+                                setSelectedLocationId(next);
+                                if (locGroup)
+                                  setSelectedGroupKey(
+                                    next ? groupKey(locGroup) : null,
+                                  );
                               }}
                               className={`w-full text-left transition-colors cursor-pointer ${
                                 isHighlighted
@@ -1619,7 +1651,9 @@ export function Charities() {
           </div>
 
           {/* Map controls */}
-          <div className={`absolute right-3 z-10 flex flex-col rounded-lg shadow-md overflow-hidden border border-gray-200 lg:bottom-6 ${selectedTags.length > 0 ? "bottom-[240px]" : "bottom-6"}`}>
+          <div
+            className={`absolute right-3 z-10 flex flex-col rounded-lg shadow-md overflow-hidden border border-gray-200 lg:bottom-6 ${selectedTags.length > 0 ? "bottom-[240px]" : "bottom-6"}`}
+          >
             <button
               onClick={() => mapRef.current?.zoomIn()}
               className="w-9 h-9 bg-white hover:bg-gray-50 flex items-center justify-center text-gray-700 border-b border-gray-200"
@@ -1683,104 +1717,108 @@ export function Charities() {
           </div>
 
           {/* Bottom sheet — mobile only, shown when a cause tag is selected */}
-          {selectedTags.length > 0 && <div
-            ref={sheetRef}
-            className="lg:hidden fixed bottom-0 left-0 right-0 z-20 bg-white rounded-t-2xl shadow-2xl flex flex-col"
-            style={{
-              height: "85vh",
-              transform:
-                sheetState === "peek"
-                  ? `translateY(calc(100% - ${PEEK_HEIGHT}px))`
-                  : "translateY(0)",
-              transition: isDraggingSheet ? "none" : "transform 0.3s ease-out",
-            }}
-            onTouchStart={handleSheetTouchStart}
-            onTouchMove={handleSheetTouchMove}
-            onTouchEnd={handleSheetTouchEnd}
-          >
-            {/* Drag handle */}
-            <div className="flex justify-center pt-3 pb-2 flex-shrink-0">
-              <div className="w-10 h-1 rounded-full bg-gray-300" />
-            </div>
+          {selectedTags.length > 0 && (
+            <div
+              ref={sheetRef}
+              className="lg:hidden fixed bottom-0 left-0 right-0 z-20 bg-white rounded-t-2xl shadow-2xl flex flex-col"
+              style={{
+                height: "85vh",
+                transform:
+                  sheetState === "peek"
+                    ? `translateY(calc(100% - ${PEEK_HEIGHT}px))`
+                    : "translateY(0)",
+                transition: isDraggingSheet
+                  ? "none"
+                  : "transform 0.3s ease-out",
+              }}
+              onTouchStart={handleSheetTouchStart}
+              onTouchMove={handleSheetTouchMove}
+              onTouchEnd={handleSheetTouchEnd}
+            >
+              {/* Drag handle */}
+              <div className="flex justify-center pt-3 pb-2 flex-shrink-0">
+                <div className="w-10 h-1 rounded-full bg-gray-300" />
+              </div>
 
-            {/* Count header */}
-            <div className="px-4 pb-2 flex-shrink-0">
-              <p className="text-sm font-semibold text-gray-700">
-                {loading ? "Loading..." : `${charities.length} charities`}
-              </p>
-            </div>
-            {/* List */}
-            <div className="overflow-y-auto flex-1">
-              {loading && (
-                <>
-                  <SkeletonCard />
-                  <SkeletonCard />
-                  <SkeletonCard />
-                </>
-              )}
-              {error && (
-                <p className="text-red-500 p-4 text-sm">
-                  Error: {error.message}
+              {/* Count header */}
+              <div className="px-4 pb-2 flex-shrink-0">
+                <p className="text-sm font-semibold text-gray-700">
+                  {loading ? "Loading..." : `${charities.length} charities`}
                 </p>
-              )}
-              {charities.map((charity) => (
-                <Link
-                  key={charity.id}
-                  to={`/charities/${charity.slug}`}
-                  className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors"
-                >
-                  {charity.logoUrl ? (
-                    <img
-                      src={cloudinaryUrl(charity.logoUrl, {
-                        w: 48,
-                        h: 48,
-                        fit: "fit",
-                      })}
-                      alt={charity.name}
-                      className="w-10 h-10 rounded-full object-contain flex-shrink-0 border border-gray-100"
-                    />
-                  ) : (
-                    <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-500 flex-shrink-0">
-                      {charity.name.slice(0, 2).toUpperCase()}
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-gray-900 text-sm truncate">
-                      {charity.name}
-                    </p>
-                    {charity.description && (
-                      <p className="text-xs text-gray-500 line-clamp-2 mt-0.5">
-                        {charity.description}
-                      </p>
-                    )}
-                    {charity.causeTags.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {charity.causeTags.slice(0, 3).map((tag) => (
-                          <span
-                            key={tag}
-                            className="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded"
-                          >
-                            {tagLabels.get(tag) ?? tag}
-                          </span>
-                        ))}
+              </div>
+              {/* List */}
+              <div className="overflow-y-auto flex-1">
+                {loading && (
+                  <>
+                    <SkeletonCard />
+                    <SkeletonCard />
+                    <SkeletonCard />
+                  </>
+                )}
+                {error && (
+                  <p className="text-red-500 p-4 text-sm">
+                    Error: {error.message}
+                  </p>
+                )}
+                {charities.map((charity) => (
+                  <Link
+                    key={charity.id}
+                    to={`/charities/${charity.slug}`}
+                    className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                  >
+                    {charity.logoUrl ? (
+                      <img
+                        src={cloudinaryUrl(charity.logoUrl, {
+                          w: 48,
+                          h: 48,
+                          fit: "fit",
+                        })}
+                        alt={charity.name}
+                        className="w-10 h-10 rounded-full object-contain flex-shrink-0 border border-gray-100"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-500 flex-shrink-0">
+                        {charity.name.slice(0, 2).toUpperCase()}
                       </div>
                     )}
-                  </div>
-                  <svg
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                    className="w-4 h-4 text-gray-300 flex-shrink-0"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      clipRule="evenodd"
-                      d="M7.21 14.77a.75.75 0 0 1 .02-1.06L11.168 10 7.23 6.29a.75.75 0 1 1 1.04-1.08l4.5 4.25a.75.75 0 0 1 0 1.08l-4.5 4.25a.75.75 0 0 1-1.06-.02Z"
-                    />
-                  </svg>
-                </Link>
-              ))}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-gray-900 text-sm truncate">
+                        {charity.name}
+                      </p>
+                      {charity.description && (
+                        <p className="text-xs text-gray-500 line-clamp-2 mt-0.5">
+                          {charity.description}
+                        </p>
+                      )}
+                      {charity.causeTags.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {charity.causeTags.slice(0, 3).map((tag) => (
+                            <span
+                              key={tag}
+                              className="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded"
+                            >
+                              {tagLabels.get(tag) ?? tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <svg
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                      className="w-4 h-4 text-gray-300 flex-shrink-0"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        clipRule="evenodd"
+                        d="M7.21 14.77a.75.75 0 0 1 .02-1.06L11.168 10 7.23 6.29a.75.75 0 1 1 1.04-1.08l4.5 4.25a.75.75 0 0 1 0 1.08l-4.5 4.25a.75.75 0 0 1-1.06-.02Z"
+                      />
+                    </svg>
+                  </Link>
+                ))}
+              </div>
             </div>
-          </div>}
+          )}
 
           <div
             style={{
@@ -1812,20 +1850,35 @@ export function Charities() {
                   ]);
               }}
               onMoveEnd={() => {
+                programmaticFlyRef.current = false;
                 if (awaitingInitialMove.current) {
                   awaitingInitialMove.current = false;
                   setMapVisible(true);
                 }
               }}
             >
-              {clusters.map((feature) => {
-                const [lng, lat] = feature.geometry.coordinates;
-                const props = feature.properties as unknown as {
-                  cluster: boolean;
-                  point_count: number;
-                  cluster_id: number;
-                  index: number;
-                };
+              {[...clusters]
+                .sort((a) => {
+                  const p = a.properties as { cluster?: boolean; index?: number };
+                  if (p.cluster) return 0;
+                  const g = groups[p.index!];
+                  if (!g) return 0;
+                  const gKey = groupKey(g);
+                  return gKey === selectedGroupKey ||
+                    (selectedGroupKey == null &&
+                      selectedLocationId != null &&
+                      g.entries.some((e) => e.location.id === selectedLocationId))
+                    ? 1
+                    : -1;
+                })
+                .map((feature) => {
+                  const [lng, lat] = feature.geometry.coordinates;
+                  const props = feature.properties as unknown as {
+                    cluster: boolean;
+                    point_count: number;
+                    cluster_id: number;
+                    index: number;
+                  };
 
                 if (props.cluster) {
                   const leaves =
@@ -1867,7 +1920,13 @@ export function Charities() {
                 const group = groups[props.index];
                 if (!group) return null;
                 const key = groupKey(group);
-                const isSelected = key === selectedGroupKey;
+                const isSelected =
+                  key === selectedGroupKey ||
+                  (selectedGroupKey == null &&
+                    selectedLocationId != null &&
+                    group.entries.some(
+                      (e) => e.location.id === selectedLocationId,
+                    ));
                 const isHovered = group.entries.some(
                   (e) => e.charity.id === hoveredCharityId,
                 );
