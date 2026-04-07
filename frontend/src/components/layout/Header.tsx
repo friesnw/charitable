@@ -93,8 +93,8 @@ export function Header() {
               <img src="/logo-icon.svg" alt="" aria-hidden="true" className="h-6 w-auto" />
             </Link>
             <div className="hidden lg:flex items-center gap-6 ml-4 mt-1">
-              <Link to="/charities" className="text-white/70 hover:text-white text-sm">Explore Map</Link>
-              <Link to="/organizations" className="text-white/70 hover:text-white text-sm">Browse Nonprofits</Link>
+              <Link to="/map" className="text-white/70 hover:text-white text-sm">Explore Map</Link>
+              <Link to="/list" className="text-white/70 hover:text-white text-sm">Browse Nonprofits</Link>
             </div>
           </div>
 
@@ -241,14 +241,14 @@ export function Header() {
           {/* Nav links */}
           <nav className="flex-1 px-4 py-2 overflow-y-auto">
             <Link
-              to="/charities"
+              to="/map"
               onClick={closeMobileMenu}
               className="flex items-center px-2 py-4 text-lg text-white border-b border-white/10"
             >
               Explore Map
             </Link>
             <Link
-              to="/organizations"
+              to="/list"
               onClick={closeMobileMenu}
               className="flex items-center px-2 py-4 text-lg text-white border-b border-white/10"
             >

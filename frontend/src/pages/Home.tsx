@@ -163,7 +163,7 @@ export function Home() {
             Discover and support high-impact Denver charities.
           </p>
           <div className="flex items-center justify-center gap-4 mt-8 flex-wrap">
-            <ButtonLink to="/charities" variant="primary">
+            <ButtonLink to="/map" variant="primary">
               Get started
             </ButtonLink>
           </div>
@@ -180,7 +180,7 @@ export function Home() {
                 key={name}
                 onClick={() =>
                   navigate(
-                    `/charities?lat=${lat}&lng=${lng}&neighborhood=${encodeURIComponent(name)}`,
+                    `/map?lat=${lat}&lng=${lng}&neighborhood=${encodeURIComponent(name)}`,
                   )
                 }
                 className="flex-shrink-0 text-sm px-3 py-1.5 rounded-full border border-white/20 bg-white/10 text-white/70 hover:border-brand-accent hover:text-brand-accent transition-colors"
@@ -220,7 +220,7 @@ export function Home() {
               </li>
             </ol>
             <div className="mt-10">
-              <ButtonLink to="/charities" variant="primary">
+              <ButtonLink to="/map" variant="primary">
                 Get started
               </ButtonLink>
             </div>
@@ -284,7 +284,7 @@ export function Home() {
           }`}
         >
           <ButtonLink
-            to={`/charities?tag=${selectedSurveyTag ?? ""}`}
+            to={`/map?tag=${selectedSurveyTag ?? ""}`}
             variant="link"
           >
             {charityCount !== null
