@@ -857,12 +857,6 @@ export function Charities() {
       updateSelectedTags([]);
     } else if (sheetState === "full" && delta > 60) {
       setSheetState("peek");
-    } else if (sheetRef.current) {
-      // snap back to current position
-      sheetRef.current.style.transform =
-        sheetState === "peek"
-          ? `translateY(calc(100% - ${PEEK_HEIGHT}px))`
-          : "translateY(0)";
     }
     setIsDraggingSheet(false);
   }
