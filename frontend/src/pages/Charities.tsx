@@ -5,6 +5,7 @@ import { cloudinaryUrl } from "../lib/cloudinary";
 import {
   causeColor,
   causeIcon,
+  causeColorMuted,
   FEATURED_TAGS,
   causesToTagLabels,
 } from "../lib/causeColors";
@@ -701,6 +702,8 @@ export function Charities() {
     const legacyTag = searchParams.get("tag");
     return legacyTag ? [legacyTag] : [];
   })();
+
+  const tagStyle = searchParams.get("tagStyle") ?? "a";
 
   // URL params from homepage neighborhood navigation — center map without saving preferences
   const urlLat = parseFloat(searchParams.get("lat") ?? "");
@@ -1602,7 +1605,14 @@ export function Charities() {
             <div className="pointer-events-auto flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               <button
                 onClick={() => updateSelectedTags([])}
-                className={`flex-shrink-0 text-xs px-3 py-1.5 rounded-full shadow font-medium transition-colors ${selectedTags.length === 0 ? "bg-gray-900 text-white" : "bg-white/90 backdrop-blur-sm text-gray-700 border border-gray-200 hover:bg-white"}`}
+                className="flex-shrink-0 text-xs px-3 py-1.5 rounded-full shadow font-medium transition-colors"
+                style={
+                  selectedTags.length === 0
+                    ? tagStyle === "b"
+                      ? { backgroundColor: "var(--brand-secondary)", color: "white" }
+                      : { backgroundColor: "#111827", color: "white" }
+                    : { backgroundColor: "rgba(255,255,255,0.9)", color: "#374151", border: "1px solid #e5e7eb" }
+                }
               >
                 All
               </button>
@@ -1621,20 +1631,16 @@ export function Charities() {
                     }}
                     className="flex-shrink-0 text-xs px-3 py-1.5 rounded-full shadow font-medium transition-all flex items-center gap-1"
                     style={
-                      isActive
-                        ? {
-                            backgroundColor: causeColor([tag]),
-                            color: "white",
-                            border: `2px solid ${causeColor([tag])}`,
-                          }
-                        : {
-                            backgroundColor: "rgba(255,255,255,0.9)",
-                            color: "#374151",
-                            border: "1px solid #e5e7eb",
-                          }
+                      tagStyle === "b"
+                        ? isActive
+                          ? { backgroundColor: "var(--brand-secondary)", color: "white", border: "2px solid var(--brand-secondary)" }
+                          : { backgroundColor: "rgba(255,255,255,0.9)", color: "var(--brand-secondary)", border: "1px solid var(--brand-secondary)" }
+                        : isActive
+                          ? { backgroundColor: causeColorMuted([tag]), color: "white", border: `2px solid ${causeColorMuted([tag])}` }
+                          : { backgroundColor: "rgba(255,255,255,0.9)", color: causeColorMuted([tag]), border: `1px solid ${causeColorMuted([tag])}99` }
                     }
                   >
-                    <span style={{ fontSize: 11 }}>{causeIcon([tag])}</span>
+                    {tagStyle !== "b" && <span className="text-[8px] leading-none" aria-hidden>●</span>}
                     {tagLabels.get(tag) ?? tag}
                   </button>
                 );
