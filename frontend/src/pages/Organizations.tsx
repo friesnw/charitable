@@ -129,13 +129,9 @@ function CharityCard({
               {charity.causeTags.map((tag) => (
                 <span
                   key={tag}
-                  className="text-xs px-1.5 py-0.5 rounded-full font-medium"
-                  style={{
-                    backgroundColor: `${causeColor([tag])}18`,
-                    color: causeColor([tag]),
-                  }}
+                  className="text-xs px-1.5 py-0.5 bg-bg-accent text-text-secondary rounded"
                 >
-                  {causeIcon([tag])} {tagLabels.get(tag) ?? tag}
+                  {tagLabels.get(tag) ?? tag}
                 </span>
               ))}
             </div>
