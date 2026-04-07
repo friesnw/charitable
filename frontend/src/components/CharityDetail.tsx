@@ -208,6 +208,17 @@ export function CharityDetail({ charity, tagLabels }: CharityDetailProps) {
                   {charity.description.split('\n').filter(Boolean).map((para, i) => (
                     <p key={i} className="text-gray-800 leading-relaxed text-base mt-3 first:mt-0">{para}</p>
                   ))}
+                  {charity.websiteUrl && (
+                    <a
+                      href={charity.websiteUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 underline underline-offset-2 transition-colors mt-3"
+                    >
+                      <Icon name="globe" className="w-3.5 h-3.5 shrink-0" />
+                      {bareDomain(charity.websiteUrl)}
+                    </a>
+                  )}
                 </section>
               )}
               {highlights.length > 0 && (
