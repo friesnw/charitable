@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { useQuery, gql } from "@apollo/client";
 import { cloudinaryUrl } from "../lib/cloudinary";
@@ -129,13 +129,9 @@ function CharityCard({
               {charity.causeTags.map((tag) => (
                 <span
                   key={tag}
-                  className="text-xs px-1.5 py-0.5 rounded-full font-medium"
-                  style={{
-                    backgroundColor: `${causeColor([tag])}18`,
-                    color: causeColor([tag]),
-                  }}
+                  className="text-xs px-1.5 py-0.5 bg-bg-accent text-text-secondary rounded"
                 >
-                  {causeIcon([tag])} {tagLabels.get(tag) ?? tag}
+                  {tagLabels.get(tag) ?? tag}
                 </span>
               ))}
             </div>
@@ -182,11 +178,18 @@ export function Organizations() {
   const [searchParams, setSearchParams] = useSearchParams();
   // tags= is comma-separated multi-select; 'all' means no filter
   const tagsParam = searchParams.get("tags");
-  const showList = tagsParam !== null;
+  // Only redirect to /causes on first-ever visit (before they've picked causes)
+  const hasPickedCauses = localStorage.getItem("hasPickedCauses") === "true";
+  const showList = tagsParam !== null || hasPickedCauses;
   const selectedTags =
     tagsParam && tagsParam !== "all"
       ? tagsParam.split(",").filter(Boolean)
       : [];
+
+  // Retroactively set flag for anyone who already has a tags param (existing users)
+  useEffect(() => {
+    if (tagsParam !== null) localStorage.setItem("hasPickedCauses", "true");
+  }, [tagsParam]);
 
   const [filterOverlayOpen, setFilterOverlayOpen] = useState(false);
 
@@ -248,13 +251,15 @@ export function Organizations() {
             selectedTags.map((tag) => (
               <span
                 key={tag}
-                className="text-xs px-3 py-1.5 rounded-full font-medium"
+                className="text-xs px-3 py-1.5 rounded-full font-medium flex items-center gap-1"
                 style={{
-                  backgroundColor: `${causeColor([tag])}18`,
-                  color: causeColor([tag]),
+                  backgroundColor: causeColor([tag]),
+                  color: "white",
+                  border: `2px solid ${causeColor([tag])}`,
                 }}
               >
-                {causeIcon([tag])} {tagLabels.get(tag) ?? tag}
+                <span style={{ fontSize: 11 }}>{causeIcon([tag])}</span>
+                {tagLabels.get(tag) ?? tag}
               </span>
             ))
           ) : (

@@ -84,7 +84,7 @@ export function Causes() {
 
         <button
           type="button"
-          onClick={() => navigate("/list?tags=all")}
+          onClick={() => { localStorage.setItem("hasPickedCauses", "true"); navigate("/list?tags=all"); }}
           className="mt-10 text-sm text-text-secondary hover:text-text-primary underline underline-offset-2 transition-colors"
         >
           Browse all organizations →
@@ -101,7 +101,7 @@ export function Causes() {
       >
         <button
           type="button"
-          onClick={() => navigate(`/list?tags=${pickerTags.join(",")}`)}
+          onClick={() => { localStorage.setItem("hasPickedCauses", "true"); navigate(`/list?tags=${pickerTags.join(",")}`); }}
           className="w-full max-w-sm mx-auto block py-3.5 rounded-full bg-brand-secondary text-white font-semibold text-sm"
         >
           See organizations →

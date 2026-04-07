@@ -35,6 +35,7 @@ export const CAUSE_COLORS: Record<string, string> = {
 
 export const DEFAULT_CAUSE_COLOR = '#0EA5E9';
 
+
 export const FEATURED_TAGS = [
   'hunger',
   'youth',

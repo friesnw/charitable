@@ -1622,16 +1622,8 @@ export function Charities() {
                     className="flex-shrink-0 text-xs px-3 py-1.5 rounded-full shadow font-medium transition-all flex items-center gap-1"
                     style={
                       isActive
-                        ? {
-                            backgroundColor: causeColor([tag]),
-                            color: "white",
-                            border: `2px solid ${causeColor([tag])}`,
-                          }
-                        : {
-                            backgroundColor: "rgba(255,255,255,0.9)",
-                            color: "#374151",
-                            border: "1px solid #e5e7eb",
-                          }
+                        ? { backgroundColor: causeColor([tag]), color: "white", border: `2px solid ${causeColor([tag])}` }
+                        : { backgroundColor: "rgba(255,255,255,0.9)", color: "#374151", border: "1px solid #e5e7eb" }
                     }
                   >
                     <span style={{ fontSize: 11 }}>{causeIcon([tag])}</span>
