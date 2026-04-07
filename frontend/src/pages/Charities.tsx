@@ -162,9 +162,11 @@ function pinSize(zoom: number): number {
 }
 
 function snapZoom(zoom: number): number {
-  if (zoom < 9.5) return 8; // full city → large clusters
-  if (zoom < 12) return 11; // neighborhood level → smaller clusters
-  return 15; // zoomed in → individual pins
+  if (zoom < 9.5) return 8;    // full metro → max clusters
+  if (zoom < 11) return 10;    // large district clusters
+  if (zoom < 12.5) return 11.5; // neighborhood clusters
+  if (zoom < 14) return 13;    // block-level clusters
+  return 15;                   // individual pins
 }
 
 function CauseDot({
@@ -637,22 +639,34 @@ function StackedPin({
   );
 }
 
+function clusterPinSize(snappedZoom: number): number {
+  if (snappedZoom <= 8) return 52;
+  if (snappedZoom <= 10) return 48;
+  if (snappedZoom <= 11.5) return 44;
+  if (snappedZoom <= 13) return 38;
+  return 32;
+}
+
 function ClusterPin({
   count,
   topCauseTags,
+  snappedZoom,
   onClick,
 }: {
   count: number;
   topCauseTags: string[];
+  snappedZoom: number;
   onClick: () => void;
 }) {
   const color = causeColor(topCauseTags);
+  const size = clusterPinSize(snappedZoom);
+  const fontSize = size <= 38 ? 11 : 13;
   return (
     <div
       onClick={onClick}
       style={{
-        width: 44,
-        height: 44,
+        width: size,
+        height: size,
         borderRadius: "50%",
         backgroundColor: color,
         border: "3px solid white",
@@ -665,7 +679,7 @@ function ClusterPin({
       }}
     >
       <span
-        style={{ color: "white", fontWeight: 700, fontSize: 13, lineHeight: 1 }}
+        style={{ color: "white", fontWeight: 700, fontSize, lineHeight: 1 }}
       >
         {count > 99 ? "99+" : count}
       </span>
@@ -792,7 +806,11 @@ export function Charities() {
   );
 
   const snappedZoom = snapZoom(zoom);
-  const clusterRadius = snappedZoom <= 10 ? 60 : 60;
+  const clusterRadius =
+    snappedZoom <= 8 ? 80 :
+    snappedZoom <= 10 ? 70 :
+    snappedZoom <= 11.5 ? 60 :
+    snappedZoom <= 13 ? 50 : 40;
   const { clusters, supercluster } = useSupercluster({
     points: clusterPoints,
     bounds,
@@ -835,8 +853,16 @@ export function Charities() {
     const delta = e.changedTouches[0].clientY - sheetTouchStartY.current;
     if (sheetState === "peek" && delta < -60) {
       setSheetState("full");
+    } else if (sheetState === "peek" && delta > 80) {
+      updateSelectedTags([]);
     } else if (sheetState === "full" && delta > 60) {
       setSheetState("peek");
+    } else if (sheetRef.current) {
+      // snap back to current position
+      sheetRef.current.style.transform =
+        sheetState === "peek"
+          ? `translateY(calc(100% - ${PEEK_HEIGHT}px))`
+          : "translateY(0)";
     }
     setIsDraggingSheet(false);
   }
@@ -1847,6 +1873,7 @@ export function Charities() {
                       <ClusterPin
                         count={props.point_count}
                         topCauseTags={topCauseTags}
+                        snappedZoom={snappedZoom}
                         onClick={() => {
                           const expansionZoom = Math.min(
                             (supercluster?.getClusterExpansionZoom(
