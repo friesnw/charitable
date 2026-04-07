@@ -65,9 +65,7 @@ const PAN_STOPS = [
 export function Home() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const [selectedSurveyTag, setSelectedSurveyTag] = useState<string | null>(
-    null,
-  );
+  const [selectedSurveyTag, setSelectedSurveyTag] = useState<string | null>(null);
   const [mapReady, setMapReady] = useState(false);
   const mapRef = useRef<MapRef>(null);
   const stopIndexRef = useRef(0);
