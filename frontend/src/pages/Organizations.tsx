@@ -199,7 +199,9 @@ export function Organizations() {
   // tags= is comma-separated multi-select; 'all' means no filter
   const tagsParam = searchParams.get("tags");
   const tagStyle = searchParams.get("tagStyle") ?? "a";
-  const showList = tagsParam !== null;
+  // Only redirect to /causes on first-ever visit (before they've picked causes)
+  const hasPickedCauses = localStorage.getItem("hasPickedCauses") === "true";
+  const showList = tagsParam !== null || hasPickedCauses;
   const selectedTags =
     tagsParam && tagsParam !== "all"
       ? tagsParam.split(",").filter(Boolean)
