@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { useQuery, gql } from "@apollo/client";
 import { cloudinaryUrl } from "../lib/cloudinary";
-import { causeColor, causeIcon } from "../lib/causeColors";
 import { nearestNeighborhood } from "../lib/neighborhoods";
+import { CauseFilterBar } from "../components/ui/CauseFilterBar";
 
 const GET_CAUSES = gql`
   query GetCausesForBrowse {
@@ -191,8 +191,6 @@ export function Organizations() {
     if (tagsParam !== null) localStorage.setItem("hasPickedCauses", "true");
   }, [tagsParam]);
 
-  const [filterOverlayOpen, setFilterOverlayOpen] = useState(false);
-
   const { data: causesData } = useQuery(GET_CAUSES);
   const { loading, data } = useQuery(GET_CHARITIES);
 
@@ -245,45 +243,12 @@ export function Organizations() {
           )}
         </div>
 
-        {/* Selected tags + filter button */}
-        <div className="flex items-center gap-2 flex-wrap">
-          {selectedTags.length > 0 ? (
-            selectedTags.map((tag) => (
-              <span
-                key={tag}
-                className="text-xs px-3 py-1.5 rounded-full font-medium flex items-center gap-1"
-                style={{
-                  backgroundColor: causeColor([tag]),
-                  color: "white",
-                  border: `2px solid ${causeColor([tag])}`,
-                }}
-              >
-                <span style={{ fontSize: 11 }}>{causeIcon([tag])}</span>
-                {tagLabels.get(tag) ?? tag}
-              </span>
-            ))
-          ) : (
-            <span className="text-sm text-text-secondary">All causes</span>
-          )}
-          <button
-            type="button"
-            onClick={() => setFilterOverlayOpen(true)}
-            className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border border-brand-tertiary bg-bg-primary hover:border-brand-secondary transition-colors font-medium text-text-secondary"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.75"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="w-3.5 h-3.5"
-            >
-              <path d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
-            </svg>
-            Filter
-          </button>
-        </div>
+        {/* Cause filter bar */}
+        <CauseFilterBar
+          causes={causes.filter((c) => c.charityCount > 0)}
+          selectedTags={selectedTags}
+          onChange={updateSelectedTags}
+        />
       </div>
 
       {loading ? (
@@ -315,93 +280,6 @@ export function Organizations() {
         </div>
       )}
 
-      {/* Filter overlay */}
-      {filterOverlayOpen && (
-        <div className="fixed inset-0 z-50 bg-bg-primary flex flex-col">
-          {/* Header */}
-          <div className="flex items-center justify-between px-5 py-4 border-b border-brand-tertiary">
-            <h2 className="font-heading font-bold text-lg text-text-primary">
-              Filter by cause
-            </h2>
-            <button
-              type="button"
-              onClick={() => setFilterOverlayOpen(false)}
-              className="w-8 h-8 flex items-center justify-center rounded-full bg-bg-accent text-text-secondary hover:bg-brand-tertiary"
-            >
-              <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
-              </svg>
-            </button>
-          </div>
-
-          {/* Cause grid */}
-          <div className="flex-1 overflow-y-auto px-4 py-5">
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {causes
-                .filter((c) => c.charityCount > 0)
-                .map((cause) => {
-                  const isActive = selectedTags.includes(cause.tag);
-                  return (
-                    <button
-                      key={cause.tag}
-                      type="button"
-                      onClick={() =>
-                        updateSelectedTags(
-                          isActive
-                            ? selectedTags.filter((t) => t !== cause.tag)
-                            : [...selectedTags, cause.tag],
-                        )
-                      }
-                      className={`flex flex-col items-center gap-2 p-5 rounded-2xl border-2 transition-all text-center ${
-                        isActive
-                          ? "border-brand-secondary shadow-md"
-                          : "border-brand-tertiary bg-bg-primary hover:border-brand-secondary"
-                      }`}
-                      style={
-                        isActive
-                          ? { backgroundColor: `${causeColor([cause.tag])}10` }
-                          : undefined
-                      }
-                    >
-                      <span
-                        className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl"
-                        style={{
-                          backgroundColor: `${causeColor([cause.tag])}${isActive ? "30" : "18"}`,
-                        }}
-                      >
-                        {causeIcon([cause.tag])}
-                      </span>
-                      <span className="font-semibold text-text-primary text-sm">
-                        {cause.label}
-                      </span>
-                    </button>
-                  );
-                })}
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div className="px-5 py-4 border-t border-brand-tertiary flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => {
-                updateSelectedTags([]);
-                setFilterOverlayOpen(false);
-              }}
-              className="text-sm font-medium text-text-secondary hover:text-text-primary"
-            >
-              Clear all
-            </button>
-            <button
-              type="button"
-              onClick={() => setFilterOverlayOpen(false)}
-              className="flex-1 py-3 rounded-full bg-brand-secondary text-white text-sm font-semibold"
-            >
-              Show results
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

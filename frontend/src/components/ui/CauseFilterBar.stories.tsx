@@ -24,14 +24,14 @@ type Story = StoryObj<typeof CauseFilterBar>;
 
 export const Default: Story = {
   render: () => {
-    const [selected, setSelected] = useState<string | null>(null);
-    return <CauseFilterBar causes={SAMPLE_CAUSES} selectedTag={selected} onChange={setSelected} />;
+    const [selected, setSelected] = useState<string[]>([]);
+    return <CauseFilterBar causes={SAMPLE_CAUSES} selectedTags={selected} onChange={setSelected} />;
   },
 };
 
 export const WithSelection: Story = {
   render: () => {
-    const [selected, setSelected] = useState<string | null>('housing');
-    return <CauseFilterBar causes={SAMPLE_CAUSES} selectedTag={selected} onChange={setSelected} />;
+    const [selected, setSelected] = useState<string[]>(['housing']);
+    return <CauseFilterBar causes={SAMPLE_CAUSES} selectedTags={selected} onChange={setSelected} />;
   },
 };
