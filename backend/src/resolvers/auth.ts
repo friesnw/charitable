@@ -73,7 +73,9 @@ export const authResolvers = {
       );
 
       let user;
+      let isNewUser = false;
       if (userResult.rows.length === 0) {
+        isNewUser = true;
         // Create new user (name defaults to email prefix)
         const name = email.split('@')[0];
         const insertResult = await pool.query(
@@ -96,6 +98,18 @@ export const authResolvers = {
         'UPDATE donation_intents SET user_id = $1 WHERE donor_email = $2 AND user_id IS NULL',
         [user.id, email]
       );
+
+      // Track sign-in analytics
+      await pool.query(
+        `INSERT INTO analytics_events (event_name, event_data) VALUES ($1, $2)`,
+        ['sign_in_complete', JSON.stringify({ userId: user.id })]
+      );
+      if (isNewUser) {
+        await pool.query(
+          `INSERT INTO analytics_events (event_name, event_data) VALUES ($1, $2)`,
+          ['account_created', JSON.stringify({ userId: user.id })]
+        );
+      }
 
       // Generate JWT
       const jwt = signToken({ userId: user.id, email: user.email, isAdmin: user.is_admin ?? false });

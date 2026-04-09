@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { causeColor, causeIcon, FEATURED_TAGS } from '../../lib/causeColors';
+import { trackEvent } from '../../utils/analytics';
 
 interface Cause {
   tag: string;
@@ -25,11 +26,9 @@ export function CauseFilterBar({ causes, selectedTags, onChange }: CauseFilterBa
 
   function toggle(tag: string) {
     setShowAll(false);
-    onChange(
-      selectedTags.includes(tag)
-        ? selectedTags.filter((t) => t !== tag)
-        : [...selectedTags, tag],
-    );
+    const isActive = selectedTags.includes(tag);
+    if (!isActive) trackEvent('filter_tag', { tag });
+    onChange(isActive ? selectedTags.filter((t) => t !== tag) : [...selectedTags, tag]);
   }
 
   return (

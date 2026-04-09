@@ -1,7 +1,9 @@
+import { useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery, gql } from '@apollo/client';
 import { CharityDetail as CharityDetailView } from '../components/CharityDetail';
 import { causesToTagLabels } from '../lib/causeColors';
+import { trackEvent } from '../utils/analytics';
 
 const GET_CAUSES = gql`
   query GetCauses {
@@ -99,6 +101,15 @@ export function CharityDetail() {
   const { data: causesData } = useQuery(GET_CAUSES);
   const tagLabels = causesToTagLabels(causesData?.causes ?? []);
 
+  const charity: Charity | null = data?.charity ?? null;
+  const lastTrackedId = useRef<string | null>(null);
+  useEffect(() => {
+    if (charity && charity.id !== lastTrackedId.current) {
+      lastTrackedId.current = charity.id;
+      trackEvent('charity_view', { charityId: charity.id, charityName: charity.name });
+    }
+  }, [charity?.id]);
+
   if (loading) {
     return (
       <div className="-mx-4 -mt-8 -mb-8 animate-pulse">
@@ -131,8 +142,6 @@ export function CharityDetail() {
   if (error) {
     return <p className="text-error">Error: {error.message}</p>;
   }
-
-  const charity: Charity | null = data?.charity;
 
   if (!charity) {
     return <p className="text-text-secondary">Charity not found.</p>;

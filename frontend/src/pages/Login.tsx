@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useMutation, gql } from '@apollo/client';
 import { Button } from '../components/ui/Button';
+import { trackEvent } from '../utils/analytics';
 
 const REQUEST_MAGIC_LINK = gql`
   mutation RequestMagicLink($email: String!) {
@@ -18,6 +19,7 @@ export function Login() {
     if (!email) return;
 
     try {
+      trackEvent('sign_in_start');
       await requestMagicLink({ variables: { email } });
       setSubmitted(true);
     } catch {

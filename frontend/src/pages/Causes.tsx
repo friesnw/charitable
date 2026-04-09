@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, gql } from "@apollo/client";
 import { causeColor, causeIcon } from "../lib/causeColors";
+import { trackEvent } from "../utils/analytics";
 
 const GET_CAUSES = gql`
   query GetCausesForPicker {
@@ -44,13 +45,14 @@ export function Causes() {
               <button
                 key={cause.tag}
                 type="button"
-                onClick={() =>
+                onClick={() => {
+                  if (!isSelected) trackEvent('onboarding_cause_select', { tag: cause.tag });
                   setPickerTags((prev) =>
                     isSelected
                       ? prev.filter((t) => t !== cause.tag)
                       : [...prev, cause.tag],
-                  )
-                }
+                  );
+                }}
                 className={`flex flex-col items-center gap-2 p-5 rounded-2xl border-2 transition-all text-center ${
                   isSelected
                     ? "border-brand-secondary shadow-md"

@@ -12,6 +12,7 @@ import {
 import { nearestNeighborhood, NEIGHBORHOODS } from "../lib/neighborhoods";
 import { Icon } from "../components/ui/Icon";
 import { Toast } from "../components/ui/Toast";
+import { CauseFilterBar } from "../components/ui/CauseFilterBar";
 import { useAuth } from "../hooks/useAuth";
 import Map, { MapRef, Marker } from "react-map-gl/mapbox";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -718,7 +719,6 @@ export function Charities() {
     null,
   );
   const [hoveredCharityId, setHoveredCharityId] = useState<string | null>(null);
-  const [showAllTags, setShowAllTags] = useState(false);
 
   const [initialCenter, setInitialCenter] = useState<
     { longitude: number; latitude: number; zoom: number } | undefined
@@ -827,15 +827,6 @@ export function Charities() {
   const availableTags = Array.from(
     new Set(charities.flatMap((c) => c.causeTags)),
   );
-  const featuredTags = FEATURED_TAGS.filter((t) => availableTags.includes(t));
-  const remainingTags = availableTags
-    .filter((t) => !FEATURED_TAGS.includes(t))
-    .sort();
-  const effectiveShowAll =
-    showAllTags || selectedTags.some((t) => remainingTags.includes(t));
-  const visibleTags = effectiveShowAll
-    ? [...featuredTags, ...remainingTags]
-    : featuredTags;
 
   const selectedGroup = selectedGroupKey
     ? (groups.find((g) => groupKey(g) === selectedGroupKey) ?? null)
@@ -996,6 +987,7 @@ export function Charities() {
     lat: number,
     lng: number,
   ) {
+    trackEvent('neighborhood_select', { neighborhood: name });
     setActiveNeighborhood(name);
     setActiveZip(null);
     setInitialCenter({ longitude: lng, latitude: lat, zoom: 14 });
@@ -1164,6 +1156,7 @@ export function Charities() {
         <LocationIntro
           onNeighborhoodSelect={handleNeighborhoodSelect}
           onZipSubmit={(zip) => {
+            trackEvent('zip_select', { zip });
             resolveZip({ variables: { zip } }).then(({ data }) => {
               const info = data?.resolveZip;
               if (!info) return;
@@ -1601,47 +1594,12 @@ export function Charities() {
 
           {/* Tag filters */}
           <div className="absolute z-10 pointer-events-none top-[4.25rem] left-1/2 -translate-x-1/2 w-[calc(100%-1.5rem)] max-w-sm lg:left-0 lg:right-0 lg:top-0 lg:p-3 lg:translate-x-0 lg:max-w-none lg:w-auto">
-            <div className="pointer-events-auto flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              <button
-                onClick={() => updateSelectedTags([])}
-                className={`flex-shrink-0 text-xs px-3 py-1.5 rounded-full shadow font-medium transition-colors ${selectedTags.length === 0 ? "bg-gray-900 text-white" : "bg-white/90 backdrop-blur-sm text-gray-700 border border-gray-200 hover:bg-white"}`}
-              >
-                All
-              </button>
-              {visibleTags.map((tag) => {
-                const isActive = selectedTags.includes(tag);
-                return (
-                  <button
-                    key={tag}
-                    onClick={() => {
-                      setShowAllTags(false);
-                      if (!isActive) trackEvent('filter_tag', { tag });
-                      updateSelectedTags(
-                        isActive
-                          ? selectedTags.filter((t) => t !== tag)
-                          : [...selectedTags, tag],
-                      );
-                    }}
-                    className="flex-shrink-0 text-xs px-3 py-1.5 rounded-full shadow font-medium transition-all flex items-center gap-1"
-                    style={
-                      isActive
-                        ? { backgroundColor: causeColor([tag]), color: "white", border: `2px solid ${causeColor([tag])}` }
-                        : { backgroundColor: "rgba(255,255,255,0.9)", color: "#374151", border: "1px solid #e5e7eb" }
-                    }
-                  >
-                    <span style={{ fontSize: 11 }}>{causeIcon([tag])}</span>
-                    {tagLabels.get(tag) ?? tag}
-                  </button>
-                );
-              })}
-              {!effectiveShowAll && remainingTags.length > 0 && (
-                <button
-                  onClick={() => setShowAllTags(true)}
-                  className="flex-shrink-0 text-xs px-3 py-1.5 rounded-full shadow font-medium bg-white/90 backdrop-blur-sm text-gray-500 border border-gray-200 hover:bg-white"
-                >
-                  + {remainingTags.length} more
-                </button>
-              )}
+            <div className="pointer-events-auto">
+              <CauseFilterBar
+                causes={causesData?.causes ?? []}
+                selectedTags={selectedTags}
+                onChange={updateSelectedTags}
+              />
             </div>
           </div>
 

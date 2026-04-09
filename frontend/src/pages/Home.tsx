@@ -6,6 +6,7 @@ import { useQuery, gql } from "@apollo/client";
 import { useAuth } from "../hooks/useAuth";
 import { NEIGHBORHOODS } from "../lib/neighborhoods";
 import { causeIcon, causeColor } from "../lib/causeColors";
+import { trackEvent } from "../utils/analytics";
 
 const GET_CHARITY_COUNT = gql`
   query GetCharityCountForTag($tags: [String]) {
@@ -178,11 +179,10 @@ export function Home() {
             {neighborhoodPills.map(({ name, lat, lng }) => (
               <button
                 key={name}
-                onClick={() =>
-                  navigate(
-                    `/map?lat=${lat}&lng=${lng}&neighborhood=${encodeURIComponent(name)}`,
-                  )
-                }
+                onClick={() => {
+                  trackEvent('neighborhood_select', { neighborhood: name });
+                  navigate(`/map?lat=${lat}&lng=${lng}&neighborhood=${encodeURIComponent(name)}`);
+                }}
                 className="flex-shrink-0 text-sm px-3 py-1.5 rounded-full border border-white/20 bg-white/10 text-white/70 hover:border-brand-accent hover:text-brand-accent transition-colors"
               >
                 {name}

@@ -5,6 +5,7 @@ import { causeColor } from '../lib/causeColors';
 import { DonateButton } from './ui/DonateButton';
 import { Icon, ICON_NAMES } from './ui/Icon';
 import { CharityDetailMap } from './CharityDetailMap';
+import { trackEvent } from '../utils/analytics';
 
 interface StoryLocation {
   id: string;
@@ -214,6 +215,7 @@ export function CharityDetail({ charity, tagLabels }: CharityDetailProps) {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 underline underline-offset-2 transition-colors mt-3"
+                      onClick={() => trackEvent('website_click', { charityId: charity.id, charityName: charity.name })}
                     >
                       <Icon name="globe" className="w-3.5 h-3.5 shrink-0" />
                       {bareDomain(charity.websiteUrl)}
@@ -326,6 +328,7 @@ export function CharityDetail({ charity, tagLabels }: CharityDetailProps) {
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 underline underline-offset-2 transition-colors"
+            onClick={() => trackEvent('website_click', { charityId: charity.id, charityName: charity.name })}
           >
             <Icon name="globe" className="w-3.5 h-3.5 shrink-0" />
             {bareDomain(charity.websiteUrl)}
@@ -354,6 +357,7 @@ export function CharityDetail({ charity, tagLabels }: CharityDetailProps) {
               charityName={charity.name}
               color={color}
               className="flex-1"
+              onClick={() => trackEvent('donate_click', { charityId: charity.id, charityName: charity.name })}
             />
           )}
           {charity.ctaUrl && charity.ctaLabel ? (
@@ -362,6 +366,7 @@ export function CharityDetail({ charity, tagLabels }: CharityDetailProps) {
               target="_blank"
               rel="noopener noreferrer"
               className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              onClick={() => trackEvent('volunteer_click', { charityId: charity.id, charityName: charity.name })}
             >
               <Icon name="globe" className="w-4 h-4 shrink-0" />
               {charity.ctaLabel}
@@ -372,6 +377,7 @@ export function CharityDetail({ charity, tagLabels }: CharityDetailProps) {
               target="_blank"
               rel="noopener noreferrer"
               className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              onClick={() => trackEvent('volunteer_click', { charityId: charity.id, charityName: charity.name })}
             >
               <Icon name="volunteer" className="w-4 h-4 shrink-0" />
               Volunteer

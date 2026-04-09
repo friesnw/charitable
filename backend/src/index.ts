@@ -7,6 +7,7 @@ import { resolvers } from './resolvers/index.js';
 import { runMigrations } from './db.js';
 import { env } from './env.js';
 import { verifyToken, Context } from './auth.js';
+import analyticsRoutes from './routes/analytics.js';
 
 
 const app = express();
@@ -19,6 +20,8 @@ const server = new ApolloServer({
 async function main() {
   await runMigrations();
   await server.start();
+
+  app.use('/api', cors(), express.json(), analyticsRoutes);
 
   app.get('/.well-known/apollo/server-health', (_req, res) => {
     res.status(200).json({ status: 'pass' });
