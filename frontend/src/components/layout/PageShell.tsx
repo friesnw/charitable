@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useRef } from 'react';
+import { ReactNode, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Header } from './Header';
 import { trackEvent } from '../../utils/analytics';
@@ -9,13 +9,15 @@ interface PageShellProps {
   background?: string;
 }
 
+// Module-level: shared across all PageShell instances, survives remounts
+let lastTrackedPath: string | null = null;
+
 export function PageShell({ children, fullWidth, background }: PageShellProps) {
   const location = useLocation();
-  const lastTrackedPath = useRef<string | null>(null);
 
   useEffect(() => {
-    if (location.pathname !== lastTrackedPath.current) {
-      lastTrackedPath.current = location.pathname;
+    if (location.pathname !== lastTrackedPath) {
+      lastTrackedPath = location.pathname;
       trackEvent('page_view', { page: location.pathname });
     }
   }, [location.pathname]);
