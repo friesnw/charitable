@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useQuery, useLazyQuery, useMutation, gql } from "@apollo/client";
+import { trackEvent } from "../utils/analytics";
 import { cloudinaryUrl } from "../lib/cloudinary";
 import {
   causeColor,
@@ -974,6 +975,7 @@ export function Charities() {
   }
 
   function handleNeighborhoodSelect(name: string, lat: number, lng: number) {
+    trackEvent('neighborhood_select', { neighborhood: name });
     setActiveNeighborhood(name);
     setInitialCenter({ longitude: lng, latitude: lat, zoom: 14 });
     setIntroSkipped(true);
@@ -1613,6 +1615,7 @@ export function Charities() {
                     key={tag}
                     onClick={() => {
                       setShowAllTags(false);
+                      if (!isActive) trackEvent('filter_tag', { tag });
                       updateSelectedTags(
                         isActive
                           ? selectedTags.filter((t) => t !== tag)
@@ -1849,120 +1852,167 @@ export function Charities() {
                 }
               }}
             >
-              {[...clusters]
-                .sort((a) => {
-                  const p = a.properties as { cluster?: boolean; index?: number };
-                  if (p.cluster) return 0;
-                  const g = groups[p.index!];
-                  if (!g) return 0;
-                  const gKey = groupKey(g);
-                  return gKey === selectedGroupKey ||
-                    (selectedGroupKey == null &&
-                      selectedLocationId != null &&
-                      g.entries.some((e) => e.location.id === selectedLocationId))
-                    ? 1
-                    : -1;
-                })
-                .map((feature) => {
-                  const [lng, lat] = feature.geometry.coordinates;
-                  const props = feature.properties as unknown as {
-                    cluster: boolean;
-                    point_count: number;
-                    cluster_id: number;
-                    index: number;
-                  };
+              {selectedCharityId != null
+                ? /* When a charity is selected, bypass supercluster and render its groups directly */
+                  groups
+                    .filter((group) =>
+                      group.entries.some((e) => e.charity.id === selectedCharityId),
+                    )
+                    .map((group) => {
+                      const key = groupKey(group);
+                      const isSelected =
+                        key === selectedGroupKey ||
+                        (selectedGroupKey == null &&
+                          selectedLocationId != null &&
+                          group.entries.some(
+                            (e) => e.location.id === selectedLocationId,
+                          ));
+                      const primaryEntry = [...group.entries].sort(
+                        (a, b) =>
+                          Number(a.location.isSublocation) -
+                          Number(b.location.isSublocation),
+                      )[0];
+                      return (
+                        <Marker
+                          key={key}
+                          latitude={group.lat}
+                          longitude={group.lng}
+                          anchor="center"
+                          onClick={(e) => {
+                            e.originalEvent.stopPropagation();
+                            if (isSelected) {
+                              setSelectedGroupKey(null);
+                              setSelectedCharityId(null);
+                              setSelectedLocationId(null);
+                            } else {
+                              trackEvent('map_pin_click', { charityId: primaryEntry.charity.id, charityName: primaryEntry.charity.name });
+                              setSelectedGroupKey(key);
+                              setSelectedCharityId(primaryEntry.charity.id);
+                              setSelectedLocationId(primaryEntry.location.id);
+                              setSheetState("peek");
+                            }
+                          }}
+                        >
+                          <StackedPin
+                            group={group}
+                            isSelected={isSelected}
+                            isHovered={false}
+                            isDimmed={false}
+                            zoom={Math.min(zoom + 1.5, 15)}
+                          />
+                        </Marker>
+                      );
+                    })
+                : /* Normal view: render supercluster output (clusters + individual pins) */
+                  [...clusters]
+                    .sort((a) => {
+                      const p = a.properties as { cluster?: boolean; index?: number };
+                      if (p.cluster) return 0;
+                      const g = groups[p.index!];
+                      if (!g) return 0;
+                      const gKey = groupKey(g);
+                      return gKey === selectedGroupKey ||
+                        (selectedGroupKey == null &&
+                          selectedLocationId != null &&
+                          g.entries.some((e) => e.location.id === selectedLocationId))
+                        ? 1
+                        : -1;
+                    })
+                    .map((feature) => {
+                      const [lng, lat] = feature.geometry.coordinates;
+                      const props = feature.properties as unknown as {
+                        cluster: boolean;
+                        point_count: number;
+                        cluster_id: number;
+                        index: number;
+                      };
 
-                if (props.cluster) {
-                  const leaves =
-                    supercluster?.getLeaves(props.cluster_id, 5) ?? [];
-                  const topCauseTags = leaves.flatMap(
-                    (leaf) =>
-                      groups[(leaf.properties as { index: number }).index]
-                        ?.entries[0]?.charity.causeTags ?? [],
-                  );
-                  return (
-                    <Marker
-                      key={`cluster-${props.cluster_id}`}
-                      latitude={lat}
-                      longitude={lng}
-                      anchor="center"
-                    >
-                      <ClusterPin
-                        count={props.point_count}
-                        topCauseTags={topCauseTags}
-                        snappedZoom={snappedZoom}
-                        onClick={() => {
-                          const expansionZoom = Math.min(
-                            (supercluster?.getClusterExpansionZoom(
-                              props.cluster_id,
-                            ) ?? 14) + 0.5,
-                            16,
-                          );
-                          mapRef.current?.flyTo({
-                            center: [lng, lat],
-                            zoom: expansionZoom,
-                            duration: 500,
-                          });
-                        }}
-                      />
-                    </Marker>
-                  );
-                }
-
-                const group = groups[props.index];
-                if (!group) return null;
-                const key = groupKey(group);
-                const isSelected =
-                  key === selectedGroupKey ||
-                  (selectedGroupKey == null &&
-                    selectedLocationId != null &&
-                    group.entries.some(
-                      (e) => e.location.id === selectedLocationId,
-                    ));
-                const isHovered = group.entries.some(
-                  (e) => e.charity.id === hoveredCharityId,
-                );
-                const isDimmed =
-                  selectedCharityId != null &&
-                  !group.entries.some(
-                    (e) => e.charity.id === selectedCharityId,
-                  ) &&
-                  !isHovered;
-                const primaryEntry = [...group.entries].sort(
-                  (a, b) =>
-                    Number(a.location.isSublocation) -
-                    Number(b.location.isSublocation),
-                )[0];
-                return (
-                  <Marker
-                    key={key}
-                    latitude={group.lat}
-                    longitude={group.lng}
-                    anchor="center"
-                    onClick={(e) => {
-                      e.originalEvent.stopPropagation();
-                      if (isSelected) {
-                        setSelectedGroupKey(null);
-                        setSelectedCharityId(null);
-                        setSelectedLocationId(null);
-                      } else {
-                        setSelectedGroupKey(key);
-                        setSelectedCharityId(primaryEntry.charity.id);
-                        setSelectedLocationId(primaryEntry.location.id);
-                        setSheetState("peek");
+                      if (props.cluster) {
+                        const leaves =
+                          supercluster?.getLeaves(props.cluster_id, 5) ?? [];
+                        const topCauseTags = leaves.flatMap(
+                          (leaf) =>
+                            groups[(leaf.properties as { index: number }).index]
+                              ?.entries[0]?.charity.causeTags ?? [],
+                        );
+                        return (
+                          <Marker
+                            key={`cluster-${props.cluster_id}`}
+                            latitude={lat}
+                            longitude={lng}
+                            anchor="center"
+                          >
+                            <ClusterPin
+                              count={props.point_count}
+                              topCauseTags={topCauseTags}
+                              snappedZoom={snappedZoom}
+                              onClick={() => {
+                                const expansionZoom = Math.min(
+                                  (supercluster?.getClusterExpansionZoom(
+                                    props.cluster_id,
+                                  ) ?? 14) + 0.5,
+                                  16,
+                                );
+                                mapRef.current?.flyTo({
+                                  center: [lng, lat],
+                                  zoom: expansionZoom,
+                                  duration: 500,
+                                });
+                              }}
+                            />
+                          </Marker>
+                        );
                       }
-                    }}
-                  >
-                    <StackedPin
-                      group={group}
-                      isSelected={isSelected}
-                      isHovered={isHovered}
-                      isDimmed={isDimmed}
-                      zoom={zoom}
-                    />
-                  </Marker>
-                );
-              })}
+
+                      const group = groups[props.index];
+                      if (!group) return null;
+                      const key = groupKey(group);
+                      const isSelected =
+                        key === selectedGroupKey ||
+                        (selectedGroupKey == null &&
+                          selectedLocationId != null &&
+                          group.entries.some(
+                            (e) => e.location.id === selectedLocationId,
+                          ));
+                      const isHovered = group.entries.some(
+                        (e) => e.charity.id === hoveredCharityId,
+                      );
+                      const primaryEntry = [...group.entries].sort(
+                        (a, b) =>
+                          Number(a.location.isSublocation) -
+                          Number(b.location.isSublocation),
+                      )[0];
+                      return (
+                        <Marker
+                          key={key}
+                          latitude={group.lat}
+                          longitude={group.lng}
+                          anchor="center"
+                          onClick={(e) => {
+                            e.originalEvent.stopPropagation();
+                            if (isSelected) {
+                              setSelectedGroupKey(null);
+                              setSelectedCharityId(null);
+                              setSelectedLocationId(null);
+                            } else {
+                              trackEvent('map_pin_click', { charityId: primaryEntry.charity.id, charityName: primaryEntry.charity.name });
+                              setSelectedGroupKey(key);
+                              setSelectedCharityId(primaryEntry.charity.id);
+                              setSelectedLocationId(primaryEntry.location.id);
+                              setSheetState("peek");
+                            }
+                          }}
+                        >
+                          <StackedPin
+                            group={group}
+                            isSelected={isSelected}
+                            isHovered={isHovered}
+                            isDimmed={false}
+                            zoom={zoom}
+                          />
+                        </Marker>
+                      );
+                    })}
             </Map>
           </div>
         </div>

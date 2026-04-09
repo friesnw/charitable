@@ -122,6 +122,9 @@ export function CharityDetailMap({
     if (!container) return;
     const handleScrollEnd = () => {
       if (isProgrammaticScroll.current) return;
+      // Only run for horizontal snap carousel (mobile); on desktop the container
+      // has no horizontal overflow so scrollWidth === clientWidth.
+      if (container.scrollWidth <= container.clientWidth) return;
       const containerCenter = container.scrollLeft + container.clientWidth / 2;
       let closest: string | null = null;
       let minDist = Infinity;
