@@ -784,10 +784,10 @@ function AnalyticsTab() {
     <div className="space-y-8">
       {/* Stat cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatCard label="Unique visitors (30d)" value={overview.uniqueVisitors} />
+        <StatCard label="Total events (30d)" value={overview.totalEvents} />
         <StatCard label="Page views (30d)" value={pageViews} />
+        <StatCard label="Unique visitors (30d)" value={overview.uniqueVisitors} />
         <StatCard label="Donate clicks (30d)" value={donateClicks} />
-        <StatCard label="New accounts (30d)" value={newAccounts} />
       </div>
 
       {/* Daily page views */}
