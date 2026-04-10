@@ -423,150 +423,6 @@ function LocationDrawer({
   );
 }
 
-const CURATED_NAMES = [
-  "Cap Hill",
-  "RiNo",
-  "Highland",
-  "LoDo",
-  "Five Points",
-  "City Park",
-  "Baker",
-  "Wash Park",
-  "Cherry Creek",
-  "Edgewater",
-];
-const curatedNeighborhoods = NEIGHBORHOODS.filter((n) =>
-  CURATED_NAMES.includes(n.name),
-);
-
-function LocationIntro({
-  onNeighborhoodSelect,
-  onZipSubmit,
-  onSkip,
-}: {
-  onNeighborhoodSelect: (name: string, lat: number, lng: number) => void;
-  onZipSubmit: (zip: string) => void;
-  onSkip: () => void;
-}) {
-  const [zipValue, setZipValue] = useState("");
-  const [search, setSearch] = useState("");
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-
-  const matches =
-    search.trim().length > 0
-      ? NEIGHBORHOODS.filter((n) =>
-          n.name.toLowerCase().includes(search.toLowerCase()),
-        )
-      : [];
-
-  function handleZip() {
-    const digits = zipValue.replace(/\D/g, "");
-    if (digits.length === 5) onZipSubmit(digits);
-  }
-
-  return (
-    <div className="absolute inset-0 z-20 bg-bg-primary overflow-y-auto flex flex-col items-center justify-start py-14 px-4">
-      <div className="w-full max-w-2xl text-center">
-        <h1 className="text-3xl font-bold text-text-primary mb-8">
-          Where in Denver are you located?
-        </h1>
-
-        {/* ZIP input */}
-        <div className="flex gap-2 justify-center mb-10">
-          <input
-            type="text"
-            inputMode="numeric"
-            placeholder="Enter ZIP code"
-            value={zipValue}
-            onChange={(e) =>
-              setZipValue(e.target.value.replace(/\D/g, "").slice(0, 5))
-            }
-            onKeyDown={(e) => e.key === "Enter" && handleZip()}
-            maxLength={5}
-            className="w-44 px-4 py-3 rounded-xl border border-brand-tertiary bg-bg-primary text-text-primary placeholder-text-secondary text-base focus:outline-none focus:border-brand-secondary"
-          />
-          <button
-            onClick={handleZip}
-            disabled={zipValue.length !== 5}
-            className="px-6 py-3 rounded-xl bg-brand-secondary text-white font-semibold disabled:opacity-40 hover:opacity-90 transition-opacity"
-          >
-            Go
-          </button>
-        </div>
-
-        <div className="flex items-center gap-4 mb-10">
-          <div className="flex-1 h-px bg-brand-tertiary" />
-          <span className="text-sm text-text-secondary">
-            or pick your neighborhood
-          </span>
-          <div className="flex-1 h-px bg-brand-tertiary" />
-        </div>
-
-        {/* Neighborhood chips + inline search */}
-        <div className="flex flex-wrap gap-2 justify-center mb-10">
-          {curatedNeighborhoods.map((n) => (
-            <button
-              key={n.name}
-              onClick={() => onNeighborhoodSelect(n.name, n.lat, n.lng)}
-              className="flex-shrink-0 text-xs px-3 py-1.5 rounded-full shadow font-medium transition-all hover:ring-1 hover:ring-brand-secondary"
-              style={{
-                backgroundColor: "rgba(255,255,255,0.9)",
-                color: "#374151",
-                border: "1px solid #e5e7eb",
-              }}
-            >
-              {n.name}
-            </button>
-          ))}
-          <div className="relative flex-shrink-0">
-            <input
-              type="text"
-              placeholder="More neighborhoods..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setDropdownOpen(true);
-              }}
-              onFocus={() => setDropdownOpen(true)}
-              onBlur={() => setTimeout(() => setDropdownOpen(false), 150)}
-              className="text-xs px-3 py-1.5 rounded-full shadow font-medium focus:outline-none"
-              style={{
-                backgroundColor: "rgba(255,255,255,0.9)",
-                color: "#6b7280",
-                border: "1px solid #e5e7eb",
-                width: "160px",
-              }}
-            />
-            {dropdownOpen && matches.length > 0 && (
-              <ul className="absolute left-0 top-full mt-1 min-w-full bg-bg-primary border border-brand-tertiary rounded-xl shadow-lg overflow-hidden z-10 text-left">
-                {matches.map((n) => (
-                  <li key={n.name}>
-                    <button
-                      onMouseDown={() => {
-                        onNeighborhoodSelect(n.name, n.lat, n.lng);
-                      }}
-                      className="w-full text-left px-4 py-2.5 text-sm text-text-primary hover:bg-bg-accent transition-colors"
-                    >
-                      {n.name}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
-
-        <button
-          onClick={onSkip}
-          className="text-sm text-text-secondary hover:text-text-primary underline underline-offset-2 transition-colors"
-        >
-          Explore all of Denver →
-        </button>
-      </div>
-    </div>
-  );
-}
-
 function StackedPin({
   group,
   isSelected,
@@ -750,7 +606,6 @@ export function Charities() {
   const isInitiallyPositioned = useRef(false);
   const programmaticFlyRef = useRef(false);
 
-  const [introSkipped, setIntroSkipped] = useState(true);
   const [activeNeighborhood, setActiveNeighborhood] = useState<string | null>(
     () => {
       const h = localStorage.getItem("userNeighborhood");
@@ -940,18 +795,6 @@ export function Charities() {
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps — intentionally runs once on mount
 
-  // Show intro when no location is set and user hasn't skipped.
-  const showIntro =
-    !introSkipped &&
-    !authLoading &&
-    activeZip === null &&
-    activeNeighborhood === null &&
-    (!isAuthenticated || !prefsLoading) &&
-    !(
-      prefsData?.myPreferences?.zipCode ||
-      prefsData?.myPreferences?.neighborhood
-    );
-
   const isZipMode = /^\d/.test(locationQuery);
   const locationSuggestions =
     !isZipMode && locationQuery.trim().length > 0
@@ -969,7 +812,6 @@ export function Charities() {
     trackEvent('neighborhood_select', { neighborhood: name });
     setActiveNeighborhood(name);
     setInitialCenter({ longitude: lng, latitude: lat, zoom: 14 });
-    setIntroSkipped(true);
     setToast({ message: `Near ${name}` });
     if (isAuthenticated) {
       savePreferences({ variables: { neighborhood: name, zipCode: null } });
@@ -1000,12 +842,7 @@ export function Charities() {
   }
 
   function handleChangeLocation() {
-    setActiveZip(null);
-    setActiveNeighborhood(null);
-    setIntroSkipped(false);
-    setToast(null);
-    localStorage.removeItem("userZip");
-    localStorage.removeItem("userNeighborhood");
+    setLocationEditing(true);
   }
 
   // When initial location resolves: jump instantly (first time) or fly (subsequent changes).
@@ -1152,38 +989,6 @@ export function Charities() {
 
   return (
     <div className="flex relative" style={{ height: "calc(100vh - 65px)" }}>
-      {showIntro && (
-        <LocationIntro
-          onNeighborhoodSelect={handleNeighborhoodSelect}
-          onZipSubmit={(zip) => {
-            trackEvent('zip_select', { zip });
-            resolveZip({ variables: { zip } }).then(({ data }) => {
-              const info = data?.resolveZip;
-              if (!info) return;
-              if (isAuthenticated) {
-                savePreferences({
-                  variables: { zipCode: zip, neighborhood: null },
-                });
-              } else {
-                localStorage.setItem("userZip", zip);
-                localStorage.removeItem("userNeighborhood");
-              }
-              setActiveZip(zip);
-              setInitialCenter({
-                longitude: info.longitude,
-                latitude: info.latitude,
-                zoom: info.zoom,
-              });
-              setIntroSkipped(true);
-              setToast({ message: `Near ${zip}` });
-            });
-          }}
-          onSkip={() => {
-            setIntroSkipped(true);
-            setMapVisible(true);
-          }}
-        />
-      )}
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar — desktop only */}
         <div className="hidden lg:flex flex-shrink-0 flex-col border-r border-brand-tertiary bg-bg-primary lg:w-96">

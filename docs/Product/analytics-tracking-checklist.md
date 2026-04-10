@@ -19,9 +19,9 @@ LIMIT 5;
 - **Data:** `{ page: '/map' }` (pathname)
 - **How to test:** Navigate between any two pages
 - **Edge cases:**
-  - [ ] Refreshing a page fires exactly ONE event (not two — StrictMode double-invoke is guarded by ref)
-  - [ ] Navigating `/map` → `/list` → `/map` fires a `page_view` each time
-  - [ ] Navigating to the same page you're already on does NOT fire again
+  - [x] Refreshing a page fires exactly ONE event (not two — StrictMode double-invoke is guarded by ref)
+  - [x] Navigating `/map` → `/list` → `/map` fires a `page_view` each time
+  - [x] Navigating to the same page you're already on does NOT fire again
 - [x] Verified
 
 ---
@@ -31,9 +31,9 @@ LIMIT 5;
 - **Data:** `{ charityId, charityName }`
 - **How to test:** Open any charity detail page
 - **Edge cases:**
-  - [ ] Refreshing a charity page fires exactly ONE event (StrictMode guard active)
-  - [ ] Navigating from one charity to another fires a new event for the second charity only
-  - [ ] Hitting back and reopening the same charity fires again (new page mount)
+  - [x] Refreshing a charity page fires exactly ONE event (StrictMode guard active)
+  - [x] Navigating from one charity to another fires a new event for the second charity only
+  - [x] Hitting back and reopening the same charity fires again (new page mount)
 - [x] Verified
 
 ---
@@ -70,8 +70,8 @@ LIMIT 5;
 - **Data:** `{ charityId, charityName }`
 - **How to test:** Go to `/map` → click a single charity pin (not a cluster)
 - **Edge cases:**
-  - [ ] Clicking a cluster pin does NOT fire this event (clusters expand zoom only)
-  - [ ] Clicking the same pin a second time (to deselect) does NOT fire again
+  - [x] Clicking a cluster pin does NOT fire this event (clusters expand zoom only)
+  - [x] Clicking the same pin a second time (to deselect) does NOT fire again
 - [x] Verified
 
 ---
@@ -83,10 +83,10 @@ LIMIT 5;
   - Go to `/map` → click a cause tag pill to activate it
   - Go to `/list` → click a cause tag pill to activate it
 - **Edge cases:**
-  - [ ] Clicking an already-active tag (deselecting) does NOT fire
-  - [ ] Clicking "All" to clear tags does NOT fire
-- [ ] Verified (`/map`)
-- [ ] Verified (`/list`)
+  - [x] Clicking an already-active tag (deselecting) does NOT fire
+  - [x] Clicking "All" to clear tags does NOT fire
+- [x] Verified (`/map`)
+- [x] Verified (`/list`)
 
 ---
 
@@ -96,10 +96,10 @@ LIMIT 5;
 - **Note:** Tracked separately from `filter_tag` — this is onboarding intent, not a filter action
 - **How to test:** Go to `/causes` → click a cause card to select it
 - **Edge cases:**
-  - [ ] Selecting multiple causes fires one event per cause (not one combined event)
-  - [ ] Deselecting a cause does NOT fire
-  - [ ] Clicking "Browse all organizations →" (skip) does NOT fire
-- [ ] Verified
+  - [x] Selecting multiple causes fires one event per cause (not one combined event)
+  - [x] Deselecting a cause does NOT fire
+  - [x] Clicking "Browse all organizations →" (skip) does NOT fire
+- [x] Verified
 
 ---
 
@@ -115,19 +115,19 @@ LIMIT 5;
   - On first visit to `/map` → type in "More neighborhoods..." → select from dropdown
   - On `/map` with a location already set → open the sidebar location editor → select a different neighborhood
 - **Edge cases:**
-  - [ ] Selecting the same neighborhood you're already on still fires (intentional re-selection)
-  - [ ] Picking from the autocomplete dropdown (not just typing) fires the event
-- [ ] Verified (home page pill)
-- [ ] Verified (intro chip)
-- [ ] Verified (intro autocomplete dropdown)
-- [ ] Verified (sidebar change)
+  - [x] Selecting the same neighborhood you're already on still fires (intentional re-selection)
+  - [x] Picking from the autocomplete dropdown (not just typing) fires the event
+- [x] Verified (home page pill)
+- [x] Verified (intro chip)
+- [x] Verified (intro autocomplete dropdown)
+- [x] Verified (sidebar change)
 
 ---
 
 ### `zip_select`
-- **Fired by:** `Charities.tsx` — ZIP entry on the intro screen (`onZipSubmit`)
+- **Fired by:** `Charities.tsx` — ZIP entry in the sidebar location editor
 - **Data:** `{ zip }` e.g. `{ zip: '80203' }`
-- **How to test:** On first visit to `/map` → type a ZIP in the location field → submit
+- **How to test:** On `/map` → click the location row to open the editor → type a ZIP → submit
 - **Edge cases:**
   - [ ] An invalid ZIP (one that fails to resolve) still fires the event (the track fires before the resolve)
   - [ ] Submitting the same ZIP twice fires twice
