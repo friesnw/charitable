@@ -142,3 +142,7 @@ List page vs Map page views
 
 Top causes selected
 
+Exclude me from all stats on admin somehow??
+
+
+user saved preferences 

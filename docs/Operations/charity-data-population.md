@@ -93,9 +93,9 @@ Humane Colorado partners with law enforcement, Colorado State University, and co
 ```
 
 ```
-Warren Village serves unhoused and unstably housed low-income single-parent families in the Denver area. They provide families with the space and resources to achieve economic mobility and navigate and disrupt systems of poverty.
+Serves unhoused and unstably housed low-income single-parent families in the Denver area, providing the space and resources for families to achieve economic mobility and navigate systems of poverty.
 
-Warren Village utilizes a two-generation approach to empower both parents and their children through life-skills classes, a high-quality Early Learning Center, education and career support, and resource navigation.
+Through a two-generation approach, Warren Village empowers both parents and their children through life-skills classes, early childhood education, career and education support, and resource navigation.
 ```
 
 **Avoid:**
@@ -104,7 +104,16 @@ Warren Village utilizes a two-generation approach to empower both parents and th
 ❌ "Since 1910, Humane Colorado has cared for animals in need..."  (leads with history)
 ❌ "Humane Colorado is one of the largest shelters in the region, operating several facilities..."  (leads with size/scale, not offerings)
 ❌ "The Harmony Equine Center in Franktown rehabilitates horses..."  (named location detail belongs in location record)
+❌ "Urban Peak ignites the potential in youth..."  (branded/marketing voice — write factually, third person)
+❌ "One of the nation's largest non-profit theatre organizations, DCPA engages..."  (leads with superlative size)
+❌ "Boys & Girls Clubs of Metro Denver has served youth... since 1961"  (leads with org name + founding year)
 ```
+
+**Org name usage:**
+- The first sentence should not start with the org name or founding year.
+- After the first sentence, use the org name naturally — do not substitute "the organization."
+- Founding dates and history can appear in later sentences when they add genuine character (e.g. "Grown out of a grassroots movement that began in North Denver in the 80's, DUG is now one of the country's largest urban agriculture networks.")
+- Do not overcompensate by stripping all dates and history — only move content that violates the first-sentence rule.
 
 ---
 
@@ -251,6 +260,19 @@ Each charity should have at least one location. For each physical site, collect:
 | `description` | 2–4 sentences describing what programs run at this specific location, not the org broadly. Do not include hours, schedules, or contact details — these go stale quickly and belong on the charity's own website. |
 | `is_sublocation` | Set `true` if the location is hosted inside another organization's building |
 | `photo_url` | Leave blank — auto-populated by `populate-street-view.ts` (see Stage 7) |
+
+**Location label conventions:**
+- Use `[Org Name] HQ` for the primary administrative location — not "Administrative Headquarters," "Main Office," or just the bare org name.
+- Labels should be specific and descriptive: "Lawrence Street Shelter" not "Main Shelter."
+
+**Location description conventions:**
+- Do not open with the location name as the subject. If the label is "Edison School Community Garden," don't start with "The Edison School Community Garden is..."
+- Do not reference a community garden by its proper name within the description. Use "members of the community garden" not "members of [Garden Name]."
+- The org name is fine to use after the first sentence.
+- No promotional adjectives: "beautiful," "stunning," "small but mighty," "welcoming," "unique."
+- Descriptions are third-person, factual, neutral — not the org's own voice.
+- Do not include origin stories or history unless directly relevant to current operations.
+- Remove exact counts and stats (plot counts, percentages); those belong in the `impact` field.
 
 **Example location descriptions — Denver Rescue Mission (prod):**
 

@@ -4,95 +4,39 @@
     "type": "split",
     "children": [
       {
-        "id": "d173aa947290f0f4",
+        "id": "9fa98773dac04ca8",
         "type": "tabs",
         "children": [
           {
-            "id": "be073f06d7d61945",
+            "id": "864daba53ff35bf7",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Learn/GraphQL.md",
+                "file": "Tasks/Todo/7-Analytics-Beacon.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "GraphQL"
+              "title": "7-Analytics-Beacon"
             }
           },
           {
-            "id": "a2df9bbf62f6851d",
+            "id": "8726cb2dc337da7f",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Tasks/Done/8-Preferences-Onboarding.md",
+                "file": "Product/analytics-tracking-checklist.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "8-Preferences-Onboarding"
-            }
-          },
-          {
-            "id": "d65d07f61bcc4a3b",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Tasks/Backlog/5-Incorporate beta pilot experience.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "5-Incorporate beta pilot experience"
-            }
-          },
-          {
-            "id": "48642f9b0979e9d1",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Tasks/Todo/05-Confirm tag icons.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "05-Confirm tag icons"
-            }
-          },
-          {
-            "id": "d80a8596db7ad11a",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Tasks/Todo/06-charity-page-optimization.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "06-charity-page-optimization"
-            }
-          },
-          {
-            "id": "af8ae90b7f5ce3fb",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Tasks/Backlog/6-Styling Updates.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "6-Styling Updates"
+              "title": "analytics-tracking-checklist"
             }
           }
         ],
-        "currentTab": 5
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -124,7 +68,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "add dug locations",
+                "query": "",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -254,36 +198,36 @@
       "bases:Create new base": false
     }
   },
-  "active": "7b09cc05cccdb3fd",
+  "active": "8726cb2dc337da7f",
   "lastOpenFiles": [
+    "Tasks/Todo/7-Analytics-Beacon.md",
+    "Product/analytics-tracking-checklist.md",
+    "Learn/beacon-analytics.md",
+    "Tasks/Todo/Add New Charities.md",
+    "Tasks/Todo/05-Confirm tag icons.md",
+    "Tasks/Todo/Improve Cause Tag UI.md",
+    "Product/Product-position.md",
+    "Tasks/Todo/Improve Copy Content.md",
+    "Tasks/Done/Improve Copy Content.md",
+    "Product/flows.md",
+    "Learn/GraphQL.md",
+    "Tasks/Done/8-Preferences-Onboarding.md",
+    "Tasks/Backlog/5-Incorporate beta pilot experience.md",
+    "Explore Differentiators.md",
+    "Tasks/Done/11-enhance-map.md",
+    "Tasks/Backlog/10-Confirm location neighborhoods.md",
+    "Tasks/Done/06-charity-page-optimization.md",
+    "Tasks/Done/04-Add FBR.md",
+    "Tasks/Done/03-New-Charities.md",
+    "Tasks/Done/04-Mobile-Optimization.md",
+    "Tasks/Backlog/6-Styling Updates.md",
     "Tasks/Done/Create-list-view.md",
     "Tasks/Done/17-Database-Backup-Process.md",
     "Tasks/Backlog/Tax info.md",
-    "Tasks/Todo/06-charity-page-optimization.md",
-    "Tasks/Todo/10-Confirm location neighborhoods.md",
     "Tasks/Todo/Create-list-view.md",
     "Product/Customer Research.md",
-    "Tasks/Todo/11-enhance-map.md",
-    "Tasks/Todo/04-Add FBR.md",
-    "Tasks/Todo/03-New-Charities.md",
-    "2026-03-05.md",
-    "Operations/Charity-Data-Refresh.md",
-    "Operations/DevOps.md",
-    "Operations/Yearly Data Refresh.md",
-    "Operations/charity-data-population.md",
-    "Operations/Dev Ops.md",
-    "Operations/Operations.md",
     "Operations",
-    "Tasks/Done/01-Shared-Locations.md",
-    "Tasks/Todo/05-Confirm tag icons.md",
-    "Tasks/Done/Airbnb enahncements.md",
-    "Tasks/Done/05-good-local-emails.md",
     "LocationListInfo (1).pdf",
-    "Tasks/Backlog/Yearly Data Refresh.md",
-    "Tasks/Todo/07-charity-detail-layout-overhaul.md",
-    "Product/Product-position.md",
-    "Tasks/Todo/07-Remove-Every-Org.md",
-    "Tasks/Done/07-Remove-Every-Org.md",
     "Screenshot 2026-02-12 at 9.14.23 PM.png",
     "Research/Archive",
     "Product/Policies",
