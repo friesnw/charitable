@@ -27,8 +27,15 @@ export const analyticsResolvers = {
           ? `AND (user_id IS NULL OR user_id NOT IN (${excludeIds.join(',')}))`
           : '';
 
-      const [eventCounts, dailyPageViews, topCharities, topCauseTags, topNeighborhoods] =
+      const [uniqueVisitorsResult, eventCounts, dailyPageViews, topCharities, topCauseTags, topNeighborhoods] =
         await Promise.all([
+          pool.query(`
+            SELECT COUNT(DISTINCT visitor_id)::int AS count
+            FROM analytics_events
+            WHERE created_at > now() - interval '30 days'
+              AND visitor_id IS NOT NULL
+              ${excludeClause}
+          `),
           pool.query(`
             SELECT event_name, COUNT(*)::int AS count
             FROM analytics_events
@@ -86,6 +93,7 @@ export const analyticsResolvers = {
 
       return {
         totalEvents,
+        uniqueVisitors: uniqueVisitorsResult.rows[0]?.count ?? 0,
         eventCounts: eventCounts.rows.map((r: { event_name: string; count: number }) => ({
           eventName: r.event_name,
           count: r.count,

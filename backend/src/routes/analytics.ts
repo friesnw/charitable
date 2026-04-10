@@ -6,7 +6,7 @@ const router = Router();
 
 router.post('/events', async (req, res) => {
   try {
-    const { event_name, event_data, page_url, referrer, user_agent, session_id } = req.body;
+    const { event_name, event_data, page_url, referrer, user_agent, session_id, visitor_id } = req.body;
 
     if (!event_name || typeof event_name !== 'string') {
       res.status(400).json({ error: 'event_name required' });
@@ -22,8 +22,8 @@ router.post('/events', async (req, res) => {
     }
 
     await pool.query(
-      `INSERT INTO analytics_events (event_name, event_data, page_url, referrer, user_agent, session_id, user_id)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      `INSERT INTO analytics_events (event_name, event_data, page_url, referrer, user_agent, session_id, user_id, visitor_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
       [
         event_name,
         event_data ?? null,
@@ -32,6 +32,7 @@ router.post('/events', async (req, res) => {
         user_agent ?? req.headers['user-agent'] ?? null,
         session_id ?? null,
         userId,
+        visitor_id ?? null,
       ],
     );
 

@@ -99,6 +99,7 @@ export const typeDefs = `#graphql
 
   type AnalyticsOverview {
     totalEvents: Int!
+    uniqueVisitors: Int!
     eventCounts: [EventCount!]!
     dailyPageViews: [DailyCount!]!
     topCharities: [TopItem!]!

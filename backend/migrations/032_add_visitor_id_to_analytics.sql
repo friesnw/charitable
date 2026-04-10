@@ -1,0 +1,2 @@
+ALTER TABLE analytics_events ADD COLUMN IF NOT EXISTS visitor_id TEXT;
+CREATE INDEX IF NOT EXISTS analytics_events_visitor_id_idx ON analytics_events (visitor_id);
