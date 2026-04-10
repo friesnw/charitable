@@ -104,30 +104,33 @@ LIMIT 5;
 ---
 
 ### `neighborhood_select`
-- **Fired by:** Three places:
+- **Fired by:** Four places:
   1. `Home.tsx` — neighborhood pills on the home page
-  2. `Charities.tsx` `handleNeighborhoodSelect` — intro screen chips + autocomplete dropdown
+  2. `Charities.tsx` `handleNeighborhoodSelect` — map sidebar neighborhood picker
   3. `Charities.tsx` `handleSidebarNeighborhoodSelect` — changing neighborhood from the map sidebar
+  4. `Preferences.tsx` — neighborhood saved from the account preferences page
 - **Data:** `{ neighborhood }` e.g. `{ neighborhood: 'Capitol Hill' }`
 - **How to test:**
   - Go to `/` → click a neighborhood pill
-  - On first visit to `/map` → click a neighborhood chip
-  - On first visit to `/map` → type in "More neighborhoods..." → select from dropdown
-  - On `/map` with a location already set → open the sidebar location editor → select a different neighborhood
+  - On `/map` → open the sidebar location editor → select a neighborhood
+  - Go to `/preferences` → set a neighborhood → save
 - **Edge cases:**
   - [x] Selecting the same neighborhood you're already on still fires (intentional re-selection)
   - [x] Picking from the autocomplete dropdown (not just typing) fires the event
 - [x] Verified (home page pill)
-- [x] Verified (intro chip)
-- [x] Verified (intro autocomplete dropdown)
 - [x] Verified (sidebar change)
+- [ ] Verified (preferences page)
 
 ---
 
 ### `zip_select`
-- **Fired by:** `Charities.tsx` — ZIP entry in the sidebar location editor
+- **Fired by:** Two places:
+  1. `Charities.tsx` — ZIP entry in the sidebar location editor
+  2. `Preferences.tsx` — ZIP saved from the account preferences page
 - **Data:** `{ zip }` e.g. `{ zip: '80203' }`
-- **How to test:** On `/map` → click the location row to open the editor → type a ZIP → submit
+- **How to test:**
+  - On `/map` → click the location row to open the editor → type a ZIP → submit
+  - Go to `/preferences` → enter a ZIP → save
 - **Edge cases:**
   - [ ] An invalid ZIP (one that fails to resolve) still fires the event (the track fires before the resolve)
   - [ ] Submitting the same ZIP twice fires twice

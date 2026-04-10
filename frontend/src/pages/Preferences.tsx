@@ -3,6 +3,7 @@ import { gql, useMutation, useQuery, useLazyQuery } from '@apollo/client';
 import { useAuth } from '../hooks/useAuth';
 import { Button } from '../components/ui/Button';
 import { NEIGHBORHOODS } from '../lib/neighborhoods';
+import { trackEvent } from '../utils/analytics';
 
 const MY_PREFERENCES = gql`
   query MyPreferences {
@@ -168,6 +169,9 @@ export function Preferences() {
         neighborhood: neighborhoodInput || null,
       },
     });
+
+    if (hasValidZip) trackEvent('zip_select', { zip: zipInput });
+    if (hasNeighborhood) trackEvent('neighborhood_select', { neighborhood: neighborhoodInput });
 
     // Clear anonymous localStorage zip — it's now saved to their account
     if (hasValidZip) localStorage.removeItem('userZip');
