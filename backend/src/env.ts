@@ -18,7 +18,8 @@ const envSchema = z.object({
   RESEND_API_KEY: z.string().startsWith('re_'),
   FRONTEND_URL: z.string().url().default('http://localhost:5173'),
   ADMIN_EMAIL: z.string().email().optional(),
-
+  // Comma-separated user IDs to exclude from analytics (e.g. "1,2")
+  ANALYTICS_EXCLUDE_USER_IDS: z.string().default(''),
 });
 
 const parsed = envSchema.safeParse(process.env);

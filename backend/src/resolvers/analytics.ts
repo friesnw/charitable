@@ -1,6 +1,7 @@
 import { pool } from '../db.js';
 import { Context } from '../auth.js';
 import { GraphQLError } from 'graphql';
+import { env } from '../env.js';
 
 function requireAdmin(context: Context) {
   if (!context.user) {
@@ -16,12 +17,23 @@ export const analyticsResolvers = {
     analyticsOverview: async (_: unknown, __: unknown, context: Context) => {
       requireAdmin(context);
 
+      const excludeIds = env.ANALYTICS_EXCLUDE_USER_IDS
+        .split(',')
+        .map((s) => parseInt(s.trim(), 10))
+        .filter((n) => !isNaN(n));
+
+      const excludeClause =
+        excludeIds.length > 0
+          ? `AND (user_id IS NULL OR user_id NOT IN (${excludeIds.join(',')}))`
+          : '';
+
       const [eventCounts, dailyPageViews, topCharities, topCauseTags, topNeighborhoods] =
         await Promise.all([
           pool.query(`
             SELECT event_name, COUNT(*)::int AS count
             FROM analytics_events
             WHERE created_at > now() - interval '30 days'
+            ${excludeClause}
             GROUP BY event_name
             ORDER BY count DESC
           `),
@@ -31,6 +43,7 @@ export const analyticsResolvers = {
             FROM analytics_events
             WHERE event_name = 'page_view'
               AND created_at > now() - interval '14 days'
+              ${excludeClause}
             GROUP BY DATE(created_at AT TIME ZONE 'America/Denver')
             ORDER BY date
           `),
@@ -40,6 +53,7 @@ export const analyticsResolvers = {
             WHERE event_name = 'charity_view'
               AND created_at > now() - interval '30 days'
               AND event_data->>'charityName' IS NOT NULL
+              ${excludeClause}
             GROUP BY label
             ORDER BY count DESC
             LIMIT 10
@@ -50,6 +64,7 @@ export const analyticsResolvers = {
             WHERE event_name IN ('filter_tag', 'onboarding_cause_select')
               AND created_at > now() - interval '30 days'
               AND event_data->>'tag' IS NOT NULL
+              ${excludeClause}
             GROUP BY label
             ORDER BY count DESC
             LIMIT 10
@@ -60,6 +75,7 @@ export const analyticsResolvers = {
             WHERE event_name = 'neighborhood_select'
               AND created_at > now() - interval '30 days'
               AND event_data->>'neighborhood' IS NOT NULL
+              ${excludeClause}
             GROUP BY label
             ORDER BY count DESC
             LIMIT 10

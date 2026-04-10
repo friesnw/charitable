@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { pool } from '../db.js';
+import { verifyToken } from '../auth.js';
 
 const router = Router();
 
@@ -12,9 +13,17 @@ router.post('/events', async (req, res) => {
       return;
     }
 
+    // Extract user_id from JWT if present (used to filter out known users from analytics)
+    let userId: number | null = null;
+    const authHeader = req.headers['authorization'];
+    if (authHeader?.startsWith('Bearer ')) {
+      const payload = verifyToken(authHeader.slice(7));
+      if (payload) userId = payload.userId;
+    }
+
     await pool.query(
-      `INSERT INTO analytics_events (event_name, event_data, page_url, referrer, user_agent, session_id)
-       VALUES ($1, $2, $3, $4, $5, $6)`,
+      `INSERT INTO analytics_events (event_name, event_data, page_url, referrer, user_agent, session_id, user_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
       [
         event_name,
         event_data ?? null,
@@ -22,6 +31,7 @@ router.post('/events', async (req, res) => {
         referrer ?? null,
         user_agent ?? req.headers['user-agent'] ?? null,
         session_id ?? null,
+        userId,
       ],
     );
 

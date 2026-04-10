@@ -21,10 +21,14 @@ export function trackEvent(name: EventName, data?: Record<string, unknown>) {
     referrer: document.referrer,
   });
 
+  const token = localStorage.getItem('auth_token');
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
   // keepalive ensures the request completes even if the page navigates away
   fetch(`${API_URL}/api/events`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: payload,
     keepalive: true,
   }).catch(() => {});
