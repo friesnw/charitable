@@ -1207,6 +1207,7 @@ export function Charities() {
                     setLocationQuery(val);
                     const digits = val.replace(/\D/g, "");
                     if (/^\d/.test(val) && digits.length === 5) {
+                      trackEvent('zip_select', { zip: digits });
                       resolveZip({ variables: { zip: digits } }).then(
                         ({ data }) => {
                           const info = data?.resolveZip;
