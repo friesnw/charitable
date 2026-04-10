@@ -5,6 +5,7 @@ import { charityResolvers } from './charities.js';
 import { authResolvers } from './auth.js';
 import { preferencesResolvers } from './preferences.js';
 import { zipResolvers } from './zip.js';
+import { analyticsResolvers } from './analytics.js';
 
 function requireAdmin(context: Context) {
   if (!context.user) {
@@ -58,6 +59,7 @@ export const resolvers = {
     ...authResolvers.Query,
     ...preferencesResolvers.Query,
     ...zipResolvers.Query,
+    ...analyticsResolvers.Query,
   },
   Mutation: {
     ...userResolvers.Mutation,

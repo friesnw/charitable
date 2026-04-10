@@ -116,7 +116,7 @@ const UPDATE_LOCATION_REVIEWED = gql`
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
-type Tab = 'charities' | 'locations' | 'cause-tags' | 'users';
+type Tab = 'charities' | 'locations' | 'cause-tags' | 'users' | 'analytics';
 
 interface CharityRow {
   id: string;
@@ -187,6 +187,7 @@ function TabBar({ active, onChange }: { active: Tab; onChange: (t: Tab) => void 
     { id: 'locations', label: 'Charity Locations' },
     { id: 'cause-tags', label: 'Cause Tags' },
     { id: 'users', label: 'Users' },
+    { id: 'analytics', label: 'Analytics' },
   ];
   return (
     <div className="flex gap-1 border-b border-brand-tertiary mb-6">
@@ -678,6 +679,168 @@ function UsersTab() {
   );
 }
 
+// ── Analytics tab ────────────────────────────────────────────────────────────
+
+const GET_ANALYTICS = gql`
+  query GetAnalyticsOverview {
+    analyticsOverview {
+      totalEvents
+      eventCounts { eventName count }
+      dailyPageViews { date count }
+      topCharities { label count }
+      topCauseTags { label count }
+      topNeighborhoods { label count }
+    }
+  }
+`;
+
+function Bar({ count, max }: { count: number; max: number }) {
+  const pct = max > 0 ? Math.round((count / max) * 100) : 0;
+  return (
+    <div className="flex items-center gap-2 w-full">
+      <div className="flex-1 h-2 bg-bg-accent rounded-full overflow-hidden">
+        <div className="h-full bg-brand-secondary rounded-full" style={{ width: `${pct}%` }} />
+      </div>
+      <span className="text-xs text-text-secondary w-8 text-right">{count}</span>
+    </div>
+  );
+}
+
+function StatCard({ label, value }: { label: string; value: number | string }) {
+  return (
+    <div className="border border-brand-tertiary rounded-lg px-4 py-3">
+      <p className="text-xs text-text-secondary">{label}</p>
+      <p className="text-2xl font-bold text-text-primary mt-0.5">{value}</p>
+    </div>
+  );
+}
+
+const EVENT_LABELS: Record<string, string> = {
+  page_view: 'Page view',
+  charity_view: 'Charity view',
+  donate_click: 'Donate click',
+  volunteer_click: 'Volunteer click',
+  website_click: 'Website click',
+  map_pin_click: 'Map pin click',
+  filter_tag: 'Filter tag',
+  onboarding_cause_select: 'Onboarding cause select',
+  neighborhood_select: 'Neighborhood select',
+  zip_select: 'ZIP select',
+  sign_in_start: 'Sign-in start',
+  sign_in_complete: 'Sign-in complete',
+  account_created: 'Account created',
+};
+
+function TopList({ title, items }: { title: string; items: { label: string; count: number }[] }) {
+  const max = items[0]?.count ?? 0;
+  return (
+    <div>
+      <h3 className="text-sm font-semibold text-text-primary mb-3">{title}</h3>
+      {items.length === 0 ? (
+        <p className="text-xs text-text-secondary">No data</p>
+      ) : (
+        <div className="space-y-2">
+          {items.map((item) => (
+            <div key={item.label}>
+              <div className="flex justify-between mb-0.5">
+                <span className="text-xs text-text-primary truncate max-w-[160px]">{item.label}</span>
+              </div>
+              <Bar count={item.count} max={max} />
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AnalyticsTab() {
+  const { data, loading, error } = useQuery(GET_ANALYTICS);
+  const overview = data?.analyticsOverview;
+
+  if (loading) return <p className="text-text-secondary text-sm">Loading...</p>;
+  if (error) return <p className="text-error text-sm">Error: {error.message}</p>;
+  if (!overview) return null;
+
+  const pageViews = overview.eventCounts.find((e: { eventName: string; count: number }) => e.eventName === 'page_view')?.count ?? 0;
+  const signIns = overview.eventCounts.find((e: { eventName: string; count: number }) => e.eventName === 'sign_in_complete')?.count ?? 0;
+  const newAccounts = overview.eventCounts.find((e: { eventName: string; count: number }) => e.eventName === 'account_created')?.count ?? 0;
+  const donateClicks = overview.eventCounts.find((e: { eventName: string; count: number }) => e.eventName === 'donate_click')?.count ?? 0;
+
+  // Fill in missing days for the daily chart
+  const dailyMap: Record<string, number> = {};
+  overview.dailyPageViews.forEach((d: { date: string; count: number }) => { dailyMap[d.date] = d.count; });
+  const days: { date: string; count: number }[] = [];
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const key = d.toISOString().slice(0, 10);
+    days.push({ date: key, count: dailyMap[key] ?? 0 });
+  }
+  const maxDaily = Math.max(...days.map((d) => d.count), 1);
+
+  return (
+    <div className="space-y-8">
+      {/* Stat cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <StatCard label="Total events (30d)" value={overview.totalEvents} />
+        <StatCard label="Page views (30d)" value={pageViews} />
+        <StatCard label="Donate clicks (30d)" value={donateClicks} />
+        <StatCard label="New accounts (30d)" value={newAccounts} />
+      </div>
+
+      {/* Daily page views */}
+      <div>
+        <h3 className="text-sm font-semibold text-text-primary mb-3">Page views — last 14 days</h3>
+        <div className="flex items-end gap-1 h-20">
+          {days.map((d) => (
+            <div key={d.date} className="flex-1 flex flex-col items-center gap-1 group relative">
+              <div
+                className="w-full bg-brand-secondary rounded-sm"
+                style={{ height: `${Math.round((d.count / maxDaily) * 64)}px`, minHeight: d.count > 0 ? '3px' : '0' }}
+              />
+              <span className="text-[9px] text-text-secondary">{d.date.slice(5)}</span>
+              {d.count > 0 && (
+                <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] bg-bg-accent border border-brand-tertiary rounded px-1 opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none">
+                  {d.count}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Top lists */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <TopList title="Top charities viewed (30d)" items={overview.topCharities} />
+        <TopList title="Top cause tags (30d)" items={overview.topCauseTags} />
+        <TopList title="Top neighborhoods (30d)" items={overview.topNeighborhoods} />
+      </div>
+
+      {/* Event breakdown */}
+      <div>
+        <h3 className="text-sm font-semibold text-text-primary mb-3">Events by type (30d)</h3>
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-brand-tertiary text-left">
+              <th className="pb-2 text-xs font-medium text-text-secondary">Event</th>
+              <th className="pb-2 text-xs font-medium text-text-secondary text-right">Count</th>
+            </tr>
+          </thead>
+          <tbody>
+            {overview.eventCounts.map((e: { eventName: string; count: number }) => (
+              <tr key={e.eventName} className="border-b border-brand-tertiary/50">
+                <td className="py-1.5 text-text-primary">{EVENT_LABELS[e.eventName] ?? e.eventName}</td>
+                <td className="py-1.5 text-text-secondary text-right">{e.count}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 // ── Main component ───────────────────────────────────────────────────────────
 
 export function Admin() {
@@ -944,6 +1107,9 @@ export function Admin() {
 
       {/* ── Users tab ── */}
       {activeTab === 'users' && <UsersTab />}
+
+      {/* ── Analytics tab ── */}
+      {activeTab === 'analytics' && <AnalyticsTab />}
     </div>
   );
 }

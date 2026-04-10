@@ -82,6 +82,30 @@ export const typeDefs = `#graphql
     charityCount: Int!
   }
 
+  type EventCount {
+    eventName: String!
+    count: Int!
+  }
+
+  type DailyCount {
+    date: String!
+    count: Int!
+  }
+
+  type TopItem {
+    label: String!
+    count: Int!
+  }
+
+  type AnalyticsOverview {
+    totalEvents: Int!
+    eventCounts: [EventCount!]!
+    dailyPageViews: [DailyCount!]!
+    topCharities: [TopItem!]!
+    topCauseTags: [TopItem!]!
+    topNeighborhoods: [TopItem!]!
+  }
+
   type Query {
     users: [User!]!
     user(id: ID!): User
@@ -92,6 +116,8 @@ export const typeDefs = `#graphql
     charity(id: ID, slug: String): Charity
     causes: [Cause!]!
     resolveZip(zip: String!): ZipInfo
+
+    analyticsOverview: AnalyticsOverview!
   }
 
   type Mutation {
