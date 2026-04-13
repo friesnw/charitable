@@ -22,6 +22,69 @@ const DIRECTIONS: { label: string; heading: number; gridRow: number; gridCol: nu
   { label: 'SE', heading: 135, gridRow: 3, gridCol: 3 },
 ];
 
+// Fetches preview via JS (avoids ORB blocking of <img src> cross-origin requests)
+function DirectionThumbnail({
+  address,
+  heading,
+  label,
+  selected,
+  onClick,
+}: {
+  address: string;
+  heading: number;
+  label: string;
+  selected: boolean;
+  onClick: () => void;
+}) {
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    let objectUrl: string | null = null;
+    setBlobUrl(null);
+    setFailed(false);
+
+    const params = new URLSearchParams({ address, heading: heading.toString(), pitch: '0' });
+    fetch(`${API_URL}/api/street-view-preview?${params}`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.blob();
+      })
+      .then((blob) => {
+        if (!active) return;
+        objectUrl = URL.createObjectURL(blob);
+        setBlobUrl(objectUrl);
+      })
+      .catch(() => { if (active) setFailed(true); });
+
+    return () => {
+      active = false;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [address, heading]);
+
+  return (
+    <button
+      onClick={onClick}
+      className={`relative rounded overflow-hidden border-2 transition-colors ${
+        selected ? 'border-brand-primary' : 'border-transparent hover:border-brand-secondary'
+      }`}
+    >
+      {blobUrl ? (
+        <img src={blobUrl} alt={`${label} view`} className="w-full aspect-video object-cover block" />
+      ) : (
+        <div className="w-full aspect-video bg-bg-accent flex items-center justify-center">
+          <span className="text-xs text-text-secondary">{failed ? '—' : '…'}</span>
+        </div>
+      )}
+      <span className="absolute bottom-0 left-0 right-0 text-center text-xs font-medium text-white bg-black/40 py-0.5">
+        {label}
+      </span>
+    </button>
+  );
+}
+
 interface Props {
   locationId: string;
   initialAddress: string;
@@ -38,7 +101,6 @@ export function StreetViewPickerModal({ locationId, initialAddress, onSaved, onC
 
   const [savePhoto] = useMutation(SAVE_STREET_VIEW_PHOTO);
 
-  // Reload previews when address is submitted (Enter or blur)
   function commitAddress() {
     const trimmed = address.trim();
     if (trimmed && trimmed !== submittedAddress) {
@@ -47,32 +109,16 @@ export function StreetViewPickerModal({ locationId, initialAddress, onSaved, onC
     }
   }
 
-  function previewUrl(heading: number) {
-    const params = new URLSearchParams({
-      address: submittedAddress,
-      heading: heading.toString(),
-      pitch: '0',
-    });
-    return `${API_URL}/api/street-view-preview?${params}`;
-  }
-
   async function handleSave() {
     if (selectedHeading === null) return;
     setSaving(true);
     setError(null);
     try {
       const result = await savePhoto({
-        variables: {
-          locationId,
-          address: submittedAddress,
-          heading: selectedHeading,
-          pitch: 0,
-        },
+        variables: { locationId, address: submittedAddress, heading: selectedHeading, pitch: 0 },
       });
       const photoUrl = result.data?.saveStreetViewPhoto?.photoUrl;
-      if (photoUrl) {
-        onSaved(photoUrl);
-      }
+      if (photoUrl) onSaved(photoUrl);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to save photo');
     } finally {
@@ -80,11 +126,8 @@ export function StreetViewPickerModal({ locationId, initialAddress, onSaved, onC
     }
   }
 
-  // Close on Escape
   useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') onClose();
-    }
+    function onKey(e: KeyboardEvent) { if (e.key === 'Escape') onClose(); }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
@@ -106,7 +149,6 @@ export function StreetViewPickerModal({ locationId, initialAddress, onSaved, onC
           </button>
         </div>
 
-        {/* Address field */}
         <div className="mb-4">
           <label className="block text-xs text-text-secondary mb-1">
             Address for photo lookup (not saved to the app)
@@ -128,39 +170,26 @@ export function StreetViewPickerModal({ locationId, initialAddress, onSaved, onC
           style={{ gridTemplateColumns: 'repeat(3, 1fr)', gridTemplateRows: 'repeat(3, 1fr)' }}
         >
           {DIRECTIONS.map((dir) => (
-            <button
-              key={dir.label}
-              onClick={() => setSelectedHeading(dir.heading)}
-              style={{ gridRow: dir.gridRow, gridColumn: dir.gridCol }}
-              className={`relative rounded overflow-hidden border-2 transition-colors ${
-                selectedHeading === dir.heading
-                  ? 'border-brand-primary'
-                  : 'border-transparent hover:border-brand-secondary'
-              }`}
-            >
-              <img
-                src={previewUrl(dir.heading)}
-                alt={`${dir.label} view`}
-                className="w-full aspect-video object-cover block"
+            <div key={dir.label} style={{ gridRow: dir.gridRow, gridColumn: dir.gridCol }}>
+              <DirectionThumbnail
+                address={submittedAddress}
+                heading={dir.heading}
+                label={dir.label}
+                selected={selectedHeading === dir.heading}
+                onClick={() => setSelectedHeading(dir.heading)}
               />
-              <span className="absolute bottom-0 left-0 right-0 text-center text-xs font-medium text-white bg-black/40 py-0.5">
-                {dir.label}
-              </span>
-            </button>
+            </div>
           ))}
 
-          {/* Center cell — visual placeholder */}
           <div
             style={{ gridRow: 2, gridColumn: 2 }}
-            className="rounded bg-bg-accent border border-brand-tertiary flex items-center justify-center"
+            className="rounded bg-bg-accent border border-brand-tertiary flex items-center justify-center aspect-video"
           >
             <span className="text-xs text-text-secondary">You</span>
           </div>
         </div>
 
-        {error && (
-          <p className="text-xs text-red-500 mb-3">{error}</p>
-        )}
+        {error && <p className="text-xs text-red-500 mb-3">{error}</p>}
 
         <div className="flex items-center justify-between">
           <p className="text-xs text-text-secondary">
