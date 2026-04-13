@@ -167,7 +167,6 @@ function snapZoom(zoom: number): number {
   if (zoom < 9.5) return 8; // full metro → max clusters
   if (zoom < 11) return 10; // large district clusters
   if (zoom < 12.5) return 11.5; // neighborhood clusters
-  if (zoom < 14) return 13; // block-level clusters
   return 15; // individual pins
 }
 
