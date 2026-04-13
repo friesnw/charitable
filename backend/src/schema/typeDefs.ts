@@ -194,6 +194,13 @@ export const typeDefs = `#graphql
 
     deleteCharityLocation(id: ID!): Boolean!
 
+    saveStreetViewPhoto(
+      locationId: ID!
+      address: String!
+      heading: Float!
+      pitch: Float
+    ): CharityLocation!
+
     updateCause(tag: String!, label: String!): Cause!
     deleteCause(tag: String!): Boolean!
   }

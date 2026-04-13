@@ -4,6 +4,7 @@ import { useQuery, useMutation, gql } from '@apollo/client';
 import { cloudinaryUrl, pickAndUploadImage, uploadToCloudinary } from '../lib/cloudinary';
 import { Initials } from '../components/ui/Initials';
 import { Icon, ICON_NAMES } from '../components/ui/Icon';
+import { StreetViewPickerModal } from '../components/StreetViewPickerModal';
 
 const GET_ADMIN_CHARITY = gql`
   query GetAdminCharity($slug: String!) {
@@ -225,6 +226,7 @@ export function AdminCharityEdit() {
   const [showAddLocation, setShowAddLocation] = useState(false);
   const [newLocForm, setNewLocForm] = useState<LocationForm>({ label: '', description: '', address: '', latitude: '', longitude: '', isSublocation: false, displayOrder: '0' });
   const [uploadingField, setUploadingField] = useState<string | null>(null);
+  const [streetViewPickerLocId, setStreetViewPickerLocId] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [showIconRef, setShowIconRef] = useState(false);
@@ -882,6 +884,12 @@ export function AdminCharityEdit() {
                                   >
                                     {uploadingField === `photo-${loc.id}` ? 'Uploading...' : loc.photoUrl ? 'Replace' : 'Upload'}
                                   </button>
+                                  <button
+                                    onClick={e => { e.stopPropagation(); setStreetViewPickerLocId(loc.id); }}
+                                    className={`${btnCls} border border-brand-tertiary text-text-secondary hover:bg-bg-accent text-xs`}
+                                  >
+                                    Street View
+                                  </button>
                                   {loc.photoUrl && (
                                     <a
                                       href={loc.photoUrl}
@@ -987,6 +995,22 @@ export function AdminCharityEdit() {
           )}
         </div>
       </div>
+
+      {streetViewPickerLocId && (() => {
+        const loc = charity.locations.find(l => l.id === streetViewPickerLocId);
+        if (!loc) return null;
+        return (
+          <StreetViewPickerModal
+            locationId={loc.id}
+            initialAddress={loc.address ?? ''}
+            onSaved={(photoUrl) => {
+              updateLocation({ variables: { id: loc.id, photoUrl } });
+              setStreetViewPickerLocId(null);
+            }}
+            onClose={() => setStreetViewPickerLocId(null)}
+          />
+        );
+      })()}
     </div>
   );
 }

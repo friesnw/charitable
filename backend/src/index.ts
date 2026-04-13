@@ -27,6 +27,26 @@ async function main() {
     res.status(200).json({ status: 'pass' });
   });
 
+  app.get('/api/street-view-preview', cors(), async (req, res) => {
+    const apiKey = env.GOOGLE_MAPS_API_KEY;
+    if (!apiKey) { res.status(503).json({ error: 'GOOGLE_MAPS_API_KEY not configured' }); return; }
+
+    const { address, heading = '0', pitch = '0', fov = '80' } = req.query as Record<string, string>;
+    if (!address) { res.status(400).json({ error: 'address required' }); return; }
+
+    const params = new URLSearchParams({ size: '600x400', location: address, heading, pitch, fov, key: apiKey });
+    try {
+      const upstream = await fetch(`https://maps.googleapis.com/maps/api/streetview?${params}`);
+      if (!upstream.ok) { res.status(502).json({ error: 'Street View API failed' }); return; }
+      res.setHeader('Content-Type', 'image/jpeg');
+      res.setHeader('Cache-Control', 'public, max-age=3600');
+      const buffer = Buffer.from(await upstream.arrayBuffer());
+      res.send(buffer);
+    } catch {
+      res.status(502).json({ error: 'Street View fetch failed' });
+    }
+  });
+
   app.get('/api/favicon', cors(), async (req, res) => {
     const domain = req.query.domain as string;
     if (!domain) { res.status(400).json({ error: 'domain required' }); return; }

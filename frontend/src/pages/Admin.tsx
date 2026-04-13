@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, gql } from '@apollo/client';
 import { cloudinaryUrl, pickAndUploadImage } from '../lib/cloudinary';
 import { Initials } from '../components/ui/Initials';
+import { StreetViewPickerModal } from '../components/StreetViewPickerModal';
 
 // ── Queries & mutations ──────────────────────────────────────────────────────
 
@@ -225,6 +226,7 @@ function LocationsTab() {
   const [locationReviewNote, setLocationReviewNote] = useState<string>(
     () => localStorage.getItem('location-review-note') ?? ''
   );
+  const [streetViewPickerId, setStreetViewPickerId] = useState<string | null>(null);
 
   const flatLocations: FlatLocation[] = (data?.charities ?? []).flatMap(
     (c: { id: string; name: string; slug: string; locations: FlatLocation[] }) =>
@@ -442,6 +444,12 @@ function LocationsTab() {
                               >
                                 {uploadingId === loc.id ? 'Uploading...' : loc.photoUrl ? 'Replace' : 'Upload'}
                               </button>
+                              <button
+                                onClick={e => { e.stopPropagation(); setStreetViewPickerId(loc.id); }}
+                                className={`${btnCls} border border-brand-tertiary text-text-secondary hover:bg-bg-accent text-xs`}
+                              >
+                                Street View
+                              </button>
                             </div>
                           </div>
                         </div>
@@ -495,6 +503,22 @@ function LocationsTab() {
           </div>
         </div>
       )}
+
+      {streetViewPickerId && (() => {
+        const loc = flatLocations.find(l => l.id === streetViewPickerId);
+        if (!loc) return null;
+        return (
+          <StreetViewPickerModal
+            locationId={loc.id}
+            initialAddress={loc.address ?? ''}
+            onSaved={(photoUrl) => {
+              updateLocation({ variables: { id: loc.id, photoUrl } });
+              setStreetViewPickerId(null);
+            }}
+            onClose={() => setStreetViewPickerId(null)}
+          />
+        );
+      })()}
     </div>
   );
 }

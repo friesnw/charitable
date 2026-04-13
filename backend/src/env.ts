@@ -20,6 +20,11 @@ const envSchema = z.object({
   ADMIN_EMAIL: z.string().email().optional(),
   // Comma-separated user IDs to exclude from analytics (e.g. "1,2")
   ANALYTICS_EXCLUDE_USER_IDS: z.string().default(''),
+  // Street View photo picker (optional — only needed for admin Street View feature)
+  GOOGLE_MAPS_API_KEY: z.string().optional(),
+  CLOUDINARY_CLOUD_NAME: z.string().optional(),
+  CLOUDINARY_API_KEY: z.string().optional(),
+  CLOUDINARY_API_SECRET: z.string().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);

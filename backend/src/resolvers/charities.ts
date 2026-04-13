@@ -1,6 +1,8 @@
 import { pool } from '../db.js';
 import { Context } from '../auth.js';
 import { GraphQLError } from 'graphql';
+import { env } from '../env.js';
+import { uploadLocationPhoto } from '../lib/cloudinary.js';
 
 function toCharity(row: Record<string, unknown>) {
   return {
@@ -256,6 +258,50 @@ export const charityResolvers = {
       requireAdmin(context);
       const result = await pool.query('DELETE FROM charity_locations WHERE id = $1', [id]);
       return (result.rowCount ?? 0) > 0;
+    },
+
+    saveStreetViewPhoto: async (
+      _: unknown,
+      args: { locationId: string; address: string; heading: number; pitch?: number },
+      context: Context
+    ) => {
+      requireAdmin(context);
+
+      if (!env.GOOGLE_MAPS_API_KEY || !env.CLOUDINARY_CLOUD_NAME || !env.CLOUDINARY_API_KEY || !env.CLOUDINARY_API_SECRET) {
+        throw new GraphQLError('Street View / Cloudinary credentials not configured on server');
+      }
+
+      const { locationId, address, heading, pitch = 0 } = args;
+
+      // Download Street View image
+      const params = new URLSearchParams({
+        size: '600x400',
+        location: address,
+        heading: heading.toString(),
+        pitch: pitch.toString(),
+        fov: '80',
+        key: env.GOOGLE_MAPS_API_KEY,
+      });
+      const svRes = await fetch(`https://maps.googleapis.com/maps/api/streetview?${params}`);
+      if (!svRes.ok) throw new GraphQLError(`Street View API returned ${svRes.status}`);
+      const imageBuffer = Buffer.from(await svRes.arrayBuffer());
+
+      // Upload to Cloudinary
+      const publicId = `location-${locationId}`;
+      const photoUrl = await uploadLocationPhoto(
+        imageBuffer,
+        publicId,
+        env.CLOUDINARY_CLOUD_NAME,
+        env.CLOUDINARY_API_KEY,
+        env.CLOUDINARY_API_SECRET,
+      );
+
+      // Persist
+      const result = await pool.query(
+        'UPDATE charity_locations SET photo_url = $1 WHERE id = $2 RETURNING *',
+        [photoUrl, locationId]
+      );
+      return toLocation(result.rows[0]);
     },
 
     updateCause: async (_: unknown, { tag, label }: { tag: string; label: string }, context: Context) => {
