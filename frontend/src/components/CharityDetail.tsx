@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
-import { cloudinaryUrl } from '../lib/cloudinary';
-import { causeColor } from '../lib/causeColors';
-import { DonateButton } from './ui/DonateButton';
-import { Icon, ICON_NAMES } from './ui/Icon';
-import { CharityDetailMap } from './CharityDetailMap';
-import { trackEvent } from '../utils/analytics';
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { cloudinaryUrl } from "../lib/cloudinary";
+import { causeColor } from "../lib/causeColors";
+import { DonateButton } from "./ui/DonateButton";
+import { Icon, ICON_NAMES } from "./ui/Icon";
+import { CharityDetailMap } from "./CharityDetailMap";
+import { trackEvent } from "../utils/analytics";
 
 interface StoryLocation {
   id: string;
@@ -49,25 +49,28 @@ interface CharityDetailProps {
   tagLabels: Map<string, string>;
 }
 
-
 function bareDomain(url: string): string {
   try {
     const host = new URL(url).hostname;
-    return host.startsWith('www.') ? host : `www.${host}`;
+    return host.startsWith("www.") ? host : `www.${host}`;
   } catch {
     return url;
   }
 }
 
-function parseHighlights(raw: string): { icon: string | null; title: string | null; text: string }[] {
+function parseHighlights(
+  raw: string,
+): { icon: string | null; title: string | null; text: string }[] {
   return raw
-    .split('\n')
+    .split("\n")
     .map((line) => {
       let rest = line;
       let icon: string | null = null;
       const prefixed = rest.match(/^\(([\w-]+)\)(.+)$/);
-      if (prefixed) { icon = prefixed[1]; rest = prefixed[2].trim(); }
-      else rest = rest.replace(/^-\s*/, '').trim();
+      if (prefixed) {
+        icon = prefixed[1];
+        rest = prefixed[2].trim();
+      } else rest = rest.replace(/^-\s*/, "").trim();
       const bolded = rest.match(/^\*\*(.+?)\*\*\s*(.*)$/);
       if (bolded) return { icon, title: bolded[1], text: bolded[2].trim() };
       return { icon, title: null, text: rest };
@@ -76,7 +79,8 @@ function parseHighlights(raw: string): { icon: string | null; title: string | nu
 }
 
 export function CharityDetail({ charity, tagLabels }: CharityDetailProps) {
-  const heroLocation = charity.locations.find((l) => l.photoUrl) ?? charity.locations[0] ?? null;
+  const heroLocation =
+    charity.locations.find((l) => l.photoUrl) ?? charity.locations[0] ?? null;
   const featuredPhoto = charity.coverPhotoUrl ?? heroLocation?.photoUrl ?? null;
   const parallaxRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -86,18 +90,22 @@ export function CharityDetail({ charity, tagLabels }: CharityDetailProps) {
         parallaxRef.current.style.transform = `translateY(${window.scrollY * 0.15}px)`;
       }
     };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, [featuredPhoto]);
   const contentPhoto1 = charity.contentPhotoUrl1 ?? null;
   const contentPhoto2 = charity.contentPhotoUrl2 ?? null;
   const color = causeColor(charity.causeTags);
-  const highlights = charity.programHighlights ? parseHighlights(charity.programHighlights) : [];
-  const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
+  const highlights = charity.programHighlights
+    ? parseHighlights(charity.programHighlights)
+    : [];
+  const [selectedLocationId, setSelectedLocationId] = useState<string | null>(
+    null,
+  );
 
   const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'NGO',
+    "@context": "https://schema.org",
+    "@type": "NGO",
     name: charity.name,
     ...(charity.description && { description: charity.description }),
     ...(charity.websiteUrl && { url: charity.websiteUrl }),
@@ -105,288 +113,417 @@ export function CharityDetail({ charity, tagLabels }: CharityDetailProps) {
     ...(charity.foundedYear && { foundingDate: String(charity.foundedYear) }),
     ...(charity.ein && { taxID: charity.ein }),
     ...(charity.primaryAddress && {
-      address: { '@type': 'PostalAddress', streetAddress: charity.primaryAddress },
+      address: {
+        "@type": "PostalAddress",
+        streetAddress: charity.primaryAddress,
+      },
     }),
     ...(charity.locations.length > 0 && {
       location: charity.locations.map((loc) => ({
-        '@type': 'Place',
+        "@type": "Place",
         name: loc.label,
-        ...(loc.address && { address: { '@type': 'PostalAddress', streetAddress: loc.address } }),
-        ...(loc.latitude != null && loc.longitude != null && {
-          geo: { '@type': 'GeoCoordinates', latitude: loc.latitude, longitude: loc.longitude },
+        ...(loc.address && {
+          address: { "@type": "PostalAddress", streetAddress: loc.address },
         }),
+        ...(loc.latitude != null &&
+          loc.longitude != null && {
+            geo: {
+              "@type": "GeoCoordinates",
+              latitude: loc.latitude,
+              longitude: loc.longitude,
+            },
+          }),
       })),
     }),
   };
 
   return (
     <>
-    <div className="-mx-4 -mt-8 -mb-8">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <div className="-mx-4 -mt-8 -mb-8">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
 
-      {/* Photo header — full-width cover photo with parallax */}
-      {featuredPhoto ? (
-        <div className="h-[220px] md:h-[300px]" style={{ width: '100vw', marginLeft: 'calc(-50vw + 50%)', overflow: 'hidden', position: 'relative' }}>
+        {/* Photo header — full-width cover photo with parallax */}
+        {featuredPhoto ? (
           <div
-            ref={parallaxRef}
+            className="h-[220px] md:h-[300px]"
             style={{
-              position: 'absolute',
-              top: '-60px', bottom: '-60px', left: 0, right: 0,
-              backgroundImage: `url(${cloudinaryUrl(featuredPhoto, { w: 1800, fit: 'scale' })})`,
-              backgroundSize: 'cover',
-              backgroundPosition: `${{ left: '25%', right: '75%', center: '50%', top: '50%', bottom: '50%' }[charity.coverPhotoFocalPoint ?? 'center'] ?? '50%'} ${{ top: '25%', bottom: '75%' }[charity.coverPhotoFocalPoint ?? ''] ?? '50%'}`,
+              width: "100vw",
+              marginLeft: "calc(-50vw + 50%)",
+              overflow: "hidden",
+              position: "relative",
             }}
-          />
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.04), rgba(0,0,0,0.22))' }} />
-        </div>
-      ) : charity.logoUrl ? (
-        <div className="px-4 pt-2">
-          <div
-            className="rounded-xl flex items-center justify-center"
-            style={{ height: 180, backgroundColor: `${color}22` }}
           >
-            <img
-              src={cloudinaryUrl(charity.logoUrl, { w: 160, h: 160, fit: 'fit' })}
-              alt={charity.name}
-              className="w-32 h-32 object-contain rounded-full shadow"
+            <div
+              ref={parallaxRef}
+              style={{
+                position: "absolute",
+                top: "-60px",
+                bottom: "-60px",
+                left: 0,
+                right: 0,
+                backgroundImage: `url(${cloudinaryUrl(featuredPhoto, { w: 1800, fit: "scale" })})`,
+                backgroundSize: "cover",
+                backgroundPosition: `${{ left: "25%", right: "75%", center: "50%", top: "50%", bottom: "50%" }[charity.coverPhotoFocalPoint ?? "center"] ?? "50%"} ${{ top: "25%", bottom: "75%" }[charity.coverPhotoFocalPoint ?? ""] ?? "50%"}`,
+              }}
+            />
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                background:
+                  "linear-gradient(to bottom, rgba(0,0,0,0.04), rgba(0,0,0,0.22))",
+              }}
             />
           </div>
-        </div>
-      ) : null}
+        ) : charity.logoUrl ? (
+          <div className="px-4 pt-2">
+            <div
+              className="rounded-xl flex items-center justify-center"
+              style={{ height: 180, backgroundColor: `${color}22` }}
+            >
+              <img
+                src={cloudinaryUrl(charity.logoUrl, {
+                  w: 160,
+                  h: 160,
+                  fit: "fit",
+                })}
+                alt={charity.name}
+                className="w-32 h-32 object-contain rounded-full shadow"
+              />
+            </div>
+          </div>
+        ) : null}
 
-      {/* Title block */}
-      <div className="px-4">
-        <div className="mt-4 mb-2">
-          <h1 className="text-2xl font-bold text-gray-900 leading-tight">{charity.name}</h1>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-sm" style={{ color: 'var(--flair-sage)' }}>
-            <span className="flex items-center gap-1.5 font-medium" style={{ color: 'var(--color-success)' }}>
-              <Icon name="check-circle-solid" className="w-4 h-4 shrink-0" />
-              Verified Non-Profit
-            </span>
-            {charity.ein && (
-              <span className="flex items-center gap-1.5">
-                <Icon name="fingerprint" className="w-4 h-4 shrink-0" />
-                EIN: {charity.ein}
+        {/* Title block */}
+        <div className="px-4">
+          <div className="mt-4 mb-2">
+            <h1 className="text-2xl font-bold text-gray-900 leading-tight">
+              {charity.name}
+            </h1>
+            <div
+              className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-sm"
+              style={{ color: "var(--flair-sage)" }}
+            >
+              <span
+                className="flex items-center gap-1.5 font-medium"
+                style={{ color: "var(--color-success)" }}
+              >
+                <Icon name="check-circle-solid" className="w-4 h-4 shrink-0" />
+                Verified Non-Profit
               </span>
-            )}
-            {charity.foundedYear && (
-              <span className="flex items-center gap-1.5">
-                <Icon name="flag" className="w-4 h-4 shrink-0" />
-                Est. {charity.foundedYear}
-              </span>
+              {charity.ein && (
+                <span className="flex items-center gap-1.5">
+                  <Icon name="fingerprint" className="w-4 h-4 shrink-0" />
+                  EIN: {charity.ein}
+                </span>
+              )}
+              {charity.foundedYear && (
+                <span className="flex items-center gap-1.5">
+                  <Icon name="flag" className="w-4 h-4 shrink-0" />
+                  Est. {charity.foundedYear}
+                </span>
+              )}
+            </div>
+            {charity.causeTags.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-3">
+                {charity.causeTags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="text-xs font-semibold uppercase tracking-wide px-3 py-1 rounded-full border"
+                    style={{
+                      color: "var(--brand-secondary)",
+                      borderColor: "var(--brand-secondary)",
+                      backgroundColor: "rgba(237, 66, 19, 0.08)",
+                    }}
+                  >
+                    {tagLabels.get(tag) ?? tag}
+                  </span>
+                ))}
+              </div>
             )}
           </div>
-          {charity.causeTags.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-3">
-              {charity.causeTags.map((tag) => (
-                <span
-                  key={tag}
-                  className="text-xs font-semibold uppercase tracking-wide px-3 py-1 rounded-full border"
-                  style={{ color: 'var(--brand-secondary)', borderColor: 'var(--brand-secondary)', backgroundColor: 'rgba(237, 66, 19, 0.08)' }}
-                >
-                  {tagLabels.get(tag) ?? tag}
-                </span>
-              ))}
-            </div>
-          )}
         </div>
-      </div>
 
-      {/* Body */}
-      <div className="px-4 py-6 pb-24 space-y-14">
-
-        {/* Two-column: [About + Highlights] | [Impact + Photos] */}
-        {(charity.description || highlights.length > 0 || charity.impact || contentPhoto1 || contentPhoto2) && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-20 items-start">
-
-            {/* Column 1: About + Program Highlights */}
-            <div className="space-y-8">
-              {charity.description && (
-                <section>
-                  <h2 className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: 'var(--flair-sage)' }}>
-                    About this organization
-                  </h2>
-                  {charity.description.split('\n').filter(Boolean).map((para, i) => (
-                    <p key={i} className="text-gray-800 leading-relaxed text-base mt-3 first:mt-0">{para}</p>
-                  ))}
-                  {charity.websiteUrl && (
-                    <a
-                      href={charity.websiteUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 underline underline-offset-2 transition-colors mt-3"
-                      onClick={() => trackEvent('website_click', { charityId: charity.id, charityName: charity.name })}
-                    >
-                      <Icon name="globe" className="w-3.5 h-3.5 shrink-0" />
-                      {bareDomain(charity.websiteUrl)}
-                    </a>
-                  )}
-                </section>
-              )}
-              {highlights.length > 0 && (
-                <section>
-                  <h2 className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: 'var(--flair-sage)' }}>
-                    Program Highlights
-                  </h2>
-                  <div className="space-y-5">
-                    {highlights.map((h, i) => {
-                      const iconName = h.icon && (ICON_NAMES as readonly string[]).includes(h.icon) ? h.icon as typeof ICON_NAMES[number] : 'star';
-                      return (
-                        <div key={i} className="flex items-start gap-3">
-                          <div
-                            className="w-12 h-12 rounded-full flex items-center justify-center shrink-0"
-                            style={{ backgroundColor: '#607F7533', color: 'var(--flair-green)' }}
-                          >
-                            <Icon name={iconName} className="w-6 h-6" />
-                          </div>
-                          <div className="pt-1.5">
-                            {h.title && <p className="text-base font-semibold text-gray-900 leading-snug">{h.title}</p>}
-                            {h.text && <p className="text-base text-gray-700 leading-relaxed">{h.text}</p>}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </section>
-              )}
-            </div>
-
-            {/* Column 2: Impact + staggered photos */}
-            <div className="space-y-8">
-              {charity.impact && (() => {
-                const lines = charity.impact!.split('\n').map(l => l.replace(/^-\s*/, '').trim()).filter(Boolean);
-                const statRegex = /^(\$?[\d,]+[%+kKmMbB]?)\s+(.+)$/;
-                return (
+        {/* Body */}
+        <div className="px-4 py-6 pb-24 space-y-14">
+          {/* Two-column: [About + Highlights] | [Impact + Photos] */}
+          {(charity.description ||
+            highlights.length > 0 ||
+            charity.impact ||
+            contentPhoto1 ||
+            contentPhoto2) && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-20 items-start">
+              {/* Column 1: About + Program Highlights */}
+              <div className="space-y-8">
+                {charity.description && (
                   <section>
-                    <h2 className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: 'var(--flair-sage)' }}>
-                      Last Year's Impact
+                    <h2
+                      className="text-xs font-semibold uppercase tracking-widest mb-3"
+                      style={{ color: "var(--flair-sage)" }}
+                    >
+                      About this organization
                     </h2>
-                    <div className="grid grid-cols-1 gap-3">
-                      {lines.map((line, i) => {
-                        const match = line.match(statRegex);
-                        if (match) {
-                          return (
-                            <div key={i} className="rounded-xl border border-gray-200 bg-white p-4">
-                              <p className="text-3xl font-bold" style={{ color: 'var(--brand-secondary)' }}>
-                                {match[1]}
-                              </p>
-                              <p className="text-sm font-semibold text-gray-800 mt-1">{match[2]}</p>
-                            </div>
-                          );
+                    {charity.description
+                      .split("\n")
+                      .filter(Boolean)
+                      .map((para, i) => (
+                        <p
+                          key={i}
+                          className="text-gray-800 leading-relaxed text-base mt-3 first:mt-0"
+                        >
+                          {para}
+                        </p>
+                      ))}
+                    {charity.websiteUrl && (
+                      <a
+                        href={charity.websiteUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 underline underline-offset-2 transition-colors mt-3"
+                        onClick={() =>
+                          trackEvent("website_click", {
+                            charityId: charity.id,
+                            charityName: charity.name,
+                          })
                         }
-                        return <p key={i} className="text-gray-800 leading-relaxed text-base">{line}</p>;
+                      >
+                        <Icon name="globe" className="w-3.5 h-3.5 shrink-0" />
+                        {bareDomain(charity.websiteUrl)}
+                      </a>
+                    )}
+                  </section>
+                )}
+                {highlights.length > 0 && (
+                  <section>
+                    <h2
+                      className="text-xs font-semibold uppercase tracking-widest mb-4"
+                      style={{ color: "var(--flair-sage)" }}
+                    >
+                      Program Highlights
+                    </h2>
+                    <div className="space-y-5">
+                      {highlights.map((h, i) => {
+                        const iconName =
+                          h.icon &&
+                          (ICON_NAMES as readonly string[]).includes(h.icon)
+                            ? (h.icon as (typeof ICON_NAMES)[number])
+                            : "star";
+                        return (
+                          <div key={i} className="flex items-start gap-3">
+                            <div
+                              className="w-12 h-12 rounded-full flex items-center justify-center shrink-0"
+                              style={{
+                                backgroundColor: "#607F7533",
+                                color: "var(--flair-green)",
+                              }}
+                            >
+                              <Icon name={iconName} className="w-6 h-6" />
+                            </div>
+                            <div className="pt-1.5">
+                              {h.title && (
+                                <p className="text-base font-semibold text-gray-900 leading-snug">
+                                  {h.title}
+                                </p>
+                              )}
+                              {h.text && (
+                                <p className="text-base text-gray-700 leading-relaxed">
+                                  {h.text}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        );
                       })}
                     </div>
                   </section>
-                );
-              })()}
-              {(contentPhoto1 || contentPhoto2) && (
-                <div className="flex gap-3 items-start">
-                  {contentPhoto1 && (
-                    <div className="flex-1 rounded-xl overflow-hidden" style={{ height: 200 }}>
-                      <img
-                        src={cloudinaryUrl(contentPhoto1, { w: 400, h: 400, fit: 'fill' })}
-                        alt=""
-                        loading="lazy"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  )}
-                  {contentPhoto2 && (
-                    <div className="flex-1 rounded-xl overflow-hidden mt-6" style={{ height: 200 }}>
-                      <img
-                        src={cloudinaryUrl(contentPhoto2, { w: 400, h: 400, fit: 'fill' })}
-                        alt=""
-                        loading="lazy"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  )}
-                </div>
-              )}
+                )}
+              </div>
+
+              {/* Column 2: Impact + staggered photos */}
+              <div className="space-y-8">
+                {charity.impact &&
+                  (() => {
+                    const lines = charity
+                      .impact!.split("\n")
+                      .map((l) => l.replace(/^-\s*/, "").trim())
+                      .filter(Boolean);
+                    const statRegex = /^(\$?[\d,]+[%+kKmMbB]?)\s+(.+)$/;
+                    return (
+                      <section>
+                        <h2
+                          className="text-xs font-semibold uppercase tracking-widest mb-3"
+                          style={{ color: "var(--flair-sage)" }}
+                        >
+                          Last Year's Impact
+                        </h2>
+                        <div className="grid grid-cols-1 gap-3">
+                          {lines.map((line, i) => {
+                            const match = line.match(statRegex);
+                            if (match) {
+                              return (
+                                <div
+                                  key={i}
+                                  className="rounded-xl border border-gray-200 bg-white p-4"
+                                >
+                                  <p
+                                    className="text-3xl font-bold"
+                                    style={{ color: "var(--brand-secondary)" }}
+                                  >
+                                    {match[1]}
+                                  </p>
+                                  <p className="text-sm font-semibold text-gray-800 mt-1">
+                                    {match[2]}
+                                  </p>
+                                </div>
+                              );
+                            }
+                            return (
+                              <p
+                                key={i}
+                                className="text-gray-800 leading-relaxed text-base"
+                              >
+                                {line}
+                              </p>
+                            );
+                          })}
+                        </div>
+                      </section>
+                    );
+                  })()}
+                {(contentPhoto1 || contentPhoto2) && (
+                  <div className="flex gap-3 items-start">
+                    {contentPhoto1 && (
+                      <div
+                        className="flex-1 rounded-xl overflow-hidden"
+                        style={{ height: 200 }}
+                      >
+                        <img
+                          src={cloudinaryUrl(contentPhoto1, {
+                            w: 400,
+                            h: 400,
+                            fit: "fill",
+                          })}
+                          alt=""
+                          loading="lazy"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                    {contentPhoto2 && (
+                      <div
+                        className="flex-1 rounded-xl overflow-hidden mt-6"
+                        style={{ height: 200 }}
+                      >
+                        <img
+                          src={cloudinaryUrl(contentPhoto2, {
+                            w: 400,
+                            h: 400,
+                            fit: "fill",
+                          })}
+                          alt=""
+                          loading="lazy"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
+          )}
 
-          </div>
-        )}
-
-        {/* Location section */}
-        {charity.locations.length > 0 && (
-          <CharityDetailMap
-            locations={charity.locations}
-            causeTags={charity.causeTags}
-            color={color}
-            locationDescription={charity.locationDescription}
-            selectedLocationId={selectedLocationId}
-            onSelectLocation={setSelectedLocationId}
-          />
-        )}
-
-        {/* Website link */}
-        {charity.websiteUrl && (
-          <a
-            href={charity.websiteUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 underline underline-offset-2 transition-colors"
-            onClick={() => trackEvent('website_click', { charityId: charity.id, charityName: charity.name })}
-          >
-            <Icon name="globe" className="w-3.5 h-3.5 shrink-0" />
-            {bareDomain(charity.websiteUrl)}
-          </a>
-        )}
-
-        {/* Usage credit */}
-        {(charity.usageCredit || charity.approvedByCharity) && (
-          <div className="space-y-1">
-            {(charity.usageCredit || `Info and photography courtesy of ${charity.name}`).split('\n').filter(Boolean).map((line, i) => (
-              <p key={i} className="text-xs tracking-wide text-gray-400 leading-relaxed">{line}</p>
-            ))}
-          </div>
-        )}
-      </div>
-
-    </div>
-
-    {/* Sticky action buttons — rendered in a portal to escape any ancestor stacking context */}
-    {createPortal(
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-3 z-50">
-        <div className="flex gap-3 px-4 mx-auto w-full max-w-4xl">
-          {charity.donateUrl && (
-            <DonateButton
-              donateUrl={charity.donateUrl}
-              charityName={charity.name}
+          {/* Location section */}
+          {charity.locations.length > 0 && (
+            <CharityDetailMap
+              locations={charity.locations}
+              causeTags={charity.causeTags}
               color={color}
-              className="flex-1"
-              onClick={() => trackEvent('donate_click', { charityId: charity.id, charityName: charity.name })}
+              locationDescription={charity.locationDescription}
+              selectedLocationId={selectedLocationId}
+              onSelectLocation={setSelectedLocationId}
             />
           )}
-          {charity.ctaUrl && charity.ctaLabel ? (
-            <a
-              href={charity.ctaUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
-              onClick={() => trackEvent('volunteer_click', { charityId: charity.id, charityName: charity.name })}
-            >
-              <Icon name="globe" className="w-4 h-4 shrink-0" />
-              {charity.ctaLabel}
-            </a>
-          ) : charity.volunteerUrl ? (
-            <a
-              href={charity.volunteerUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
-              onClick={() => trackEvent('volunteer_click', { charityId: charity.id, charityName: charity.name })}
-            >
-              <Icon name="volunteer" className="w-4 h-4 shrink-0" />
-              Volunteer
-            </a>
-          ) : null}
+
+          {/* Usage credit */}
+          {(charity.usageCredit || charity.approvedByCharity) && (
+            <div className="space-y-1">
+              {(
+                charity.usageCredit ||
+                `Info and photography courtesy of ${charity.name}`
+              )
+                .split("\n")
+                .filter(Boolean)
+                .map((line, i) => (
+                  <p
+                    key={i}
+                    className="text-xs tracking-wide text-gray-400 leading-relaxed"
+                  >
+                    {line}
+                  </p>
+                ))}
+            </div>
+          )}
         </div>
-      </div>,
-      document.body
-    )}
+      </div>
+
+      {/* Sticky action buttons — rendered in a portal to escape any ancestor stacking context */}
+      {createPortal(
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-3 z-50">
+          <div className="flex gap-3 px-4 mx-auto w-full max-w-4xl">
+            {charity.donateUrl && (
+              <DonateButton
+                donateUrl={charity.donateUrl}
+                charityName={charity.name}
+                color={color}
+                className="flex-1"
+                onClick={() =>
+                  trackEvent("donate_click", {
+                    charityId: charity.id,
+                    charityName: charity.name,
+                  })
+                }
+              />
+            )}
+            {charity.ctaUrl && charity.ctaLabel ? (
+              <a
+                href={charity.ctaUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                onClick={() =>
+                  trackEvent("volunteer_click", {
+                    charityId: charity.id,
+                    charityName: charity.name,
+                  })
+                }
+              >
+                <Icon name="globe" className="w-4 h-4 shrink-0" />
+                {charity.ctaLabel}
+              </a>
+            ) : charity.volunteerUrl ? (
+              <a
+                href={charity.volunteerUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                onClick={() =>
+                  trackEvent("volunteer_click", {
+                    charityId: charity.id,
+                    charityName: charity.name,
+                  })
+                }
+              >
+                <Icon name="volunteer" className="w-4 h-4 shrink-0" />
+                Volunteer
+              </a>
+            ) : null}
+          </div>
+        </div>,
+        document.body,
+      )}
     </>
   );
 }

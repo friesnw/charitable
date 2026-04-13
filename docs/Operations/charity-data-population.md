@@ -76,12 +76,19 @@ This is especially important for impact numbers — an incorrect stat displayed 
 - 2–3 short paragraphs, written in third person.
 - **Lead with what the organization does** — the core service or offering, who it serves, what it provides. The first sentence should answer: what does this org actually do for people?
 - Do not open with history, founding year, or "since [year]." Do not open with size or scale ("one of the largest..."). Do not open with a description of their facilities.
-- History and tenure belong at the end of the last paragraph at most, and only if genuinely notable.
+- History belongs in its own separate paragraph at the end — not embedded within the main body text. Write it as a standalone sentence that begins with the org name and includes specific founding context (what prompted the org, who started it, what the moment was), not just the founding year. See pattern below.
 - **Do not include specific numbers or statistics.** Quantities, percentages, and impact figures belong exclusively in the `impact` field.
 - Keep specific named locations (building names, campuses) out of the description unless essential — those details belong in the location records.
 - ~100–200 words total.
 - Adapt language from the About page — do not copy-paste verbatim.
 - Each paragraph is separated by a newline; the UI renders each as its own `<p>` tag.
+
+**Structure:** main body paragraphs, then history as its own final paragraph.
+
+The history paragraph should:
+- Begin with the org name
+- Include specific founding context — what prompted it, who started it, what the moment was
+- Not be just "Founded in X year" — that's a year, not a story
 
 **Good examples:**
 ```
@@ -89,13 +96,22 @@ Humane Colorado connects homeless pets with caring families through adoption, re
 
 Operating across several facilities in Colorado, the organization serves dogs, cats, small mammals, horses, and other animals in need. Programs range from full-service shelter and adoption centers to low-cost spay/neuter and vaccine clinics, temporary pet housing, and humane education for community members of all ages.
 
-Humane Colorado partners with law enforcement, Colorado State University, and community donors to address animal welfare challenges that extend well beyond shelter walls.
+Humane Colorado was founded in 1874 by a group of Denver citizens alarmed by the treatment of animals in the city's stockyards — one of the oldest continuously operating humane organizations in the West.
 ```
 
 ```
 Serves unhoused and unstably housed low-income single-parent families in the Denver area, providing the space and resources for families to achieve economic mobility and navigate systems of poverty.
 
 Through a two-generation approach, Warren Village empowers both parents and their children through life-skills classes, early childhood education, career and education support, and resource navigation.
+
+Warren Village was established in 1974 on the belief that stable housing is the foundation for everything else — and that families in crisis need more than a roof, they need a full support system beneath them.
+```
+
+**History paragraph — avoid:**
+```
+❌ "Warren Village has served Denver families since 1974."  (year only, no story)
+❌ "Founded in 1974, Warren Village has operated for more than 50 years."  (just duration)
+❌ "Warren Village was founded in 1974 and has served families ever since."  (nothing interesting)
 ```
 
 **Avoid:**
@@ -131,6 +147,26 @@ Each line is one impact stat. The UI strips any leading `- ` and then applies th
 - Numbers must be exact and sourced from an official report.
 - Do not append the reporting year to stat labels — the UI already displays the report year as a section heading, making it redundant.
 - 3–5 stats is the ideal range.
+
+**Every line must open with a number or %.** No qualifier words before the number. Fix these patterns:
+
+| ❌ Wrong | ✅ Fix |
+|---|---|
+| `More than 1,000 volunteers...` | `1,000+ volunteers...` |
+| `Nearly 1,200 children placed...` | `1,200+ children placed...` |
+| `Over 6,500 women counseled...` | `6,500+ women counseled...` |
+| `Roughly 80 meals served daily...` | `~80 meals served daily...` |
+| `Reaches approximately 90%...` | `~90% of Colorado's population reached...` |
+| `Programs reach six counties...` | `6 counties reached...` |
+| `Three distinct services...` | `3 distinct services...` |
+
+**Do not include descriptive/organizational facts as impact bullets.** These are not impact:
+- Years in operation ("35+ years serving Denver...")
+- Size superlatives ("One of the largest shelters in...")
+- Acreage, species counts, or facility stats that describe the org rather than its output
+- Program lists that belong in `program_highlights` ("Programs include GED, parenting classes...")
+
+Impact means outcomes, reach, or scale of service delivered — not what the org is or how long it has existed.
 
 **Valid number formats:** `1,202,334` · `93%` · `89%` · `$2.4M` · `627` · `242`
 
@@ -256,10 +292,25 @@ Each charity should have at least one location. For each physical site, collect:
 |---|---|
 | `label` | Short descriptive name, e.g. "Lawrence Street Shelter" or "Warren Village at Gilpin" |
 | `address` | Full street address, city, state, zip |
-| `latitude` / `longitude` | Geocode via Google Maps or Nominatim; verify the pin lands at the correct building. If coordinates cannot be confirmed, leave blank — a missing pin is better than a wrong one. |
+| `latitude` / `longitude` | Leave `null` when staging in the Todo doc — geocoded automatically after DB insert (see Geocoding below). |
 | `description` | 2–4 sentences describing what programs run at this specific location, not the org broadly. Do not include hours, schedules, or contact details — these go stale quickly and belong on the charity's own website. |
-| `is_sublocation` | Set `true` if the location is hosted inside another organization's building |
 | `photo_url` | Leave blank — auto-populated by `populate-street-view.ts` (see Stage 7) |
+
+**Geocoding**
+
+After inserting location rows to the DB, run the geocoding script to populate lat/lng from addresses automatically:
+
+```bash
+cd backend && npx tsx scripts/geocode-locations.ts
+```
+
+- Uses Nominatim (OpenStreetMap) — free, no API key required
+- Rate-limited to 1 request per second; runs automatically with the correct delay
+- Only updates rows where `latitude IS NULL` or `longitude IS NULL`
+- Use `--dry-run` to preview results before writing, `--id <n>` for a single row
+- If an address isn't found by Nominatim (e.g. private roads, rural routes not in OSM), set coordinates manually from Google Maps — a missing pin is better than a wrong one
+
+**When staging in the Todo doc**, geocoding should be run against the addresses in the doc before the entries are reviewed, and the returned coordinates written back into the doc. This way coordinates are verified before DB insert rather than after.
 
 **Location label conventions:**
 - Use `[Org Name] HQ` for the primary administrative location — not "Administrative Headquarters," "Main Office," or just the bare org name.
@@ -336,10 +387,13 @@ Do not rush to sync. Make all edits locally first, spot-check at `/charities/[sl
 
 Before marking a charity as reviewed (`is_reviewed = true`), confirm:
 
+- [ ] Every impact bullet opens with a number or % — no qualifier words before the numeral ("More than," "Nearly," "Over," "Roughly," "Approximately," etc.)
+- [ ] No descriptive/organizational facts in impact (years in operation, "one of the largest," acreage, species counts, program lists)
+- [ ] Description history is a separate final paragraph starting with the org name and a specific founding story — not embedded in the main body and not just a founding year
 - [ ] Impact stats are cited from an official source (annual report, impact page, or 990)
 - [ ] Program highlights use valid icon names from the list in Stage 3
 - [ ] Photo fields are empty OR photo usage has been explicitly approved by the charity
 - [ ] If photos are uploaded, `usage_credit` names the organization and any known photographers
-- [ ] At least one location has correct lat/lng — verify the pin appears at the correct building on the map
+- [ ] All locations have lat/lng populated — run `geocode-locations.ts` after insert; manually supply any coordinates Nominatim couldn't resolve
 - [ ] Detail page at `/charities/[slug]` renders without broken images or missing sections
 - [ ] `is_reviewed` is set to `true`
