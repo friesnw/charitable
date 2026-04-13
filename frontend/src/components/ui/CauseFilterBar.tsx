@@ -28,7 +28,7 @@ export function CauseFilterBar({ causes, selectedTags, onChange }: CauseFilterBa
     setShowAll(false);
     const isActive = selectedTags.includes(tag);
     if (!isActive) trackEvent('filter_tag', { tag });
-    onChange(isActive ? selectedTags.filter((t) => t !== tag) : [...selectedTags, tag]);
+    onChange(isActive ? [] : [tag]);
   }
 
   return (

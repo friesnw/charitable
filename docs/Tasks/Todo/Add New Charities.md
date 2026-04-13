@@ -4,9 +4,8 @@
 
 Add 20 new Denver-area nonprofits to GoodLocal. Review all entries below, edit any copy you want changed, then signal when ready to apply to DB.
 
-Two new cause tags already added to DB:
+New cause tag added to DB:
 - `news-media` → News & Media
-- `disaster-resilience` → Disaster Resilience
 
 ---
 
