@@ -88,7 +88,7 @@ function DirectionThumbnail({
 interface Props {
   locationId: string;
   initialAddress: string;
-  onSaved: (photoUrl: string) => void;
+  onSaved: () => void;
   onClose: () => void;
 }
 
@@ -99,7 +99,9 @@ export function StreetViewPickerModal({ locationId, initialAddress, onSaved, onC
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [savePhoto] = useMutation(SAVE_STREET_VIEW_PHOTO);
+  const [savePhoto] = useMutation(SAVE_STREET_VIEW_PHOTO, {
+    refetchQueries: ['GetAdminLocations', 'GetAdminCharity'],
+  });
 
   function commitAddress() {
     const trimmed = address.trim();
@@ -117,8 +119,7 @@ export function StreetViewPickerModal({ locationId, initialAddress, onSaved, onC
       const result = await savePhoto({
         variables: { locationId, address: submittedAddress, heading: selectedHeading, pitch: 0 },
       });
-      const photoUrl = result.data?.saveStreetViewPhoto?.photoUrl;
-      if (photoUrl) onSaved(photoUrl);
+      if (result.data?.saveStreetViewPhoto) onSaved();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to save photo');
     } finally {

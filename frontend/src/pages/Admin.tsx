@@ -511,8 +511,7 @@ function LocationsTab() {
           <StreetViewPickerModal
             locationId={loc.id}
             initialAddress={loc.address ?? ''}
-            onSaved={(photoUrl) => {
-              updateLocation({ variables: { id: loc.id, photoUrl } });
+            onSaved={() => {
               setStreetViewPickerId(null);
             }}
             onClose={() => setStreetViewPickerId(null)}

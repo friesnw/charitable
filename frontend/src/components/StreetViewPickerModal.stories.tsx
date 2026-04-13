@@ -22,7 +22,7 @@ export const Default: Story = {
   args: {
     locationId: '42',
     initialAddress: '1355 S Broadway, Denver, CO 80210',
-    onSaved: (url) => console.log('Saved:', url),
+    onSaved: () => console.log('Saved'),
     onClose: () => console.log('Closed'),
   },
 };
@@ -31,7 +31,7 @@ export const NoAddress: Story = {
   args: {
     locationId: '99',
     initialAddress: '',
-    onSaved: (url) => console.log('Saved:', url),
+    onSaved: () => console.log('Saved'),
     onClose: () => console.log('Closed'),
   },
 };

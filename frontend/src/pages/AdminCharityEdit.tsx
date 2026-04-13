@@ -1003,8 +1003,7 @@ export function AdminCharityEdit() {
           <StreetViewPickerModal
             locationId={loc.id}
             initialAddress={loc.address ?? ''}
-            onSaved={(photoUrl) => {
-              updateLocation({ variables: { id: loc.id, photoUrl } });
+            onSaved={() => {
               setStreetViewPickerLocId(null);
             }}
             onClose={() => setStreetViewPickerLocId(null)}
