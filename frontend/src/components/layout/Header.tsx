@@ -154,6 +154,7 @@ export function Header() {
                     <span className="block px-4 py-2 text-sm text-text-secondary truncate">{user?.email}</span>
                     <hr className="border-brand-tertiary" />
                     <Link to="/preferences" onClick={() => setProfileOpen(false)} className="block px-4 py-2 text-sm text-text-secondary hover:bg-bg-accent hover:text-text-primary">Preferences</Link>
+                    <Link to="/favorites" onClick={() => setProfileOpen(false)} className="block px-4 py-2 text-sm text-text-secondary hover:bg-bg-accent hover:text-text-primary">Saved nonprofits</Link>
                     {user?.isAdmin && (
                       <Link to="/admin" onClick={() => setProfileOpen(false)} className="block px-4 py-2 text-sm text-text-secondary hover:bg-bg-accent hover:text-text-primary">Admin</Link>
                     )}
@@ -255,13 +256,22 @@ export function Header() {
               Browse Nonprofits
             </Link>
             {isAuthenticated && (
-              <Link
-                to="/preferences"
-                onClick={closeMobileMenu}
-                className="flex items-center px-2 py-4 text-lg text-white border-b border-white/10"
-              >
-                Preferences
-              </Link>
+              <>
+                <Link
+                  to="/preferences"
+                  onClick={closeMobileMenu}
+                  className="flex items-center px-2 py-4 text-lg text-white border-b border-white/10"
+                >
+                  Preferences
+                </Link>
+                <Link
+                  to="/favorites"
+                  onClick={closeMobileMenu}
+                  className="flex items-center px-2 py-4 text-lg text-white border-b border-white/10"
+                >
+                  Saved nonprofits
+                </Link>
+              </>
             )}
             {user?.isAdmin && (
               <Link

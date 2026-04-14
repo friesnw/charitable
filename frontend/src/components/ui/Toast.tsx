@@ -5,9 +5,10 @@ interface ToastProps {
   action?: { label: string; onClick: () => void };
   onDismiss: () => void;
   duration?: number;
+  bottom?: number;
 }
 
-export function Toast({ message, action, onDismiss, duration = 4000 }: ToastProps) {
+export function Toast({ message, action, onDismiss, duration = 4000, bottom }: ToastProps) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -24,8 +25,8 @@ export function Toast({ message, action, onDismiss, duration = 4000 }: ToastProp
 
   return (
     <div
-      className="absolute bottom-8 left-1/2 z-50 flex items-center gap-3 px-5 py-3 rounded-2xl bg-white border border-gray-200 shadow-xl text-sm transition-all duration-300 whitespace-nowrap"
-      style={{ opacity: visible ? 1 : 0, transform: visible ? 'translateX(-50%) translateY(0)' : 'translateX(-50%) translateY(12px)' }}
+      className="absolute left-1/2 z-50 flex items-center gap-3 px-5 py-3 rounded-2xl bg-white border border-gray-200 shadow-xl text-sm transition-all duration-300 whitespace-nowrap"
+      style={{ bottom: bottom ?? 32, opacity: visible ? 1 : 0, transform: visible ? 'translateX(-50%) translateY(0)' : 'translateX(-50%) translateY(12px)' }}
     >
       <span className="flex items-center justify-center w-5 h-5 rounded-full bg-green-100 text-green-600 flex-shrink-0">
         <svg width="11" height="11" viewBox="0 0 11 11" fill="none">

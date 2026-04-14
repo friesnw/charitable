@@ -4,7 +4,7 @@ import { GraphQLError } from 'graphql';
 import { env } from '../env.js';
 import { uploadLocationPhoto } from '../lib/cloudinary.js';
 
-function toCharity(row: Record<string, unknown>) {
+export function toCharity(row: Record<string, unknown>) {
   return {
     id: row.id,
     name: row.name,

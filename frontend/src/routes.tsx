@@ -15,6 +15,7 @@ import { AdminCharityEdit } from './pages/AdminCharityEdit';
 import { CharitiesLocationFirstPOC } from './pages/CharitiesLocationFirstPOC';
 import { Organizations } from './pages/Organizations';
 import { Causes } from './pages/Causes';
+import { Favorites } from './pages/Favorites';
 
 export const router = createBrowserRouter([
   {
@@ -57,6 +58,18 @@ export const router = createBrowserRouter([
   {
     path: '/charities/:slug',
     element: <PageShell background="var(--bg-secondary)"><CharityDetail /></PageShell>,
+  },
+  {
+    path: '/favorites',
+    element: (
+      <ProtectedRoute>
+        <PageShell background="var(--bg-secondary)"><Favorites /></PageShell>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/favorites/:shareToken',
+    element: <PageShell background="var(--bg-secondary)"><Favorites /></PageShell>,
   },
   {
     path: '/admin',

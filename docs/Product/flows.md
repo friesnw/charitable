@@ -268,6 +268,63 @@ Reference for manual QA and automated testing. Each flow covers the happy path a
 
 ---
 
+## 12. Saving & Favorites
+
+### 12a. Save a Charity (Authenticated)
+1. Visit `/charities/:slug`
+2. Bookmark icon visible in the title block (next to charity name)
+3. Click bookmark → `toggleFavorite` mutation fires; icon fills; "Saved to your list" toast appears
+4. Toast has "View list" action → navigates to `/favorites/:userId`
+5. Click bookmark again → icon empties; "Removed from your list" toast appears
+6. Toast has "Undo" action → re-saves the charity, dismisses toast
+
+**Edge cases:**
+- Each new toast interaction resets the timer — rapid toggling shows fresh toasts
+- Mutation error → UI reverts to previous state
+
+### 12b. Save a Charity (Unauthenticated)
+1. Visit `/charities/:slug`
+2. Click bookmark icon → `SaveToListModal` opens inline (portal overlay)
+3. Enter email → `localStorage.setItem('pendingFavorite', charityId)` and `localStorage.setItem('pendingFavoritePath', pathname)` set before magic link is requested
+4. Submit → "Check your email" state shown; modal stays open
+5. User clicks magic link → `/auth/verify?token=...`
+6. After login completes, `toggleFavorite` fires automatically with the pending charity ID
+7. User redirected back to the original charity page (from `pendingFavoritePath`)
+8. Bookmark icon reflects the saved state
+
+**Edge cases:**
+- If user abandons magic link flow, pending favorite is cleared on next successful login attempt
+- New users (no completed onboarding) are always sent to `/preferences` first, then the pending favorite fires — they must return to the charity page manually
+
+### 12c. View Saved Nonprofits
+1. Visit `/favorites/:userId` (public, no auth required)
+2. Page shows `"{Name}'s favorite nonprofits"` heading and count
+3. Grid of charity cards, ordered by save date (most recent first)
+4. Share button top-right opens the share modal for this URL
+5. Empty state: "No saved nonprofits yet" (other people's list) or save prompt (own list)
+
+**Navigation:**
+- Authenticated users can access their own list via "Saved nonprofits" in the profile dropdown (desktop) and mobile nav
+
+---
+
+## 13. Sharing
+
+### 13a. Share a Charity Page
+1. Visit `/charities/:slug`
+2. Tap the share (arrow-up-tray) icon in the sticky action bar
+3. Share modal slides up from bottom (mobile) or centers (desktop)
+4. URL preview bar shows the current URL in monospace — click it to copy
+5. "Copy link" button copies the URL; icon and label change to "Copied!" for 2 seconds
+6. "Messages" button (mobile only) opens the native Messages app with the URL pre-filled via `sms:?&body=`
+
+### 13b. Share a Favorites List
+1. Visit `/favorites/:userId`
+2. "Share list" button in the page header
+3. Same share modal behavior as 13a
+
+---
+
 ## Route Index
 
 | Route | Auth | Description |
@@ -279,6 +336,7 @@ Reference for manual QA and automated testing. Each flow covers the happy path a
 | `/charities` | Public | Browse + filter charities |
 | `/charities/:slug` | Public | Charity detail |
 | `/nearby` | Public | Distance-sorted charities |
+| `/favorites/:userId` | Public | User's saved nonprofits list |
 | `/dashboard` | Auth | User dashboard |
 | `/preferences` | Auth | User settings |
 | `/admin` | Admin | Charity/tag/user management |

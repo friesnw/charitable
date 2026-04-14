@@ -2,7 +2,9 @@ export const ICON_NAMES = [
   // Program highlight icons
   'heart', 'star', 'people', 'shield', 'home', 'tree', 'family', 'education',
   // UI / action icons (stroke)
-  'check-circle', 'calendar', 'volunteer', 'globe', 'heart-outline', 'share',
+  'check-circle', 'calendar', 'volunteer', 'globe', 'heart-outline', 'share', 'bookmark-outline', 'arrow-up-tray', 'link', 'chat-bubble',
+  // UI / action icons (mixed fill/stroke)
+  'bookmark',
   // UI / action icons (filled)
   'search', 'user', 'map-pin', 'info', 'close', 'check-circle-solid', 'flag', 'fingerprint', 'download', 'sun', 'plus-circle', 'square-2-stack',
 ] as const;
@@ -63,9 +65,37 @@ const icons: Record<IconName, IconDef> = {
     stroke: true,
     strokeWidth: 1.75,
   },
+  bookmark: {
+    viewBox: '0 0 24 24',
+    path: 'M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0z',
+  },
+  'bookmark-outline': {
+    viewBox: '0 0 24 24',
+    path: 'M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0z',
+    stroke: true,
+    strokeWidth: 1.75,
+  },
   share: {
     viewBox: '0 0 24 24',
     path: 'M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185z',
+    stroke: true,
+    strokeWidth: 1.75,
+  },
+  'arrow-up-tray': {
+    viewBox: '0 0 24 24',
+    path: 'M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5',
+    stroke: true,
+    strokeWidth: 1.75,
+  },
+  link: {
+    viewBox: '0 0 24 24',
+    path: 'M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244',
+    stroke: true,
+    strokeWidth: 1.75,
+  },
+  'chat-bubble': {
+    viewBox: '0 0 24 24',
+    path: 'M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 0 1 1.037-.443 48.282 48.282 0 0 0 5.68-.494c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z',
     stroke: true,
     strokeWidth: 1.75,
   },

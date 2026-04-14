@@ -4,6 +4,7 @@ export const typeDefs = `#graphql
     name: String!
     email: String!
     isAdmin: Boolean!
+    shareToken: String!
     createdAt: String
   }
 
@@ -107,11 +108,23 @@ export const typeDefs = `#graphql
     topNeighborhoods: [TopItem!]!
   }
 
+  type UserFavoritesPage {
+    userName: String!
+    charities: [Charity!]!
+  }
+
+  type FavoriteResult {
+    charityId: ID!
+    favorited: Boolean!
+  }
+
   type Query {
     users: [User!]!
     user(id: ID!): User
     me: User
     myPreferences: UserPreferences
+    myFavorites: [Charity!]!
+    userFavorites(shareToken: String!): UserFavoritesPage!
 
     charities(tags: [String], search: String): [Charity!]!
     charity(id: ID, slug: String): Charity
@@ -124,6 +137,7 @@ export const typeDefs = `#graphql
   type Mutation {
     createUser(name: String!, email: String!): User!
     deleteUser(id: ID!): Boolean!
+    toggleFavorite(charityId: ID!): FavoriteResult!
 
     requestMagicLink(email: String!): Boolean!
     verifyMagicLink(token: String!): AuthPayload!

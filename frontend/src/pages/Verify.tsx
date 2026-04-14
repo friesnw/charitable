@@ -19,6 +19,15 @@ const VERIFY_MAGIC_LINK = gql`
   }
 `;
 
+const TOGGLE_FAVORITE = gql`
+  mutation ToggleFavoriteAfterVerify($charityId: ID!) {
+    toggleFavorite(charityId: $charityId) {
+      charityId
+      favorited
+    }
+  }
+`;
+
 export function Verify() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -26,6 +35,7 @@ export function Verify() {
   const [error, setError] = useState<string | null>(null);
 
   const [verifyMagicLink] = useMutation(VERIFY_MAGIC_LINK);
+  const [toggleFavorite] = useMutation(TOGGLE_FAVORITE);
 
   useEffect(() => {
     const token = searchParams.get('token');
@@ -36,19 +46,33 @@ export function Verify() {
     }
 
     verifyMagicLink({ variables: { token } })
-      .then(({ data }) => {
+      .then(async ({ data }) => {
         if (data?.verifyMagicLink) {
           login(data.verifyMagicLink.token, data.verifyMagicLink.user);
-          const destination = data.verifyMagicLink.onboardingCompleted
-            ? '/map'
-            : '/preferences';
+
+          const pendingCharityId = localStorage.getItem('pendingFavorite');
+          const pendingPath = localStorage.getItem('pendingFavoritePath');
+
+          if (pendingCharityId) {
+            localStorage.removeItem('pendingFavorite');
+            localStorage.removeItem('pendingFavoritePath');
+            try {
+              await toggleFavorite({ variables: { charityId: pendingCharityId } });
+            } catch {
+              // silently fail — don't block navigation
+            }
+          }
+
+          const destination = !data.verifyMagicLink.onboardingCompleted
+            ? '/preferences'
+            : (pendingPath ?? '/map');
           navigate(destination, { replace: true });
         }
       })
       .catch((err) => {
         setError(err.message || 'Verification failed');
       });
-  }, [searchParams, verifyMagicLink, login, navigate]);
+  }, [searchParams, verifyMagicLink, toggleFavorite, login, navigate]);
 
   if (error) {
     return (

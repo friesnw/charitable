@@ -18,6 +18,7 @@ export const authResolvers = {
       return {
         ...row,
         isAdmin: row.is_admin ?? false,
+        shareToken: row.share_token,
         createdAt: row.created_at?.toISOString(),
       };
     },
@@ -127,6 +128,7 @@ export const authResolvers = {
         user: {
           ...user,
           isAdmin: user.is_admin ?? false,
+          shareToken: user.share_token,
           createdAt: user.created_at?.toISOString(),
         },
       };

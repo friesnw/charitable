@@ -28,7 +28,7 @@ export function FavoriteButton({ favorited, loading = false, onClick, className 
           : 'text-gray-400 hover:text-rose-400'
       } ${loading ? 'opacity-50 cursor-default' : ''} ${className}`}
     >
-      <Icon name={favorited ? 'heart' : 'heart-outline'} className={iconSize} />
+      <Icon name={favorited ? 'bookmark' : 'bookmark-outline'} className={iconSize} />
     </button>
   );
 }
