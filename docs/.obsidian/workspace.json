@@ -41,12 +41,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Tasks/Backlog/Add More Charities.md",
+                "file": "Research/Beta-Pilot-Experience.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Add More Charities"
+              "title": "Beta-Pilot-Experience"
             }
           }
         ],
@@ -212,8 +212,12 @@
       "bases:Create new base": false
     }
   },
-  "active": "7b09cc05cccdb3fd",
+  "active": "84185927d7185767",
   "lastOpenFiles": [
+    "Tasks/Todo/5-Incorporate beta pilot experience.md",
+    "Tasks/Todo/Add New Charities.md",
+    "Tasks/Todo/Link to FY reporting.md",
+    "Tasks/Backlog/Add More Charities.md",
     "Tasks/Backlog/Untitled.md",
     "Tasks/Backlog/10-Confirm location neighborhoods.md",
     "Tasks/Backlog/10-populate additional data.md",
@@ -227,10 +231,7 @@
     "Tasks/Done/13-Donation-Pages.md",
     "Tasks/Backlog/MVP Measurement Plan.md",
     "Tasks/Done/11-Tag cleanup.md",
-    "Tasks/Todo/5-Incorporate beta pilot experience.md",
-    "Tasks/Todo/Add New Charities.md",
     "Tasks/Todo/Better imagery.md",
-    "Tasks/Backlog/Add More Charities.md",
     "Tasks/Todo/Improve Cause Tag UI.md",
     "Tasks/Done/7-Analytics-Beacon.md",
     "Product/analytics-tracking-checklist.md",
@@ -239,7 +240,6 @@
     "Product/Product-position.md",
     "Tasks/Todo/Improve Copy Content.md",
     "Tasks/Done/Improve Copy Content.md",
-    "Product/flows.md",
     "Operations",
     "LocationListInfo (1).pdf",
     "Screenshot 2026-02-12 at 9.14.23 PM.png",
