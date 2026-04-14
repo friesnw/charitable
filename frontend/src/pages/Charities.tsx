@@ -601,9 +601,6 @@ export function Charities() {
   const mapRef = useRef<MapRef>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
   const sheetTouchStartY = useRef(0);
-  const savedView = useRef<{ center: [number, number]; zoom: number } | null>(
-    null,
-  );
   const pendingCenterRef = useRef<{
     longitude: number;
     latitude: number;
@@ -947,11 +944,6 @@ export function Charities() {
     if (selectedGroupKey) {
       const group = groups.find((g) => groupKey(g) === selectedGroupKey);
       if (!group) return;
-      const center = map.getCenter();
-      savedView.current = {
-        center: [center.lng, center.lat],
-        zoom: map.getZoom(),
-      };
       const isMobile = window.innerWidth < 1024;
       programmaticFlyRef.current = true;
       map.flyTo({
@@ -979,11 +971,6 @@ export function Charities() {
           (l) => l.latitude != null && l.longitude != null,
         ) ?? [];
       if (locs.length === 0) return;
-      const center = map.getCenter();
-      savedView.current = {
-        center: [center.lng, center.lat],
-        zoom: map.getZoom(),
-      };
       programmaticFlyRef.current = true;
       if (locs.length === 1) {
         map.flyTo({
@@ -1003,14 +990,6 @@ export function Charities() {
           { padding: pad, maxZoom: 14, duration: 600 },
         );
       }
-    } else if (savedView.current) {
-      programmaticFlyRef.current = true;
-      map.flyTo({
-        center: savedView.current.center,
-        zoom: savedView.current.zoom,
-        duration: 600,
-      });
-      savedView.current = null;
     }
   }, [selectedCharityId, selectedGroupKey, selectedLocationId]);
 
