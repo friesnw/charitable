@@ -5,7 +5,6 @@ import { cloudinaryUrl } from "../lib/cloudinary";
 import { causeColor } from "../lib/causeColors";
 import { DonateButton } from "./ui/DonateButton";
 import { FavoriteButton } from "./ui/FavoriteButton";
-import { ShareButton } from "./ui/ShareButton";
 import { Icon, ICON_NAMES } from "./ui/Icon";
 import { CharityDetailMap } from "./CharityDetailMap";
 import { trackEvent } from "../utils/analytics";
@@ -499,14 +498,6 @@ export function CharityDetail({ charity, tagLabels, favorited = false, favoriteL
       {createPortal(
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-3 z-50">
           <div className="flex gap-3 px-4 mx-auto w-full max-w-4xl">
-            {onFavoriteClick && (
-              <FavoriteButton
-                favorited={favorited}
-                loading={favoriteLoading}
-                onClick={() => onFavoriteClick()}
-                className="w-12 h-12 flex-shrink-0 border border-gray-300 rounded-xl"
-              />
-            )}
             {charity.donateUrl && (
               <DonateButton
                 donateUrl={charity.donateUrl}
@@ -554,13 +545,6 @@ export function CharityDetail({ charity, tagLabels, favorited = false, favoriteL
                 Volunteer
               </a>
             ) : null}
-            <ShareButton
-              url={window.location.href}
-              title={`${charity.name} — GoodLocal`}
-              text={`Check out ${charity.name} on GoodLocal`}
-              label="Share"
-              className="flex-shrink-0 px-4"
-            />
           </div>
         </div>,
         document.body,
