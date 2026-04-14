@@ -312,6 +312,8 @@ function LocationDrawer({
                       </div>
                       <Link
                         to={`/charities/${charity.slug}`}
+                        target="_blank"
+                        rel="noreferrer"
                         className="block text-center py-2.5 rounded-lg text-sm font-medium text-white bg-brand-secondary hover:opacity-90 transition-opacity"
                       >
                         View charity →
@@ -406,6 +408,8 @@ function LocationDrawer({
                       </div>
                       <Link
                         to={`/charities/${charity.slug}`}
+                        target="_blank"
+                        rel="noreferrer"
                         className="block text-center py-2.5 rounded-lg text-sm font-medium text-white bg-brand-secondary hover:opacity-90 transition-opacity"
                       >
                         View charity →
@@ -565,7 +569,7 @@ export function Charities() {
   const urlNeighborhood = searchParams.get("neighborhood");
   const hasUrlCenter = !isNaN(urlLat) && !isNaN(urlLng);
 
-  const [zoom, setZoom] = useState(11.5);
+  const [zoom, setZoom] = useState(() => window.innerWidth < 1024 ? 10.5 : 11.5);
   const [selectedGroupKey, setSelectedGroupKey] = useState<string | null>(null);
   const [selectedCharityId, setSelectedCharityId] = useState<string | null>(
     null,
@@ -691,6 +695,7 @@ export function Charities() {
     : null;
 
   function handleSheetTouchStart(e: React.TouchEvent) {
+    e.stopPropagation();
     sheetTouchStartY.current = e.touches[0].clientY;
     setIsDraggingSheet(true);
   }
@@ -1006,6 +1011,9 @@ export function Charities() {
       // No repositioning pending — show the map immediately at default Denver view
       setMapVisible(true);
     }
+    // Sync zoom state to actual map zoom so supercluster starts with the correct level
+    const actualZoom = mapRef.current?.getZoom();
+    if (actualZoom !== undefined) setZoom(actualZoom);
     const b = mapRef.current?.getBounds();
     if (b) setBounds([b.getWest(), b.getSouth(), b.getEast(), b.getNorth()]);
   }
@@ -1536,8 +1544,13 @@ export function Charities() {
                   {loading ? "Loading..." : `${charities.length} charities`}
                 </p>
               </div>
-              {/* List */}
-              <div ref={listRef} className="overflow-y-auto flex-1">
+              {/* List — stop touch propagation so the map doesn't pan behind the sheet */}
+              <div
+                ref={listRef}
+                className="overflow-y-auto flex-1"
+                onTouchStart={(e) => e.stopPropagation()}
+                onTouchMove={(e) => e.stopPropagation()}
+              >
                 {loading && (
                   <>
                     <SkeletonCard />
@@ -1554,10 +1567,8 @@ export function Charities() {
                   <Link
                     key={charity.id}
                     to={`/charities/${charity.slug}`}
-                    onClick={() => {
-                      sessionStorage.setItem('map_list_scroll', String(listRef.current?.scrollTop ?? 0));
-                      sessionStorage.setItem('map_sheet_state', sheetState);
-                    }}
+                    target="_blank"
+                    rel="noreferrer"
                     className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors"
                   >
                     {charity.logoUrl ? (
