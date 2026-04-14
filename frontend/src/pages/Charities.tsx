@@ -1192,6 +1192,8 @@ export function Charities() {
                           >
                             <Link
                               to={`/charities/${charity.slug}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
                               className="flex-1 text-center py-2.5 rounded-lg text-sm font-medium text-white bg-brand-secondary hover:opacity-90 transition-opacity"
                             >
                               View charity →
@@ -1613,6 +1615,11 @@ export function Charities() {
                   awaitingInitialMove.current = false;
                   setMapVisible(true);
                 }
+              }}
+              onClick={() => {
+                setSelectedGroupKey(null);
+                setSelectedCharityId(null);
+                setSelectedLocationId(null);
               }}
             >
               {selectedCharityId != null
