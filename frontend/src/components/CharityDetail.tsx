@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useNavigate } from "react-router-dom";
 import { cloudinaryUrl } from "../lib/cloudinary";
 import { causeColor } from "../lib/causeColors";
 import { DonateButton } from "./ui/DonateButton";
+import { FavoriteButton } from "./ui/FavoriteButton";
+import { ShareButton } from "./ui/ShareButton";
 import { Icon, ICON_NAMES } from "./ui/Icon";
 import { CharityDetailMap } from "./CharityDetailMap";
 import { trackEvent } from "../utils/analytics";
@@ -47,6 +50,9 @@ export interface StoryCharity {
 interface CharityDetailProps {
   charity: StoryCharity;
   tagLabels: Map<string, string>;
+  favorited?: boolean;
+  favoriteLoading?: boolean;
+  onFavoriteClick?: () => void;
 }
 
 function bareDomain(url: string): string {
@@ -78,7 +84,8 @@ function parseHighlights(
     .filter((h) => h.title || h.text.length > 0);
 }
 
-export function CharityDetail({ charity, tagLabels }: CharityDetailProps) {
+export function CharityDetail({ charity, tagLabels, favorited = false, favoriteLoading = false, onFavoriteClick }: CharityDetailProps) {
+  const navigate = useNavigate();
   const heroLocation =
     charity.locations.find((l) => l.photoUrl) ?? charity.locations[0] ?? null;
   const featuredPhoto = charity.coverPhotoUrl ?? heroLocation?.photoUrl ?? null;
@@ -177,6 +184,15 @@ export function CharityDetail({ charity, tagLabels }: CharityDetailProps) {
                   "linear-gradient(to bottom, rgba(0,0,0,0.04), rgba(0,0,0,0.22))",
               }}
             />
+            <button
+              onClick={() => navigate(-1)}
+              className="md:hidden absolute top-4 left-4 z-10 w-9 h-9 flex items-center justify-center rounded-full bg-black/40 text-white"
+              aria-label="Go back"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+                <path d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
           </div>
         ) : charity.logoUrl ? (
           <div className="px-4 pt-2">
@@ -200,9 +216,19 @@ export function CharityDetail({ charity, tagLabels }: CharityDetailProps) {
         {/* Title block */}
         <div className="px-4">
           <div className="mt-4 mb-2">
-            <h1 className="text-2xl font-bold text-gray-900 leading-tight">
-              {charity.name}
-            </h1>
+            <div className="flex items-start justify-between gap-3">
+              <h1 className="text-2xl font-bold text-gray-900 leading-tight">
+                {charity.name}
+              </h1>
+              {onFavoriteClick && (
+                <FavoriteButton
+                  favorited={favorited}
+                  loading={favoriteLoading}
+                  onClick={() => onFavoriteClick()}
+                  className="w-10 h-10 mt-0.5 flex-shrink-0 bg-bg-secondary border border-brand-tertiary rounded-full"
+                />
+              )}
+            </div>
             <div
               className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-sm"
               style={{ color: "var(--flair-sage)" }}
@@ -473,6 +499,14 @@ export function CharityDetail({ charity, tagLabels }: CharityDetailProps) {
       {createPortal(
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-3 z-50">
           <div className="flex gap-3 px-4 mx-auto w-full max-w-4xl">
+            {onFavoriteClick && (
+              <FavoriteButton
+                favorited={favorited}
+                loading={favoriteLoading}
+                onClick={() => onFavoriteClick()}
+                className="w-12 h-12 flex-shrink-0 border border-gray-300 rounded-xl"
+              />
+            )}
             {charity.donateUrl && (
               <DonateButton
                 donateUrl={charity.donateUrl}
@@ -520,6 +554,13 @@ export function CharityDetail({ charity, tagLabels }: CharityDetailProps) {
                 Volunteer
               </a>
             ) : null}
+            <ShareButton
+              url={window.location.href}
+              title={`${charity.name} — GoodLocal`}
+              text={`Check out ${charity.name} on GoodLocal`}
+              label="Share"
+              className="flex-shrink-0 px-4"
+            />
           </div>
         </div>,
         document.body,

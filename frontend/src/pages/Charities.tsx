@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useNavigationType } from "react-router-dom";
 import { useQuery, useLazyQuery, useMutation, gql } from "@apollo/client";
 import { trackEvent } from "../utils/analytics";
 import { cloudinaryUrl } from "../lib/cloudinary";
@@ -590,6 +590,10 @@ export function Charities() {
   const [sheetState, setSheetState] = useState<"peek" | "full">("peek");
   const [isDraggingSheet, setIsDraggingSheet] = useState(false);
 
+  const navigationType = useNavigationType();
+  const listRef = useRef<HTMLDivElement>(null);
+  const pendingScrollRef = useRef<number | null>(null);
+
   const mapRef = useRef<MapRef>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
   const sheetTouchStartY = useRef(0);
@@ -694,6 +698,12 @@ export function Charities() {
   function handleSheetTouchMove(e: React.TouchEvent) {
     if (!sheetRef.current) return;
     const delta = e.touches[0].clientY - sheetTouchStartY.current;
+    // In full state, only allow downward drag to collapse — and only when list is scrolled to top.
+    // Upward drags or drags while the list is scrolled should be ignored so the list can scroll freely.
+    if (sheetState === "full") {
+      const atListTop = !listRef.current || listRef.current.scrollTop === 0;
+      if (delta <= 0 || !atListTop) return;
+    }
     const base =
       sheetState === "peek" ? `calc(100% - ${PEEK_HEIGHT}px)` : "0px";
     sheetRef.current.style.transform = `translateY(calc(${base} + ${delta}px))`;
@@ -706,7 +716,8 @@ export function Charities() {
     } else if (sheetState === "peek" && delta > 80) {
       updateSelectedTags([]);
     } else if (sheetState === "full" && delta > 60) {
-      setSheetState("peek");
+      const atListTop = !listRef.current || listRef.current.scrollTop === 0;
+      if (atListTop) setSheetState("peek");
     }
     setIsDraggingSheet(false);
   }
@@ -720,6 +731,25 @@ export function Charities() {
       return next;
     });
   }
+
+  // Restore mobile list scroll position and sheet state when navigating back
+  useEffect(() => {
+    if (navigationType === 'POP') {
+      const savedSheetState = sessionStorage.getItem('map_sheet_state');
+      const savedScroll = sessionStorage.getItem('map_list_scroll');
+      if (savedSheetState === 'full') setSheetState('full');
+      if (savedScroll) pendingScrollRef.current = parseInt(savedScroll, 10);
+      sessionStorage.removeItem('map_sheet_state');
+      sessionStorage.removeItem('map_list_scroll');
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!loading && pendingScrollRef.current !== null && listRef.current) {
+      listRef.current.scrollTop = pendingScrollRef.current;
+      pendingScrollRef.current = null;
+    }
+  }, [loading, charities]);
 
   // Location from auth preferences
   useEffect(() => {
@@ -1507,7 +1537,7 @@ export function Charities() {
                 </p>
               </div>
               {/* List */}
-              <div className="overflow-y-auto flex-1">
+              <div ref={listRef} className="overflow-y-auto flex-1">
                 {loading && (
                   <>
                     <SkeletonCard />
@@ -1524,6 +1554,10 @@ export function Charities() {
                   <Link
                     key={charity.id}
                     to={`/charities/${charity.slug}`}
+                    onClick={() => {
+                      sessionStorage.setItem('map_list_scroll', String(listRef.current?.scrollTop ?? 0));
+                      sessionStorage.setItem('map_sheet_state', sheetState);
+                    }}
                     className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors"
                   >
                     {charity.logoUrl ? (
