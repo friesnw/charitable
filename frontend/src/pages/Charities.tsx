@@ -205,10 +205,12 @@ function LocationDrawer({
   group,
   tagLabels,
   onClose,
+  onNavigate,
 }: {
   group: LocationGroup;
   tagLabels: Map<string, string>;
   onClose: () => void;
+  onNavigate?: () => void;
 }) {
   const [visible, setVisible] = useState(false);
   const [drawerSnap, setDrawerSnap] = useState<"partial" | "full">("partial");
@@ -312,8 +314,7 @@ function LocationDrawer({
                       </div>
                       <Link
                         to={`/charities/${charity.slug}`}
-                        target="_blank"
-                        rel="noreferrer"
+                        onClick={onNavigate}
                         className="block text-center py-2.5 rounded-lg text-sm font-medium text-white bg-brand-secondary hover:opacity-90 transition-opacity"
                       >
                         View charity →
@@ -408,8 +409,7 @@ function LocationDrawer({
                       </div>
                       <Link
                         to={`/charities/${charity.slug}`}
-                        target="_blank"
-                        rel="noreferrer"
+                        onClick={onNavigate}
                         className="block text-center py-2.5 rounded-lg text-sm font-medium text-white bg-brand-secondary hover:opacity-90 transition-opacity"
                       >
                         View charity →
@@ -612,6 +612,7 @@ export function Charities() {
   const awaitingInitialMove = useRef(false);
   const isInitiallyPositioned = useRef(false);
   const programmaticFlyRef = useRef(false);
+  const isRestoringViewRef = useRef(false);
 
   const [activeNeighborhood, setActiveNeighborhood] = useState<string | null>(
     () => {
@@ -737,15 +738,40 @@ export function Charities() {
     });
   }
 
-  // Restore mobile list scroll position and sheet state when navigating back
+  // Restore map position, selection, and sheet state when navigating back
   useEffect(() => {
     if (navigationType === 'POP') {
       const savedSheetState = sessionStorage.getItem('map_sheet_state');
       const savedScroll = sessionStorage.getItem('map_list_scroll');
+      const savedLat = sessionStorage.getItem('map_center_lat');
+      const savedLng = sessionStorage.getItem('map_center_lng');
+      const savedZoom = sessionStorage.getItem('map_zoom');
+      const savedGroup = sessionStorage.getItem('map_selected_group');
+      const savedCharity = sessionStorage.getItem('map_selected_charity');
+      const savedLocation = sessionStorage.getItem('map_selected_location');
+
       if (savedSheetState === 'full') setSheetState('full');
       if (savedScroll) pendingScrollRef.current = parseInt(savedScroll, 10);
-      sessionStorage.removeItem('map_sheet_state');
-      sessionStorage.removeItem('map_list_scroll');
+
+      if (savedLat && savedLng && savedZoom) {
+        awaitingInitialMove.current = true;
+        pendingCenterRef.current = {
+          longitude: parseFloat(savedLng),
+          latitude: parseFloat(savedLat),
+          zoom: parseFloat(savedZoom),
+        };
+      }
+
+      if (savedGroup) {
+        isRestoringViewRef.current = true;
+        setSelectedGroupKey(savedGroup);
+        if (savedCharity) setSelectedCharityId(savedCharity);
+        if (savedLocation) setSelectedLocationId(savedLocation);
+      }
+
+      ['map_sheet_state', 'map_list_scroll', 'map_center_lat', 'map_center_lng',
+        'map_zoom', 'map_selected_group', 'map_selected_charity', 'map_selected_location']
+        .forEach((k) => sessionStorage.removeItem(k));
     }
   }, []);
 
@@ -909,6 +935,11 @@ export function Charities() {
 
   // Fly to selected pin or charity's pins, or return to saved view when deselected
   useEffect(() => {
+    // Skip fly when restoring position after back navigation
+    if (isRestoringViewRef.current) {
+      isRestoringViewRef.current = false;
+      return;
+    }
     const map = mapRef.current;
     if (!map) return;
     const pad = { top: 80, bottom: 60, left: 40, right: 40 };
@@ -1567,8 +1598,10 @@ export function Charities() {
                   <Link
                     key={charity.id}
                     to={`/charities/${charity.slug}`}
-                    target="_blank"
-                    rel="noreferrer"
+                    onClick={() => {
+                      sessionStorage.setItem('map_list_scroll', String(listRef.current?.scrollTop ?? 0));
+                      sessionStorage.setItem('map_sheet_state', sheetState);
+                    }}
                     className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors"
                   >
                     {charity.logoUrl ? (
@@ -1839,6 +1872,19 @@ export function Charities() {
           key={selectedGroupKey ?? ""}
           group={selectedGroup}
           tagLabels={tagLabels}
+          onNavigate={() => {
+            const map = mapRef.current;
+            if (!map) return;
+            const center = map.getCenter();
+            sessionStorage.setItem('map_center_lat', String(center.lat));
+            sessionStorage.setItem('map_center_lng', String(center.lng));
+            sessionStorage.setItem('map_zoom', String(map.getZoom()));
+            if (selectedGroupKey) sessionStorage.setItem('map_selected_group', selectedGroupKey);
+            if (selectedCharityId) sessionStorage.setItem('map_selected_charity', selectedCharityId);
+            if (selectedLocationId) sessionStorage.setItem('map_selected_location', selectedLocationId);
+            sessionStorage.setItem('map_list_scroll', String(listRef.current?.scrollTop ?? 0));
+            sessionStorage.setItem('map_sheet_state', sheetState);
+          }}
           onClose={() => {
             setSelectedGroupKey(null);
             setSelectedCharityId(null);
